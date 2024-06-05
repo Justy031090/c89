@@ -1,2 +1,7 @@
-*.md
-.gitignore
+*
+!.gitignore
+!*/
+!*.c
+!*.sh
+!README.md
+
