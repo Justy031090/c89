@@ -7,8 +7,20 @@ void PrintHello()
 }
 
 
-int PowerOfTen(int n)
-{
+double PowerOfTen(int n)
+{	
+	int chosen_num = 10;
+	int i=0;
+	int result = 1;
+	if(n<0)
+	{
+		n = n * (-1);
+		chosen_num = 1/chosen_num;
+	}
+	for (i = 0; i < n; i++)
+	{
+		chosen_num *= 10; /*needs to be checked. too tired today */
+	}
 	/*check if number of iterations till n= n**10 */
 	/*no point in checking positive or negative, the power is positive means n will be positive*/
 	/* the number could be very large. probably good idea to use unsigned long int. */
