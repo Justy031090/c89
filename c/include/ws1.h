@@ -4,7 +4,7 @@
 
 void PrintHello();
 
-int PowerOfTen(int n);
+double PowerOfTen(int n);
 
 int FlipOrder(int n);
 
