@@ -2,30 +2,28 @@
 
 void PrintHello()
 {
-	char s[] = {0x22, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x221, 0x22};
+	char s[] = {0x22, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x22};
         printf("%s", s);
 }
 
 
 double PowerOfTen(int n)
 {	
-	int chosen_num = 10;
-	int i=0;
-	int result = 1;
-	if(n<0)
+	float chosen_num = 10.0;
+	int i;
+	double result = 1.0;
+	if(n < 0)
 	{
 		n = n * (-1);
 		chosen_num = 1/chosen_num;
 	}
-	for (i = 0; i < n; i++)
+
+	for (i =  0; i < n; i++)
 	{
-		chosen_num *= 10; /*needs to be checked. too tired today */
+		result *= chosen_num;
 	}
-	/*check if number of iterations till n= n**10 */
-	/*no point in checking positive or negative, the power is positive means n will be positive*/
-	/* the number could be very large. probably good idea to use unsigned long int. */
-	
-	return 0;
+
+	return result;
 }
 
 int FlipOrder(int n)
