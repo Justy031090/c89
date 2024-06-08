@@ -8,7 +8,7 @@ double PowerOfTen(int n);
 
 int FlipOrder(int n);
 
-void Swap(void *a, void *b);
+void Swap(int *a, int *b);
 
 
 #endif /* __WS1_H__ */
