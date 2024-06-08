@@ -28,18 +28,22 @@ double PowerOfTen(int n)
 
 int FlipOrder(int n)
 {
-	/* A way to separate the digits inside of that number. division or modulo could be a good way.
-	each separated Number could be multiplied by its distance from the begging position
-	e.g 1034 ---> 4301. there are 4 digits, 4 is 3 steps away so ---> 4*1000 + (3 - 2 steps away) 3*100 + (0 - 1 step away) 0*-10 +  (1 is 0 steps away) 1;
-	this will produce 4000 + 300 + 0 + 1 --> 4301, the desires number. 
-	*/
-	return 0;
+	int result = 0;
+	int digit;
+
+	while ( 0 != n )
+	{
+		digit = n % 10;
+		result = (result * 10) + digit;
+		n = n/10;
+	}
+	
+	return result;
 }
 
 void Swap(void *a, void *b);
-{
-	/*
-	well, it speaks by itself. receving the 2 adresses we enter their values. 
-	Can make a temp. variable to store one of the values. 
-	*/
+}
+	int temp = *a;
+	a* = *b;
+	*b = temp;
 }
