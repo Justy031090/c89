@@ -20,7 +20,13 @@ int strcmp(const char *s1, const char *s2)
 
  size_t MyStrlen(const char *s)
  {
- 	
+ 	size_t length = 0;
+ 	while(*s != '\0')
+ 	{
+ 		length++;
+ 		s++;
+ 	}
+ 	return length;
  }
 
 
@@ -32,9 +38,8 @@ int strcmp(const char *s1, const char *s2)
 
 int main()
 {
-	const char *s1 = "BOOM!!!";
 	const char *s2 = "BOOM!!";
-	int result = strcmp(s1, s2);
+	int result = MyStrlen(s2);
 	printf("%d\n\n", result);
 	return 0;
 }
