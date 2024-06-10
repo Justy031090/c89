@@ -30,10 +30,29 @@ void PrintAddresses()
 	printf("Memory adress of variable ptr s: %p\n", (void *)(&ptr));
 	printf("Memory adress of variable ptr2: %p\n", (void *)(&ptr2));
 	
-	/*if(ptr)
+	/*it will be better to use a loop or a helper function*/
+	
+	/*
+	if(ptr)
 	{
 		int **ptr3 = &ptr;
 	}
 	free(ptr2);
-	ptr2 = NULL; */
+	ptr2 = NULL;
+	*/
+}	
+
+
+void SwapTwoSize_t(size_t *ptr1, size_t *ptr2)
+{
+	size_t temp = *ptr1;
+	*ptr1 = *ptr2;
+	*ptr2 = temp;
+}
+
+
+
+void SwapTwoPointers(size_t **ptr1, size_t **ptr2)
+{
+	SwapTwoSize_t((size_t *)ptr1, (size_t *)ptr2);
 }
