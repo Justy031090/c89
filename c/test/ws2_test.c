@@ -7,13 +7,16 @@ int main()
 	int *ptr, *ptr2, i = 2, j = 8, index = 0;
 	int arr1[] = {2,3,4,5};
 	int arr2[4];
-	size_t k = 5, l = 10, *ptr3, *ptr4, *ptr5 = &k, *ptr6= &l, **ptr_to_5, **ptr_to_6;
+	size_t k = 5, l = 10, *ptr3, *ptr4, *ptr5 = &k, *ptr6= &l;
+	const char *str = "boom!";
+	const char *str2 = "boooom!";
+	const char *str3 = "boom!";
 	ptr = &i;
 	ptr2 = &j;
 	ptr3 = &k;
 	ptr4 = &l;
-	ptr_to_6 = &ptr6;
-	ptr_to_5 = &ptr5;
+
+	
 	/*******************************************************************************/
 	
 	/*SwapInt Function Tests*/
@@ -33,14 +36,23 @@ int main()
 	PrintAddresses();                         /*Should print the addresses of s_i, i, *ptr, *ptr2, **ptr3*/
 	
 	/*SwapTwoSize Test*/
-	printf("%lu\n%lu\n", *ptr3, *ptr4);       /*Checking the values before SwapTwoSize* - should print 5, 10*/
+	printf("Values Before:\n%lu\n%lu\n", *ptr3, *ptr4);       /*Checking the values before SwapTwoSize* - should print 5, 10*/
 	SwapTwoSize_t(ptr3, ptr4);
-	printf("%lu\n%lu\n", *ptr3, *ptr4);      /*Checking the values after SwapTwoSize - should print 10, 5*/
+	printf("Values After:\n%lu\n%lu\n", *ptr3, *ptr4);      /*Checking the values after SwapTwoSize - should print 10, 5*/
 	
 	/*SwapTwoPointers Function Tests*/
-	printf("%p\n%p\n", (void *)ptr5, (void *)ptr6 );       /*Checking the values before SwapTwoPointers*/
+	printf("ptr1 adress:%p\nptr2 adress:%p\n", (void *)ptr3, (void *)ptr4 );       /*Checking the values before SwapTwoPointers*/
 	SwapTwoPointers(&ptr5, &ptr6);
-	printf("%p\n%p\n", (void *)ptr5, (void *)ptr6 );       /*Checking the values after SwapTwoPointers*/
+	printf("ptr1 adress:%p\nptr2 adress:%p\n", (void *)ptr3, (void *)ptr4 );       /*Checking the values after SwapTwoPointers*/
+	
+	/*StrCmp Function Test*/
+	printf("Should get negative value %d\n",StrCmp(str, str2));         /*Checking for a negative value s2>s1*/
+	printf("Should get positive value %d\n",StrCmp(str2, str));        /*Checking for a positive value s1>s2*/
+	printf("Should get zero %d\n",StrCmp(str, str3));		  /*Checking for a result of zero, strings are the same*/
+	
+	/*StrLen Function Test*/
+	printf("The length of the string should be 5 - the tests output is: %lu\n",StrLen(str));
+	printf("The length of the string should be 7 - the tests output is: %lu\n",StrLen(str2));
 	
 	return 0;
 }

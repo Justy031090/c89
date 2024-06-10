@@ -56,3 +56,25 @@ void SwapTwoPointers(size_t **ptr1, size_t **ptr2)
 {
 	SwapTwoSize_t((size_t *)ptr1, (size_t *)ptr2);
 }
+
+int StrCmp(const char *s1, const char *s2)
+{	
+	for(;*s1 == *s2 && *s1 != '\0';)
+	{
+		s1++;
+		s2++;
+	}
+	
+	return (int)*s1 - (int)*s2;
+}
+
+ size_t StrLen(const char *str)
+ {
+ 	size_t length = 0;
+ 	while(*str != '\0')
+ 	{
+ 		length++;
+ 		str++;
+ 	}
+ 	return length;
+ }
