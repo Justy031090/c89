@@ -75,6 +75,20 @@ int StrCaseCmp(const char *s1, const char *s2)
 }
 
 
+char *StrChr(const char *s, int c)
+{
+	while(*s != '\0')
+	{
+		if(*s == c)
+		{
+			return (char *)s;
+		}
+		s++;
+	}
+	return (char *)s;
+}
+
+
 
 
 
