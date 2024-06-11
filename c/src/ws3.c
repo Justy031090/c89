@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "ws3.h"
 
 char *StrCpy(char *dst, const char *src)
 {	
@@ -44,14 +45,14 @@ char *StrnCpy(char *dst, const char *src, size_t dsize)
 
 int StrnCmp(const char *str1, const char *str2, size_t n)
 {
-	int i;	
+	size_t i;	
 	for(i=0; i<n; i++)
 	{
 		if(*str1 != *str2)
 		{
 			return (int)*str1 - (int)*str2;
 		}
-		if(*str1 == '\0' ||* str2 == '\0' )
+		if(*str1 == '\0' || *str2 == '\0' )
 		{
 			return 0;
 		}
@@ -62,5 +63,43 @@ int StrnCmp(const char *str1, const char *str2, size_t n)
 	return 0;
 
 }
+
+int StrCaseCmp(const char *s1, const char *s2)
+{
+	for(;tolower(*s1) == tolower(*s2) && *s1 != '\0';)
+	{
+		s1++;
+		s2++;
+	}
+	return (int)*s1 - (int)*s2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
