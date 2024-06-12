@@ -1,8 +1,17 @@
 
-#include <stdio.h>
-#include <string.h>
 #include "ws3.h"
 
+ size_t StrLen(const char *str)
+{
+ 	size_t length = 0;
+ 	while(*str != '\0')
+ 	{
+ 		length++;
+ 		str++;
+ 	}
+ 	return length;
+}
+ 
 char *StrCpy(char *dst, const char *src)
 {	
     int len = 0;
@@ -87,6 +96,29 @@ char *StrChr(const char *s, int c)
 	}
 	return (char *)s;
 }
+
+char *StrDup(const char *s)
+{
+	int length = StrLen(s);
+	char *duplicate_string = (char *)malloc(sizeof(char)*length);
+	return StrCpy(duplicate_string, s);
+}
+
+char *StrCat(char *dst, const char *src)
+{
+	size_t dst_length = StrLen(dst);
+	size_t src_length = StrLen(src);
+	size_t length = dst_length + src_length;
+	char *concatenated = (char *)malloc((sizeof(char) * length) +1);
+	
+	StrCpy(concatenated, dst);
+	concatenated = concatenated + dst_length;
+	StrCpy(concatenated, src);
+	concatenated = concatenated - dst_length;
+	return concatenated;
+	
+}
+
 
 
 

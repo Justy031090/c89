@@ -2,6 +2,8 @@
 #define __WS3_H__
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 size_t StrLen(const char *str);
 
