@@ -168,6 +168,24 @@ char *StrStr(const char *haystack, const char *needle)
 	return StrCpy(substring, haystack);
 }
 
+size_t StrSpn(const char *s, const char *accept)
+{
+	size_t counts = 0;
+	
+	while(*s != '\0')
+	{
+		if(*s == *accept)
+		{
+			counts++;
+			accept++;
+			s++;
+		}
+		else
+			break;
+	}
+	return counts;
+}
+
 
 
 

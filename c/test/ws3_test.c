@@ -13,7 +13,7 @@ int main()
 	printf("%d\n", StrnCmp(s, k, 5));
 	printf("%d\n", StrCaseCmp(k, s));
 	printf("%d\n", StrCaseCmp(s, k));*/
-	printf("%s\n", StrStr("MichaelMich", ""));
+	printf("%d\n", StrSpn("Mich is cool", "Mich is"));
 
 	return 0;
 }
