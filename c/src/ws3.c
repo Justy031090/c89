@@ -30,8 +30,8 @@ char *StrCpy(char *dst, const char *src)
 
 char *StrnCpy(char *dst, const char *src, size_t dsize)
 {
-	size_t i;
-	for(i=0; i<dsize; i++)
+	size_t i = 0;
+	for(; i<dsize; i++)
 	{
 		if (*src != '\0')
 		{
@@ -119,9 +119,54 @@ char *StrCat(char *dst, const char *src)
 	
 }
 
+char *StrnCat(char *dst, const char *src, size_t ssize)
+{
+	size_t dst_length = StrLen(dst);
+	size_t length = dst_length + ssize;
+	char *concatenated = (char *)malloc((sizeof(char) * length) +1);
+	
+	StrCpy(concatenated, dst);
+	concatenated = concatenated + dst_length;
+	StrnCpy(concatenated, src, ssize);
+	concatenated = concatenated - dst_length;
+	return concatenated;
+}
 
+char *StrStr(const char *haystack, const char *needle)
+{
+	size_t length = StrLen(needle);
+	size_t counts = 0; 
+	char *substring = (char *)malloc(sizeof(char) * (StrLen(haystack)));
+	
+	/*if needle has length of zero*/
+	if(length == 0)
+		return (char *)haystack;
+	
 
-
+	while(*haystack != '\0')
+	{
+		if(counts == length)
+			break;
+		else if(*haystack == *needle) 
+		{
+			counts++;
+			haystack++;
+			needle++;
+		}
+		else
+		{
+			counts = 0;
+			haystack++;
+		}
+	}
+	
+	/*If there were no occurences, return NULL*/
+	if(counts == 0)
+		return NULL;
+	
+	haystack = haystack - counts;
+	return StrCpy(substring, haystack);
+}
 
 
 
