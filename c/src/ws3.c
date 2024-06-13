@@ -94,7 +94,7 @@ char *StrChr(const char *s, int c)
 		}
 		s++;
 	}
-	return (char *)s;
+	return NULL;
 }
 
 char *StrDup(const char *s)
@@ -171,18 +171,23 @@ char *StrStr(const char *haystack, const char *needle)
 size_t StrSpn(const char *s, const char *accept)
 {
 	size_t counts = 0;
+	const char *iterable;
 	
-	while(*s != '\0')
+	for (;*s!='\0'; s++)
 	{
-		if(*s == *accept)
+		for(iterable = accept; *iterable != '\0'; iterable++)
 		{
-			counts++;
-			accept++;
-			s++;
+			if(*iterable == '\0')
+				break;
+			if(*iterable == *s)
+			{
+				counts++;
+				break;
+			}
+
 		}
-		else
-			break;
 	}
+			
 	return counts;
 }
 
@@ -198,13 +203,13 @@ int IsPolindrome(const char *s)
 	
 	for(; reverse >= s;)
 	{
-		if(*s == *reverse)
+		if(tolower(*s) == tolower(*reverse))
 		{
 			s++;
 			reverse--;
 		}
 		else
-			return ;
+			return 0;
 	}	
 	return 1;
 }
