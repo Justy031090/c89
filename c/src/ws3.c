@@ -186,6 +186,28 @@ size_t StrSpn(const char *s, const char *accept)
 	return counts;
 }
 
+int IsPolindrome(const char *s)
+{
+	char *reverse = (char *)s;
+	
+	while(*reverse != '\0')
+	{
+		reverse++;
+	}
+	reverse--;
+	
+	for(; reverse >= s;)
+	{
+		if(*s == *reverse)
+		{
+			s++;
+			reverse--;
+		}
+		else
+			return 1;
+	}	
+	return 0;
+}
 
 
 
