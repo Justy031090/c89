@@ -115,7 +115,10 @@ char *StrCat(char *dst, const char *src)
 	concatenated = concatenated + dst_length;
 	StrCpy(concatenated, src);
 	concatenated = concatenated - dst_length;
-	return concatenated;
+	StrCpy(result, concatenated);
+	free(concatenated);
+	concatenated = NULL;
+	return result;
 	
 }
 
@@ -137,6 +140,7 @@ char *StrStr(const char *haystack, const char *needle)
 	size_t length = StrLen(needle);
 	size_t counts = 0; 
 	char *substring = (char *)malloc(sizeof(char) * (StrLen(haystack)));
+	char* res;
 	
 	/*if needle has length of zero*/
 	if(length == 0)
@@ -165,7 +169,11 @@ char *StrStr(const char *haystack, const char *needle)
 		return NULL;
 	
 	haystack = haystack - counts;
-	return StrCpy(substring, haystack);
+	res = StrCpy(substring, haystack);
+	substring(free);
+	subsring = NULL;
+	
+	return res;
 }
 
 size_t StrSpn(const char *s, const char *accept)
@@ -215,7 +223,12 @@ int IsPolindrome(const char *s)
 }
 
 
-
+char *RevieWhiteSpaces(char *s)
+{
+	/*Loop with isspace, if true - trim. 
+	possibe to move every item step down through the loop.
+	*/
+}
 
 
 

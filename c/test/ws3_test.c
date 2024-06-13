@@ -57,8 +57,8 @@ int main()
 	
 	printf("StrDup test Ended\n\n");
 	
-	printf("Expect to concat to MichaelBar: %s\n", StrCat(test_src, "Bar"));
-	printf("Library Func output: %s\n", strcat(test_src, "Bar"));
+	printf("Expect to concat to MichaelBar: %s\n", StrCat(test_src, test_str));
+	printf("Library Func output: %s\n", strcat(test_src, test_str));
 	printf("Expect to concat to I LRD: %s\n", StrCat("I", "LRD"));
 	printf("Library Func output: %s\n", strcat("I", "LRD"));
 	printf("Expect to to get 'nothing+ LRD': %s\n", StrCat("", "LRD"));
@@ -69,7 +69,7 @@ int main()
 	printf("StrCat test Ended\n\n");
 	
 	printf("Expect to concat to MichaelB: %s\n", StrnCat(test_src, "Bar", 1));
-	printf("Library Func output %s\n", strncat(test_src, "Bar", 1));
+	printf("Library Func output %s\n", strncat(test_src, test_str, 1));
 	printf("Expect to concat to I LRD: %s\n", StrnCat("I", "LRD", 8));
 	printf("Library Func output %s\n", strncat("I", "LRD", 8));
 	printf("Expect to to get 'nothing+ LRD': %s\n", StrnCat("", "LRD",5));
@@ -84,9 +84,9 @@ int main()
 	printf("Expect to get the substring 'chael':  %s\n", StrStr(test_src, "ch"));
 	printf("Library Func output:  %s\n", strstr(test_src, "ch"));
 	printf("Expect to get input string Michael back:' %s\n", StrStr(test_src, ""));
-		printf("Library Func output:  %s\n", strstr(test_src, ""));
+	printf("Library Func output:  %s\n", strstr(test_src, ""));
 	printf("Expect to get no-match - NULL back:' %s\n", StrStr(test_src, "xor"));
-		printf("Library Func output:  %s\n", strstr(test_src, "xor"));
+	printf("Library Func output:  %s\n", strstr(test_src, "xor"));
 	
 	printf("StrStr test Ended\n\n");
 	
@@ -108,10 +108,6 @@ int main()
 	
 	printf("IsPolindrome test Ended\n\n");
 	
-	/*
-	printf("%d\n", IsPolindrome("1234321"));
 
-	*/
-
-	return 0;
+	return 1;
 }
