@@ -65,7 +65,6 @@ int main()
 	
 	printf("StrStr test Ended\n\n");
 	
-	
 	printf("Input M - expect to get 1: %lu\n", StrSpn(test_src, "M"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "M"));
 	printf("Input Mic - expect to get 3: %lu\n", StrSpn(test_src, "Mic"));
@@ -75,7 +74,14 @@ int main()
 	printf("Input x - expect to get 0: %lu\n", StrSpn(test_src, "x"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "x"));
 	
+	printf("StrSpn test Ended\n\n");
 	
+	printf("Testing if polindrome for 123321 - expected:1\n Returned: %d\n",IsPolindrome("123321")); 
+	printf("Testing if polindrome for 1234321 - expected:0\n Returned: %d\n",IsPolindrome("1234321")); 
+	printf("Testing if polindrome for #!sSkSs!# - expected:1\n Returned: %d\n",IsPolindrome("#!sSkSs!#"));
+	printf("Testing if polindrome for 0Abba0 - expected:1\n Returned: %d\n",IsPolindrome("0Abba0")); 
+	
+	printf("IsPolindrome test Ended\n\n");
 	
 	/*
 	printf("%d\n", IsPolindrome("1234321"));
