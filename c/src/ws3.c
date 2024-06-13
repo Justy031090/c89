@@ -204,9 +204,9 @@ int IsPolindrome(const char *s)
 			reverse--;
 		}
 		else
-			return 1;
+			return ;
 	}	
-	return 0;
+	return 1;
 }
 
 
