@@ -85,7 +85,7 @@ int main()
 	
 	printf("StrnCat test Ended\n\n");
 	
-	/*
+	
 	printf("Expect to get the substring 'chael':  %s\n", StrStr(test_src, "ch"));
 	printf("Library Func output:  %s\n", strstr(test_src, "ch"));
 	printf("Expect to get input string Michael back:' %s\n", StrStr(test_src, ""));
@@ -93,8 +93,8 @@ int main()
 	printf("Expect to get no-match - NULL back:' %s\n", StrStr(test_src, "xor"));
 	printf("Library Func output:  %s\n", strstr(test_src, "xor"));
 	
-	printf("StrStr test Ended\n\n");*/
-	
+	printf("StrStr test Ended\n\n");
+		
 	printf("Input M - expect to get 1: %lu\n", StrSpn(test_src, "M"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "M"));
 	printf("Input Mic - expect to get 3: %lu\n", StrSpn(test_src, "Mic"));

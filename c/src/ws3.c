@@ -153,19 +153,16 @@ char *StrnCat(char *dst, const char *src, size_t ssize)
 	return dst;
 }
 
-/*
+
 char *StrStr(const char *haystack, const char *needle)
 {
 	size_t length = StrLen(needle);
 	size_t counts = 0; 
-	char *substring = (char *)malloc(sizeof(char) * (StrLen(haystack)));
-	char* res;
 	
-	if(length == 0)
+	if(0 == length)
 		return (char *)haystack;
 	
-
-	while(*haystack != '\0')
+	while('\0' !=*haystack)
 	{
 		if(counts == length)
 			break;
@@ -184,15 +181,10 @@ char *StrStr(const char *haystack, const char *needle)
 	
 	if(counts == 0)
 		return NULL;
-	
-	haystack = haystack - counts;
-	res = StrCpy(substring, haystack);
-	substring(free);
-	subsring = NULL;
-	
-	return res;
+	haystack -= counts;
+	return (char *)haystack;
 }
-*/
+
 
 size_t StrSpn(const char *s, const char *accept)
 {
