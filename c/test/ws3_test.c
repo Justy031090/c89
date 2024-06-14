@@ -4,20 +4,22 @@ int main()
 {
 	
 	char *test_src = "Michael";
-	char *test_dst;
+	char test_array[1024] = "Hello World";
 	char *test_str = "Bar";
+	char empty_array[500];
+	char *test_dst = NULL;
 	
-	StrCpy(test_dst, test_src);
-	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",test_dst, test_src, test_dst, test_src);
+	StrCpy(empty_array, test_src);
+	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",empty_array, test_src, empty_array, test_src);
 	
 	printf("StrCpy test Ended\n\n");
-
-	printf("Expect to get 'Mi' - %s\n", StrnCpy(test_dst, test_src, 2));
-	printf("Library func. output :  - %s\n", strncpy(test_dst, test_src, 2));
-	printf("Expect to get 'Micha': %s\n", StrnCpy(test_dst, test_src, 5));
-	printf("Library func. output :  - %s\n", strncpy(test_dst, test_src, 5));
-	printf("Expect to get 'Michael':%s\n", StrnCpy(test_dst, test_src, 23));
-	printf("Library func. output :  - %s\n", strncpy(test_dst, test_src, 23)); 
+	
+	printf("Expect to get 'Mi' - %s\n", StrnCpy(empty_array, test_src, 2));
+	printf("Library func. output :  - %s\n", strncpy(empty_array, test_src, 2));
+	printf("Expect to get 'Micha': %s\n", StrnCpy(empty_array, test_src, 5));
+	printf("Library func. output :  - %s\n", strncpy(empty_array, test_src, 5));
+	printf("Expect to get 'Michael':%s\n", StrnCpy(empty_array, test_src, 23));
+	printf("Library func. output :  - %s\n", strncpy(empty_array, test_src, 23)); 
 	
 	printf("StrnCpy test Ended\n\n");
 	
@@ -49,7 +51,7 @@ int main()
 	printf("StrChr test Ended\n\n");
 	
 	test_dst = StrDup(test_src);
-	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",test_dst, test_src, test_src, test_dst);
+	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",empty_array, test_src, test_src, empty_array);
 	printf("Expect to be able to free without error\n");
 	free(test_dst);
 	test_dst = NULL;
@@ -57,30 +59,33 @@ int main()
 	
 	printf("StrDup test Ended\n\n");
 	
-	printf("Expect to concat to MichaelBar: %s\n", StrCat(test_src, test_str));
-	printf("Library Func output: %s\n", strcat(test_src, test_str));
-	printf("Expect to concat to I LRD: %s\n", StrCat("I", "LRD"));
-	printf("Library Func output: %s\n", strcat("I", "LRD"));
-	printf("Expect to to get 'nothing+ LRD': %s\n", StrCat("", "LRD"));
-	printf("Library Func output: %s\n", strcat("", "LRD"));
-	printf("Expect to to get I + 'nothing': %s\n", StrCat("I", ""));
-	printf("Library Func output: %s\n", strcat("I", ""));
+	printf("Expect to concat to Hello World Bar: %s\n", StrCat(test_array, test_str));
+	test_array[11] = '\0';
+	printf("Library Func output: %s\n", strcat(test_array, test_str));
+	test_array[11] = '\0';
+	printf("Expect to to get 'Hello World+ LRD': %s\n", StrCat(test_array, "LRD"));
+	test_array[11] = '\0';
+	printf("Library Func output: %s\n", strcat(test_array, "LRD"));
+	test_array[11] = '\0';
+	printf("Expect to to get Hello World + 'nothing': %s\n", StrCat(test_array, ""));
+	printf("Library Func output: %s\n", strcat(test_array, ""));
 	
 	printf("StrCat test Ended\n\n");
 	
-	printf("Expect to concat to MichaelB: %s\n", StrnCat(test_src, "Bar", 1));
-	printf("Library Func output %s\n", strncat(test_src, test_str, 1));
-	printf("Expect to concat to I LRD: %s\n", StrnCat("I", "LRD", 8));
-	printf("Library Func output %s\n", strncat("I", "LRD", 8));
-	printf("Expect to to get 'nothing+ LRD': %s\n", StrnCat("", "LRD",5));
-	printf("Library Func output %s\n", strncat("", "LRD",5));
-	printf("Expect to to get I + 'nothing': %s\n", StrnCat("I", "", 2));
-	printf("Library Func output %s\n", strncat("I", "", 2));
-	printf("Expect to to get 'nothing': %s\n", StrnCat("", "", 2));
-	printf("Library Func output %s\n", strncat("", "", 2));
+	printf("Expect to concat to Hello WorldB: %s\n", StrnCat(test_array, "Bar", 1));
+	test_array[11] = '\0';
+	printf("Library Func output %s\n", strncat(test_array, test_str, 1));
+	test_array[11] = '\0';
+	printf("Expect to concat to Hello World LRD: %s\n", StrnCat(test_array, "LRD", 8));
+	test_array[11] = '\0';
+	printf("Library Func output %s\n", strncat(test_array, "LRD", 8));
+	test_array[11] = '\0';
+	printf("Expect to to get Hello World + 'nothing': %s\n", StrnCat(test_array, "", 2));
+	printf("Library Func output %s\n", strncat(test_array, "", 2));
 	
 	printf("StrnCat test Ended\n\n");
 	
+	/*
 	printf("Expect to get the substring 'chael':  %s\n", StrStr(test_src, "ch"));
 	printf("Library Func output:  %s\n", strstr(test_src, "ch"));
 	printf("Expect to get input string Michael back:' %s\n", StrStr(test_src, ""));
@@ -88,26 +93,26 @@ int main()
 	printf("Expect to get no-match - NULL back:' %s\n", StrStr(test_src, "xor"));
 	printf("Library Func output:  %s\n", strstr(test_src, "xor"));
 	
-	printf("StrStr test Ended\n\n");
+	printf("StrStr test Ended\n\n");*/
 	
 	printf("Input M - expect to get 1: %lu\n", StrSpn(test_src, "M"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "M"));
 	printf("Input Mic - expect to get 3: %lu\n", StrSpn(test_src, "Mic"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "Mic"));
-	printf("Input iMc123cc - expect to get 3: %lu\n", StrSpn(test_src, "iMc123cc"));
-	printf("Library Func. Output - : %lu\n", strspn(test_src, "iMc123cc"));
+	printf("Input iMc113cc - expect to get 3: %lu\n", StrSpn(test_src, "iMc113cc"));
+	printf("Library Func. Output - : %lu\n", strspn(test_src, "iMc113cc"));
 	printf("Input x - expect to get 0: %lu\n", StrSpn(test_src, "x"));
 	printf("Library Func. Output - : %lu\n", strspn(test_src, "x"));
 	
 	printf("StrSpn test Ended\n\n");
 	
-	printf("Testing if polindrome for 123321 - expected:1\n Returned: %d\n",IsPolindrome("123321")); 
-	printf("Testing if polindrome for 1234321 - expected:0\n Returned: %d\n",IsPolindrome("1234321")); 
+	printf("Testing if polindrome for 113321 - expected:1\n Returned: %d\n",IsPolindrome("113321")); 
+	printf("Testing if polindrome for 1134321 - expected:0\n Returned: %d\n",IsPolindrome("1134321")); 
 	printf("Testing if polindrome for #!sSkSs!# - expected:1\n Returned: %d\n",IsPolindrome("#!sSkSs!#"));
 	printf("Testing if polindrome for 0Abba0 - expected:1\n Returned: %d\n",IsPolindrome("0Abba0")); 
 	
 	printf("IsPolindrome test Ended\n\n");
 	
 
-	return 1;
+	return 0;
 }

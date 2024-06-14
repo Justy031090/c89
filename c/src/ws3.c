@@ -109,32 +109,51 @@ char *StrCat(char *dst, const char *src)
 	size_t dst_length = StrLen(dst);
 	size_t src_length = StrLen(src);
 	size_t length = dst_length + src_length;
-	char *concatenated = (char *)malloc((sizeof(char) * length) +1);
 	
-	StrCpy(concatenated, dst);
-	concatenated = concatenated + dst_length;
-	StrCpy(concatenated, src);
-	concatenated = concatenated - dst_length;
-	StrCpy(result, concatenated);
-	free(concatenated);
-	concatenated = NULL;
-	return result;
+	while('\0' != *dst)
+		dst++;
+		
+	while('\0' != *src)
+	{
+		*dst = *src;
+		dst++;
+		src++;
+	}
+	dst++;
+	*dst = '\0';
+	dst = dst - length -1;
+	
+
+	return dst;
 	
 }
 
 char *StrnCat(char *dst, const char *src, size_t ssize)
 {
 	size_t dst_length = StrLen(dst);
-	size_t length = dst_length + ssize;
-	char *concatenated = (char *)malloc((sizeof(char) * length) +1);
+	size_t src_length = StrLen(src);
+	size_t length = dst_length + src_length;
+	size_t i = 0;
 	
-	StrCpy(concatenated, dst);
-	concatenated = concatenated + dst_length;
-	StrnCpy(concatenated, src, ssize);
-	concatenated = concatenated - dst_length;
-	return concatenated;
+	while('\0' != *dst)
+		dst++;
+		
+	while(i<ssize && *src)
+	{
+		*dst = *src;
+		dst++;
+		src++;
+		i++;
+	}
+	dst++;
+	*dst = '\0';
+	dst = dst - length -1;
+	
+
+	return dst;
 }
 
+/*
 char *StrStr(const char *haystack, const char *needle)
 {
 	size_t length = StrLen(needle);
@@ -142,7 +161,6 @@ char *StrStr(const char *haystack, const char *needle)
 	char *substring = (char *)malloc(sizeof(char) * (StrLen(haystack)));
 	char* res;
 	
-	/*if needle has length of zero*/
 	if(length == 0)
 		return (char *)haystack;
 	
@@ -164,7 +182,6 @@ char *StrStr(const char *haystack, const char *needle)
 		}
 	}
 	
-	/*If there were no occurences, return NULL*/
 	if(counts == 0)
 		return NULL;
 	
@@ -175,6 +192,7 @@ char *StrStr(const char *haystack, const char *needle)
 	
 	return res;
 }
+*/
 
 size_t StrSpn(const char *s, const char *accept)
 {
@@ -222,13 +240,14 @@ int IsPolindrome(const char *s)
 	return 1;
 }
 
-
+/*
 char *RevieWhiteSpaces(char *s)
 {
-	/*Loop with isspace, if true - trim. 
+	Loop with isspace, if true - trim. 
 	possibe to move every item step down through the loop.
-	*/
+	
 }
+*/
 
 
 
