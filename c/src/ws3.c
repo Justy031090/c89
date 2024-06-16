@@ -101,6 +101,7 @@ char *StrDup(const char *s)
 {
 	int length = StrLen(s);
 	char *duplicate_string = (char *)malloc(sizeof(char)*length);
+	/*Need to test if the malloc worked*/
 	return StrCpy(duplicate_string, s);
 }
 
@@ -232,14 +233,33 @@ int IsPolindrome(const char *s)
 	return 1;
 }
 
-/*
+
 char *RevieWhiteSpaces(char *s)
 {
-	Loop with isspace, if true - trim. 
-	possibe to move every item step down through the loop.
-	
+	char *next_sign = s+1;
+	char *stop_point = s;
+	while('\0' != *s || '\0' != *next_sign)
+	{		
+		if(0 != isspace(*s) && 0 != isspace(*next_sign))
+			{
+				stop_point = s;
+				while('\0' != *next_sign)
+				{
+					*s = *next_sign;
+					s++; next_sign++;
+				}
+				
+				s = stop_point;
+				next_sign = stop_point + 1;
+				
+			}
+			
+		s++; next_sign++;
+		
+	}
+	return s;
 }
-*/
+
 
 
 

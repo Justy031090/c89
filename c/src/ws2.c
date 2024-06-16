@@ -30,6 +30,8 @@ void PrintAddresses()
 	printf("Memory adress of variable ptr s: %p\n", (void *)(&ptr));
 	printf("Memory adress of variable ptr2: %p\n", (void *)(&ptr2));
 	
+	free(ptr2);
+	
 	/*it will be better to use a loop or a helper function*/
 	
 	/*

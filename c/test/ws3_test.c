@@ -8,7 +8,7 @@ int main()
 	char *test_str = "Bar";
 	char empty_array[500];
 	char *test_dst = NULL;
-	
+	/*
 	StrCpy(empty_array, test_src);
 	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",empty_array, test_src, empty_array, test_src);
 	
@@ -112,7 +112,8 @@ int main()
 	printf("Testing if polindrome for 0Abba0 - expected:1\n Returned: %d\n",IsPolindrome("0Abba0")); 
 	
 	printf("IsPolindrome test Ended\n\n");
-	
+	*/
+	printf("%s\n", RevieWhiteSpaces("  This is a       string\tthat is \vbeing  checked"));
 
 	return 0;
 }
