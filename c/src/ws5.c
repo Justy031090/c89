@@ -68,3 +68,88 @@ int SumOfMatrix(int arr[][3], int rows, int cols,  int result_arr[])
 	}
 	return 1;
 }
+
+
+void TypesList(char *types[12])
+{
+
+	int i = 0, j=0, sum = 0;
+	int res_arr[12];
+	int size = 12;
+	
+	for(; i<size;i++)
+	{
+		for(; types[i][j] != '\0'; j++)
+		{
+			sum += (int)types[i][j];
+		}
+		res_arr[i] = sum;
+		sum = 0;
+		j = 0;
+	}
+	
+	i = 0;
+	
+	for(;i<size; i++)
+	{
+		switch(res_arr[i])
+		{
+		case 414:
+			printf("Size of char is %ld byte\n ",sizeof(char));
+			break;
+		case 1307:
+			printf("Size of unsigned char is %ld byte\n ",sizeof(unsigned char));
+			break;
+		case 331:
+			printf("Size of int is %ld byte\n",sizeof(int));
+			break;
+		case 1224:
+			printf("Size of unsigned int is %ld byte\n",sizeof(unsigned int));
+			break;
+		case 923:
+			printf("Size of short int is %ld byte\n",sizeof(short int));
+			break;
+		case 1816:
+			printf("Size of unsigned short int is %ld byte\n",sizeof(unsigned short int));
+			break;
+		case 795:
+			printf("Size of int is %ld byte\n",sizeof(long int));
+			break;
+		case 1688:
+			printf("Size of long int is %ld byte\n",sizeof(unsigned long int));
+			break;
+		case 534:
+			printf("Size of float is %ld byte\n",sizeof(float));
+			break;
+		case 1099:
+			printf("Size of long double is %ld byte\n",sizeof(long double));
+			break;
+		case 635:
+			printf("Size of double is %ld byte\n",sizeof(double));
+			break;
+		case 769:
+			printf("Size of pointer depending on the system. here it's %ld byte\n", sizeof(&i));
+			break;
+		default:
+			printf("Datatype is invalid");
+		}	
+	}
+}
+
+	
+	
+	
+	
+void Environment(char **envp)
+{
+	printf("%d\n" ,envp[0][0]);
+}
+
+
+
+
+
+
+
+
+

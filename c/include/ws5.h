@@ -8,8 +8,8 @@ int SumOfMatrix(int arr[][3], int cols, int rows, int result_arr[]);
 
 int Josephus(int arr[], size_t size);
 
-void TypesList(char types[]);
+void TypesList(char *types[12]);
 
-char **Environment(char **envp);
+void Environment(char **envp);
 
 #endif /* __WS5_H__ */
