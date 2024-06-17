@@ -2,28 +2,22 @@
 
 int main()
 {
-	int i =0, j=0;
-	char *test_arr[2] = {"double", "pointer"};
-	int sum = 0;
-	int res_arr[2];
-	
-	for(; i<2; i++)
-	{
-		for(; test_arr[i][j] != '\0'; j++){
-		sum += (int)test_arr[i][j];
-		printf("Ascii - %d\n\n", (int)test_arr[i][j]);
-		printf("Arr - %c\n\n", test_arr[i][j]);
-		}
-		res_arr[i] = sum;
-		sum = 0;
-		j = 0;
-	}
-	for(; sum<2; sum++){
-		printf("%d\n", res_arr[sum]);
-	}
+int n = 1;
+int size = 3;
+int rounds = 0;
+int ans = 0;
 
-	
-	return 0;
+while(size != 1)
+{
+	size = size/2;
+	rounds++;
+}
+size = 3;
+
+for(;rounds > 0; n = n*2, --rounds)
+;
+ans = 2*(size-n);
+printf("%d\n", ans);	
 }
 
 
