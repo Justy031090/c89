@@ -1,9 +1,25 @@
+#include <stdio.h>
+#include "ws6.h"
 
 
-void PressKeyIf(void)
+static func_ptr table[127];
+table[84] = PKL;
+table[116] = PKL;
+table[97] = PKL;
+table[65] = PKL;
+table[26] = PKL;
+
+func_ptr PKL = PressKeyLut;
+void PressKeyLut(func_ptr arr[])
 {
-	int t = 1;
-	while(t)
+	char c = getc(stdin);
+	arr[c];
+}
+
+void PressKeyIf()
+{
+	char c = 0;
+	while(27 != c)
 	{
 		char c = getc(stdin);
 		if(c == 116 || c == 84)
@@ -14,14 +30,10 @@ void PressKeyIf(void)
 		{
 			printf("\"A\" was pressed\n");
 		}
-		if(c == 27)
-		{
-			t = 0;
-		}
 	}
 }
 
-void PressKeySwitch(void)
+void PressKeySwitch()
 {
 	int t = 1;
 	
@@ -44,7 +56,5 @@ void PressKeySwitch(void)
 	}
 }
 
-void PressKeyLut(void)
-{
-}
+
 
