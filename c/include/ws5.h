@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <stddef.h> /*for the usage of size_t*/
 
 #ifndef __WS5_H__
 #define __WS5_H__
@@ -11,6 +9,6 @@ int Josephus(int arr[], size_t size);
 
 void TypesList(char *types[]);
 
-void Environment(char **envp);
+int Environment(char **envp);
 
 #endif /* __WS5_H__ */

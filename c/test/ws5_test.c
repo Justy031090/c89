@@ -1,6 +1,7 @@
+#include <stdio.h>
 #include "ws5.h"
 
-int main(int argc, char *argv[], char *envp[])
+int main(int argc, char **argv, char **envp)
 {
 	int test_arr[3][3] = { {1,2,3}, {4,5,6}, {7,8,9} };
 	int res_arr[3] = {0, 0, 0};
@@ -9,7 +10,7 @@ int main(int argc, char *argv[], char *envp[])
 	int jos_arr[100];
 	int b = 3;
 	
-	/*char *datatypes[] = {"char", "unsigned char", "int", "unsigned int", "short int", "unsigned short int", "long int", "unsigned long int", "float", "double", "long double", "pointer"};
+	char *datatypes[] = {"char", "unsigned char", "int", "unsigned int", "short int", "unsigned short int", "long int", "unsigned long int", "float", "double", "long double", "pointer"};
 	
 
 	SumOfMatrix(test_arr, a, b, res_arr);
@@ -28,9 +29,11 @@ int main(int argc, char *argv[], char *envp[])
 	
 	TypesList(datatypes);
 	
-	printf("\n\n\n");*/
+	printf("\n\n\n");
 	
+
 	Environment(envp);
+
 
 
 	

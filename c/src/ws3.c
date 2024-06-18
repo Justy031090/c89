@@ -236,27 +236,27 @@ int IsPolindrome(const char *s)
 
 char *RevieWhiteSpaces(char *s)
 {
-	char *next_sign = s+1;
-	char *stop_point = s;
-	while('\0' != *s || '\0' != *next_sign)
-	{		
-		if(0 != isspace(*s) && 0 != isspace(*next_sign))
-			{
-				stop_point = s;
-				while('\0' != *next_sign)
-				{
-					*s = *next_sign;
-					s++; next_sign++;
-				}
-				
-				s = stop_point;
-				next_sign = stop_point + 1;
-				
-			}
-			
-		s++; next_sign++;
+	char *current = s;
+	char *next = s+1;
+	
+		/*To check from beginning and end - untill first character (isspace == 0); */
 		
+		/*check doubles*/
+		if(0 != isspace(*current) && 0 != isspace(*next))
+		{
+			while('\0' != *next)
+			{
+				*current = *next;
+				++next; ++current;
+			}
+			*current = '\0';
+			current = s;
+			next = s+1;
+		}
+		
+		++next; ++current;
 	}
+	
 	return s;
 }
 

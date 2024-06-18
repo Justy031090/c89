@@ -1,23 +1,26 @@
+#include <stdlib.h>
 #include "ws5.h"
 
+/*CODE REVIEWD BY ORAN*/
 
 int Josephus(int arr[], size_t size)
 {
 	size_t n = 1;
 	size_t sz = size;
 	int rounds = 0;
-	int ans = 0;
 
-	while(sz != 1)
+	while(1 != sz)
 	{
 		sz = sz/2;
-		rounds++;
+		++rounds;
 	}
 	
-	for(;rounds > 0; n = n*2, --rounds);
-	ans = 2*(size-n);
+	for(;0 < rounds; n = n*2, --rounds)
+	{
+		//do nothing
+	}
 	
-	return ans;
+	return 2*(size-n);
 }
 
 
@@ -29,15 +32,13 @@ int SumOfMatrix(int arr[][3], int rows, int cols,  int result_arr[])
 	int j = 0;
 	int sum = 0;
 	
-	for(;i<rows; i++)
+	for(;i<rows; ++i)
 	{
-		for(;j<cols;j++)
+		for(;j<cols;++j)
 		{
-			sum += arr[i][j];
+			result_arr[i] += arr[i][j];
 		}
-		result_arr[i] = sum;
 		j = 0;
-		sum = 0;
 	}
 	return 1;
 }
@@ -50,9 +51,9 @@ void TypesList(char *types[])
 	int res_arr[12]; /*Could make larger for more types*/
 	int size = 12;   /*Can be counted untill null terminator via while loop*/
 	
-	for(; i<size;i++)
+	for(; i<size;++i)
 	{
-		for(; types[i][j] != '\0'; j++)
+		for(; types[i][j] != '\0'; ++j)
 		{
 			sum += (int)types[i][j];
 		}
@@ -63,7 +64,7 @@ void TypesList(char *types[])
 	
 	i = 0;
 	
-	for(;i<size; i++)
+	for(;i<size; ++i)
 	{
 		switch(res_arr[i])
 		{
@@ -111,42 +112,57 @@ void TypesList(char *types[])
 
 
 	
+
 	
-	
-void Environment(char **envp)
+int Environment(char **envp)
 {	
 	int i = 0, j=0;
 	int outer_size = 0;
 	int inner_size = 0;
 	char **buffer = NULL;
 	
-	for (; envp[i] != '\0'; i++)
+	
+	
+	for (;'\0' != envp[i]; ++i)
 	{
-		for(;envp[i][j] != '\0'; j++, ++inner_size);
+		for(;'\0' != envp[i][j]; ++j, ++inner_size);
+		
 		j = 0;
 	}	
 	outer_size = i;
+	
 	i = 0;
 	
 	buffer = (char **)malloc(sizeof(char *) * (outer_size+inner_size));
 	
 	if(!buffer)
+	{
+		
 		printf("Malloc Failed");
+		free(buffer);
+		return -1;
+	}
 	
-	for(; i<outer_size; i++)
+
+	for(; i<outer_size; ++i)
 	{
 		buffer[i] = envp[i];
 		
-		for(;envp[i][j] != '\0'; j++)
-			buffer[i][j] = envp[i][j];
-	
+		for(;'\0'!= envp[i][j]; ++j)
+		{
+			buffer[i][j] = tolower(envp[i][j]);
+		}
 		j = 0;
 	}
 		
 	i = 0;
 		
-	for (; buffer[i] != '\0'; i++)
+	for (;'\0' != buffer[i]; ++i)
 		printf("%s\n", buffer[i]);
+		
+	free(buffer);
+	buffer = NULL;
+	return 1;
 }
 
 
