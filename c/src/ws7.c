@@ -25,6 +25,7 @@ void FillArray()
 	}
 }
 
+/*Function Passed To Main*/
 void PrintInMain()
 {
 	int i=0;

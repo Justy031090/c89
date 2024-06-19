@@ -3,11 +3,15 @@
 
 
 typedef void (*func_ptr)(int);
+typedef int (*fun)(char *);
+
 struct print_me
 {
 	int x;
 	func_ptr print_ptr;
 };
+
+
 
 void PrintInMain();
 
