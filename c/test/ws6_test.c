@@ -2,12 +2,17 @@
 #include <stdio.h>
 #include "ws6.h"
 
+/******************************************************************************
+***********************REVIEWD BY HIS MAJESTY, OR KOL**************************
+******************************************************************************/
 
 int main()
 {
+	
 	system("stty -icanon -echo");
-	PressKeyIf();
+	/*PressKeyIf();
 	PressKeySwitch();
+		*/
 	PressKeyLut();
 	system("stty icanon echo");
 		

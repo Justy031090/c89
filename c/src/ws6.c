@@ -2,19 +2,64 @@
 #include "ws6.h"
 
 
-static func_ptr table[127];
-table[84] = PKL;
-table[116] = PKL;
-table[97] = PKL;
-table[65] = PKL;
-table[26] = PKL;
-
-func_ptr PKL = PressKeyLut;
-void PressKeyLut(func_ptr arr[])
+void PressedOnT()
 {
-	char c = getc(stdin);
-	arr[c];
+	printf("\"T\" was pressed\n");
 }
+
+void PressedOnA()
+{
+	printf("\"A\" was pressed\n");
+}
+
+void PressedOnEsc()
+{
+	system("stty icanon echo");
+}
+
+
+void Dummy()
+{
+ ;
+}
+
+
+void FillTable ()
+{	
+
+	int i = 0;
+	func_ptr POA = PressedOnA;
+	func_ptr POT = PressedOnT;
+	func_ptr DUM = Dummy;
+	func_ptr POESC = PressedOnEsc;
+	while(i<256)
+	{
+		table[i] = DUM;
+		i++;
+	}
+	
+	table[116] = POT;
+	table[84] = POT;
+	table[65] = POA;
+	table[97] = POA;
+	table[27] = POESC;
+}
+
+
+
+
+void PressKeyLut()
+{	
+	char c = 0;
+	FillTable();
+	while(c != 27)
+	{
+		c = getc(stdin);
+		system("stty -icanon -echo");
+		table[c]();
+	}
+}
+
 
 void PressKeyIf()
 {

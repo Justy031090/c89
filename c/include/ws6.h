@@ -4,7 +4,9 @@
 #include <stdio.h>
 
 typedef void (*func_ptr)(void);
-void PressKeyLut(arr);
+
+static func_ptr table[256];
+void PressKeyLut();
 void PressKeyIf();
 void PressKeySwitch();
 
