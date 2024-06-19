@@ -1,85 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef void (*func_ptr)(int);
 
-	int add (int y, int z)
-	{
-		return y+z;
-	}
 
-	typedef int my_int;
-	typedef char my_char;
-	typedef float my_float;
-	typedef char arr_ptr[][10];
-	typedef int (*func_ptr)(int, int);
-	
-void TypeDefTests (void)
+void Print(int x)
 {
-	my_int i = 3;
-	my_char c = 97;
-	my_float floaty = 2.5;
-	arr_ptr test_arr = {{1,2}, {3,4}, {5.6}};
-	func_ptr AddFunc = add;
-	
-	printf("%d\n%c\n%f\n%i\n%d\n", i, c, floaty, test_arr[0][1], AddFunc(2,2));
+	printf("Printing integer %d\n", x);
 }
-	
-	
-void PressKeyIf(void)
+
+func_ptr ptr_to_print = Print;
+
+struct print_me
 {
-	int t = 1;
-	while(t)
+	int x;
+	func_ptr print_func;
+};
+
+
+
+struct print_me struct_prints[10];
+
+void FillArray()
+{
+	int i=0;
+	while(i<10)
 	{
-		char c = getc(stdin);
-		if(c == 116 || c == 84)
-		{
-			printf("\"T\" was pressed\n");
-		}
-		if(c == 97 || c == 65)
-		{
-			printf("\"A\" was pressed\n");
-		}
-		if(c == 27)
-		{
-			t = 0;
-		}
+		struct_prints[i].x = i;
+		struct_prints[i].print_func = ptr_to_print;
+		++i;
 	}
 }
 
-void PressKeySwitch(void)
-{
-	int t = 1;
-	
-	while(0 != t)
-	{
-		switch(getc(stdin))
-		{
-		case 116:
-		case 84:
-			printf("\"T\" was pressed\n");
-			break;
-		case 97:
-		case 65:
-			printf("\"A\" was pressed\n");
-			break;
-		case 27:
-			t = 0;
-			break;
-		}
-	}
-}
 
-void PressKeyLut(void)
-{
-}
+
 
 
 
 int main()
 {
-	system("stty -icanon -echo");
-	SwitchPresKey();
-	system("stty icanon echo");
+	int i = 0;
+	FillArray();
+	while(i<10)
+	{
+		struct_prints[i].print_func(struct_prints[i].x);
+		i++;
+	}
+	
 	return 0;
 }
 

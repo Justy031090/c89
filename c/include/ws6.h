@@ -10,4 +10,4 @@ void PressKeyLut();
 void PressKeyIf();
 void PressKeySwitch();
 
-#endif /* __WS5_H__ */
+#endif /* __WS6_H__ */

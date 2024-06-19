@@ -238,25 +238,48 @@ char *RevieWhiteSpaces(char *s)
 {
 	char *current = s;
 	char *next = s+1;
+	char *last = s;
 	
-		/*To check from beginning and end - untill first character (isspace == 0); */
+	while('\0' != *last)
+	{
+		last++;
+	}
+	last--;
+	
+	/*Check start*/
+	while(0 != isspace(*current))
+	{
+		++current;
+	}
+	
+	/*Check end*/
+	while(0 != isspace(*last))
+	{
+		--last;
 		
-		/*check doubles*/
+	}
+	last++;
+	*last = '\0';
+	s = current;
+	next = current + 1;
+	
+	
+	/*check doubles*/
+	
+	while('\0' != *next)
+	{
 		if(0 != isspace(*current) && 0 != isspace(*next))
 		{
+			current++; next++;
 			while('\0' != *next)
 			{
 				*current = *next;
-				++next; ++current;
+				++next;++current;
 			}
-			*current = '\0';
-			current = s;
-			next = s+1;
 		}
-		
-		++next; ++current;
+		next++; current++;
 	}
-	
+	*current = '\0';
 	return s;
 }
 
