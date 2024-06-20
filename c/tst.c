@@ -2,8 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef int (*fun)(FILE *file, char* filename);
+#define CMD_ARR_SIZE (4)
+#define MAX_LINE_SIZE (200)
+
+
+
+
+typedef int (*cmd_func)(FILE *file, char* filename);
 typedef int (*compare_ptr)(const char*, const char*, size_t);
+typedef void (*func_ptr)(int);
+typedef int (*fun)(char *);
 
 int OnExit(FILE *file, char* filename)
 {
@@ -50,10 +58,8 @@ int OnCount(FILE *file, char* filename)
 int OnLeftArrow(FILE *file, char* filename)
 {
 	char *buffer = NULL;
-	size_t test = 0;
 	int arrow_placement = 0;
 	int length = 0;
-	(void)filename;
 		
 	fseek(file, 0, SEEK_END);
 	length = ftell(file);
@@ -86,15 +92,20 @@ int OnLeftArrow(FILE *file, char* filename)
 	file = fopen(filename, "a");
 	
 	fwrite(buffer, 1, arrow_placement-1 ,file);
+	
+	fclose(file);
+	
+	free(buffer);
+	buffer = NULL;
 
 	return 1;
 }
 
 	compare_ptr compare = strncmp;
-	fun ext = OnExit;
-	fun rm = OnRemove;
-	fun count = OnCount;
-	fun write_on_top = OnLeftArrow;
+	cmd_func ext = OnExit;
+	cmd_func rm = OnRemove;
+	cmd_func count = OnCount;
+	cmd_func write_on_top = OnLeftArrow;
 	
 struct special_inputs
 {
@@ -103,9 +114,9 @@ struct special_inputs
 	fun operation;
 };
 
-struct special_inputs array_of_inputs[4];
+struct special_inputs array_of_inputs[CMD_ARR_SIZE];
 
-void FillArr(struct special_inputs array[])
+void FillArr(struct special_inputs array[CMD_ARR_SIZE])
 {
 	array[0].str = "-count\n";
 	array[0].comparison = compare;
@@ -124,12 +135,12 @@ void FillArr(struct special_inputs array[])
 	array[3].operation = write_on_top;
 }
 
-int CheckCommand(char *command, struct special_inputs array[], size_t array_size, FILE *file, char* filename)
+int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE *file, char* filename)
 {
 	int result = 2;
 	size_t i = 0;
-	/* have to check the <*/
-	while(i<array_size)
+
+	while(i < CMD_ARR_SIZE)
 	{
 		result = array[i].comparison(command, array[i].str, strlen(array[i].str));
 		if(0 == result)
@@ -142,44 +153,44 @@ int CheckCommand(char *command, struct special_inputs array[], size_t array_size
 }
 
 
-void EnterStrings(char *filename)
+int Logger(char *filename)
 {	
 
-	int result = 1;
-	char buffer[200];
-	char *test = NULL;
+	int cmd_flag = 1;
+	char line_buffer[MAX_LINE_SIZE];
+	char *input_string = NULL;
 	FILE *fp = fopen(filename, "a+");
 	
 	FillArr(array_of_inputs);
 	
-	if(fp == NULL)
-		return;
+	if(NULL == fp)
+		return -1;
 		
 	printf("Let's write a book!\n");
 	
-	while(result == 1)
+	while(1 == cmd_flag)
 	{
-		test = fgets(buffer, 199, stdin);
-		if(compare(test, "-", 1) == 0)
+		input_string = fgets(line_buffer, MAX_LINE_SIZE, stdin);
+		if(0 == compare(input_string, "-", 1))
 		{
-			result = CheckCommand(test, array_of_inputs, 4, fp, filename);
+			cmd_flag = CheckCommand(input_string, array_of_inputs, fp, filename);
 		}
-		else if(compare(test, "<", 1) == 0)
+		else if(0 == compare(input_string, "<", 1))
 		{
-			fwrite(buffer,1, strlen(test), fp);
-			result = CheckCommand(test, array_of_inputs, 4, fp, filename);
+			fwrite(line_buffer, sizeof(char), strlen(input_string), fp);
+			cmd_flag = CheckCommand(input_string, array_of_inputs, fp, filename);
 		}
 		else
 		{
-			fwrite(buffer,1, strlen(test), fp);
+			fwrite(line_buffer, sizeof(char), strlen(input_string), fp);
 		}
 	}	
-	exit(0);
+	return 1;
 }
 
 
 int main()
 {	
-	EnterStrings("tst.txt");
+	Logger("tst.txt");
 	return 0;
 }
