@@ -15,6 +15,7 @@
 typedef int (*cmd_func)(FILE *file, char* filename);
 typedef int (*compare_ptr)(const char*, const char*, size_t);
 typedef void (*print_func_type)(int);
+typedef enum LoggerReturn { Error = -1, Exit , Continue, Success} logger_return;
 
 /******************************************************************************
 ***********************PRINT FUNCTION SECTION**********************************
@@ -90,18 +91,19 @@ int GetFileLength(FILE *file)
 }
 
 /*Exits from the file*/
-int OnExit(FILE *file, char* filename)
+logger_return OnExit(FILE *file, char* filename)
 {
 	(void)filename;
-	return fclose(file);
+	fclose(file);
+	return Exit;
 }
 
 /*Deletes the file*/
-int OnRemove(FILE *file, char* filename)
+logger_return OnRemove(FILE *file, char* filename)
 {
 	fclose(file); 
 	remove(filename);
-	return 0;
+	return Exit;
 }
 
 
@@ -111,7 +113,7 @@ IT CONTINUES TO RUN NORMALLY AFTER WE PRINT TO THE USER THE NUMBER OF LINES !
 */
 
 /*Returns the number of lines in the file, based on counting the newline character*/
-int OnCount(FILE *file, char* filename)
+logger_return OnCount(FILE *file, char* filename)
 {
 	char c = 0;
 	int count = 0;
@@ -139,13 +141,13 @@ int OnCount(FILE *file, char* filename)
 		printf("The file is empty !\n");
 
 	}
-	return 1;
+	return Continue;
 }
 
 /*
 	
 */
-int OnLeftArrow(FILE *file, char* filename)
+logger_return OnLeftArrow(FILE *file, char* filename)
 {
 	char *buffer = NULL;
 	int arrow_placement = 0;
@@ -156,7 +158,7 @@ int OnLeftArrow(FILE *file, char* filename)
 	buffer = (char *)malloc(length);
 	if(NULL == buffer)
 	{
-		return -1;
+		return Error;
 	}
 	
 	
@@ -180,7 +182,7 @@ int OnLeftArrow(FILE *file, char* filename)
 	free(buffer);
 	buffer = NULL;
 
-	return 0;
+	return Exit;
 }
 
 /*
@@ -188,7 +190,7 @@ int OnLeftArrow(FILE *file, char* filename)
 	by chain of responsibility type-of (loops over every untill one dealing 
 	with it)
 */
-int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE *file, char* filename)
+logger_return CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE *file, char* filename)
 {
 	int result = 2;
 	size_t i = 0;
@@ -205,7 +207,7 @@ int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE 
 		}
 		++i;
 	}
-	return 1;
+	return Continue;
 }
 
 
@@ -256,7 +258,7 @@ int Logger(char *filename)
 	FillSpecialInputs(array_of_inputs);
 	
 	if(NULL == fp)
-		return -1;
+		return Error;
 		
 	printf("Let's write a book!\n");
 	
@@ -277,7 +279,7 @@ int Logger(char *filename)
 			fwrite(line_buffer, sizeof(char), strlen(input_string), fp);
 		}
 	}	
-	return 1;
+	return Success;
 }
 
 
