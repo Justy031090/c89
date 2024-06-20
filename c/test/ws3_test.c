@@ -8,7 +8,7 @@ int main()
 	char *test_str = "Bar";
 	char empty_array[500];
 	char *test_dst = NULL;
-	char white_space_test[] = "  spa  ce  ";
+	char white_space_test[] = "  \tsp  ace\v  ";
 	/*
 	StrCpy(empty_array, test_src);
 	printf("Expect to get different adresses with same strings - \n%p\n%p\n%s\n%s\n",empty_array, test_src, empty_array, test_src);

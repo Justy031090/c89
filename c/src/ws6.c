@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "ws6.h"
 
+/*better too define a macro for the ascii umbers of Tt,Aa, ESC*/
 
 void PressedOnT()
 {

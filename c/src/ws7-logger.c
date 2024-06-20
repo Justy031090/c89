@@ -1,6 +1,10 @@
-#include <stdio.h>
+#include <stdio.h> /*prints, streams */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /*strncmp*/
+
+#define ARRAY_SIZE (4)
+
+
 
 typedef int (*fun)(FILE *file, char* filename);
 typedef int (*compare_ptr)(const char*, const char*, size_t);
@@ -20,72 +24,37 @@ int OnRemove(FILE *file, char* filename)
 
 int OnCount(FILE *file, char* filename)
 {
-	char c = 0;
 	int count = 0;
+	int c = getc(file);
 	(void)filename;
-
-	fseek(file, 0, SEEK_SET);
-	
-	while (c != EOF )
-	{
-		c = fgetc(file);
-		if(c == '\n')
-		{
-			count++;
-		}
-	}
 	
 	if( 0 < count)
 	{
 		printf("Number of lines in the file is %d\n", count);
+		return 0;
 	}
 	else
 	{
 		printf("The file is empty !\n");
-
+		return 1;
 	}
-	return 1;
 }
 
 int OnLeftArrow(FILE *file, char* filename)
 {
-	char *buffer = NULL;
-	size_t test = 0;
-	int arrow_placement = 0;
-	int length = 0;
+	char buffer[1024];
+	int size = 0;
+	fseek(file, 0L, SEEK_END);
+	size = ftell(file);
+	fread(buffer, 1, size, file);
+	printf("%s\n", buffer);
+	freopen(filename, "w", file);
+	buffer[0] = '^';
+	fwrite(buffer,1, size, file);
+	
+	/*create buffer to hold prev info*/
+	/*write first new line, then flush buffer inside*/
 	(void)filename;
-		
-	fseek(file, 0, SEEK_END);
-	length = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	
-	buffer = (char *)malloc(length);
-	if(NULL == buffer)
-	{
-		return 0;
-	}
-	
-	
-	while(arrow_placement != '<')
-	{
-		arrow_placement = fgetc(file);
-	}
-	
-	arrow_placement = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	
-	fread(buffer, 1, length, file);
-	
-	freopen(filename, "w+", file);
-	
-	printf("%s\n", buffer+arrow_placement);
-	
-	fwrite(buffer+arrow_placement, 1, length-arrow_placement ,file);
-	
-	fclose(file);
-	file = fopen(filename, "a");
-	
-	fwrite(buffer, 1, arrow_placement-1 ,file);
 
 	return 1;
 }
@@ -103,9 +72,10 @@ struct special_inputs
 	fun operation;
 };
 
-struct special_inputs array_of_inputs[4];
+struct special_inputs array_of_inputs[ARRAY_SIZE];
 
-void FillArr(struct special_inputs array[])
+
+void FillArr(struct special_inputs array[ARRAY_SIZE])
 {
 	array[0].str = "-count\n";
 	array[0].comparison = compare;
@@ -128,7 +98,6 @@ int CheckCommand(char *command, struct special_inputs array[], size_t array_size
 {
 	int result = 2;
 	size_t i = 0;
-	/* have to check the <*/
 	while(i<array_size)
 	{
 		result = array[i].comparison(command, array[i].str, strlen(array[i].str));
@@ -140,8 +109,7 @@ int CheckCommand(char *command, struct special_inputs array[], size_t array_size
 	}
 	return 1;
 }
-
-
+	
 void EnterStrings(char *filename)
 {	
 
@@ -159,27 +127,14 @@ void EnterStrings(char *filename)
 	
 	while(result == 1)
 	{
-		test = fgets(buffer, 199, stdin);
-		if(compare(test, "-", 1) == 0)
+		text = fgets(buffer, 199, stdin);
+		if(compare(test, "<", 1) == 0 || compare(test, "-", 1) == 0)
 		{
-			result = CheckCommand(test, array_of_inputs, 4, fp, filename);
+			result = CheckCommand(text, array_of_inputs, ARRAY_SIZE, fp, filename);
 		}
-		else if(compare(test, "<", 1) == 0)
-		{
-			fwrite(buffer,1, strlen(test), fp);
-			result = CheckCommand(test, array_of_inputs, 4, fp, filename);
-		}
-		else
-		{
-			fwrite(buffer,1, strlen(test), fp);
-		}
-	}	
+		fwrite(buffer,1, strlen(text), fp);
+	}
+	
+	
 	exit(0);
-}
-
-
-int main()
-{	
-	EnterStrings("tst.txt");
-	return 0;
 }

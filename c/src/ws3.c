@@ -240,11 +240,12 @@ char *RevieWhiteSpaces(char *s)
 	char *next = s+1;
 	char *last = s;
 	
+	/*Initialize last to be at the end of the string*/
 	while('\0' != *last)
 	{
 		last++;
 	}
-	last--;
+	
 	
 	/*Check start*/
 	while(0 != isspace(*current))
@@ -258,14 +259,14 @@ char *RevieWhiteSpaces(char *s)
 		--last;
 		
 	}
+	
 	last++;
+	/*Setting new boundaries to the original string "s" */
 	*last = '\0';
 	s = current;
 	next = current + 1;
 	
-	
 	/*check doubles*/
-	
 	while('\0' != *next)
 	{
 		if(0 != isspace(*current) && 0 != isspace(*next))
@@ -275,15 +276,15 @@ char *RevieWhiteSpaces(char *s)
 			{
 				*current = *next;
 				++next;++current;
+				
 			}
+			
 		}
 		next++; current++;
 	}
-	*current = '\0';
+	next = '\0';
 	return s;
 }
-
-
 
 
 
