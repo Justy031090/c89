@@ -80,6 +80,14 @@ struct special_inputs
          HELPER FUNCTIONS BLOCK
 =============================================*/
 
+int GetFileLength(FILE *file)
+{	
+	int length = 0;
+	fseek(file, 0, SEEK_END);
+	length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	return length;
+}
 
 /*Exits from the file*/
 int OnExit(FILE *file, char* filename)
@@ -143,9 +151,7 @@ int OnLeftArrow(FILE *file, char* filename)
 	int arrow_placement = 0;
 	int length = 0;
 		
-	fseek(file, 0, SEEK_END);
-	length = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	length = GetFileLength(file);
 	
 	buffer = (char *)malloc(length);
 	if(NULL == buffer)
