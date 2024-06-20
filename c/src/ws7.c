@@ -17,7 +17,7 @@ typedef int (*compare_ptr)(const char*, const char*, size_t);
 typedef void (*print_func_type)(int);
 
 /******************************************************************************
-***********************PRINT FUNCTION BLOCK************************************
+***********************PRINT FUNCTION SECTION**********************************
 ******************************************************************************/
 
 /*Structure for the Print function*/
@@ -65,7 +65,7 @@ void PrintInMain()
 }
 
 /******************************************************************************
-***********************LOGGER FUNCTION BLOCK***********************************
+***********************LOGGER FUNCTION SECTION*********************************
 ******************************************************************************/
 
 /*Structure for special inputs*/
@@ -77,17 +77,18 @@ struct special_inputs
 };
 
 /*=============================================
-         HELPER FUNCTIONS SECTION
+         HELPER FUNCTIONS BLOCK
 =============================================*/
 
 
-
+/*Exits from the file*/
 int OnExit(FILE *file, char* filename)
 {
 	(void)filename;
 	return fclose(file);
 }
 
+/*Deletes the file*/
 int OnRemove(FILE *file, char* filename)
 {
 	fclose(file); 
@@ -95,24 +96,33 @@ int OnRemove(FILE *file, char* filename)
 	return 0;
 }
 
+
+/*
+OnCount FUNCTION IS NOT CLOSING THE FILE FOR A PURPOSE.
+IT CONTINUES TO RUN NORMALLY AFTER WE PRINT TO THE USER THE NUMBER OF LINES !
+*/
+
+/*Returns the number of lines in the file, based on counting the newline character*/
 int OnCount(FILE *file, char* filename)
 {
 	char c = 0;
 	int count = 0;
 	(void)filename;
-
+	
+	/*Moving the pointer to the beginning of the file*/
 	fseek(file, 0, SEEK_SET);
 	
+	/*Looping over the whole file, for every newline character, adding the counts*/
 	while (c != EOF )
 	{
 		c = fgetc(file);
-		if(c == '\n')
+		if('\n'== c)
 		{
 			count++;
 		}
 	}
 	
-	if( 0 < count)
+	if( 0  <  count)
 	{
 		printf("Number of lines in the file is %d\n", count);
 	}
@@ -124,6 +134,9 @@ int OnCount(FILE *file, char* filename)
 	return 1;
 }
 
+/*
+	
+*/
 int OnLeftArrow(FILE *file, char* filename)
 {
 	char *buffer = NULL;
@@ -137,7 +150,7 @@ int OnLeftArrow(FILE *file, char* filename)
 	buffer = (char *)malloc(length);
 	if(NULL == buffer)
 	{
-		return 0;
+		return -1;
 	}
 	
 	
@@ -151,23 +164,24 @@ int OnLeftArrow(FILE *file, char* filename)
 	fread(buffer, sizeof(char), length, file);
 	
 	freopen(filename, "w+", file);
-	
 	fwrite(buffer+arrow_placement, sizeof(char), length-arrow_placement ,file);
-	
 	fclose(file);
+	
 	file = fopen(filename, "a");
-	
 	fwrite(buffer, sizeof(char), arrow_placement-1 ,file);
-	
 	fclose(file);
 	
 	free(buffer);
 	buffer = NULL;
 
-	return 1;
+	return 0;
 }
 
-
+/*
+	The functions checks which comnnad input the user sent,
+	by chain of responsibility type-of (loops over every untill one dealing 
+	with it)
+*/
 int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE *file, char* filename)
 {
 	int result = 2;
@@ -175,7 +189,10 @@ int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE 
 
 	while(i < CMD_ARR_SIZE)
 	{
+		/*Checking if its the actual command (if it equals to the string completely)*/
 		result = array[i].comparison(command, array[i].str, strlen(array[i].str));
+		
+		/*in case it is the same - it triggers the operation in that struct*/
 		if(0 == result)
 		{
 			return array[i].operation(file, filename);
@@ -186,14 +203,21 @@ int CheckCommand(char *command, struct special_inputs array[CMD_ARR_SIZE], FILE 
 }
 
 
+/*=============================================
+         Initialization Block
+=============================================*/
+
+/*initialize the struct array*/
 struct special_inputs array_of_inputs[CMD_ARR_SIZE];
 
+/*initialize the function pointers*/
 compare_ptr compare = strncmp;
 cmd_func ext = OnExit;
 cmd_func rm = OnRemove;
 cmd_func count = OnCount;
 cmd_func write_on_top = OnLeftArrow;
 
+/*Filling the array previously created with its related functions & commands*/
 void FillSpecialInputs(struct special_inputs array[CMD_ARR_SIZE])
 {
 	array[0].str = "-count\n";
@@ -213,6 +237,9 @@ void FillSpecialInputs(struct special_inputs array[CMD_ARR_SIZE])
 	array[3].operation = write_on_top;
 }
 
+/*=============================================
+         Logger Function Block
+=============================================*/
 int Logger(char *filename)
 {	
 	int cmd_flag = 1;
