@@ -2,6 +2,8 @@
 #include "ws8.h"
 
 #define NO_OF_BITS (8)
+#define MANTISSA_SIZE (23)
+#define EXPONENT_SIZE (8)
 
 /*When y is a Negative value - the behavior will be undefined*/
 long Pow2(unsigned int x, unsigned int y)
@@ -152,6 +154,76 @@ int NumberOfSetBits(unsigned int num)
 	num = (num >> 16) + (num & 0x0000FFFF);
 	
 	return num;
+}
+
+void PrintFLoat(float fnum)
+{
+	int array_tracker = 0;
+	int temp_res = 0;
+	unsigned int i = 0;
+	int j = EXPONENT_SIZE - 1;
+	int bits_arr[34];
+	int num = 0;
+	float after_point = 0;
+	
+	i=0;
+	
+	/*sign bit*/
+	bits_arr[0] = 0;
+	
+	if(fnum < 0)
+	{
+		bits_arr[0] = 1;
+		fnum = fnum * (-1);
+	}
+	num = (int)fnum;
+	after_point = (fnum-num);
+	++array_tracker;
+	
+	
+	/*exponent*/
+	while( i < EXPONENT_SIZE )
+	{
+		temp_res = (num & (1 << j)) >>j;  
+		bits_arr[array_tracker] = temp_res;  
+		++i;
+		--j;
+		++array_tracker;
+		
+	}
+	
+	temp_res = 0;
+	
+	i=0;
+	j=MANTISSA_SIZE -2;
+	
+
+	/*mantissa*/
+	while( i < MANTISSA_SIZE )
+	{
+		after_point = after_point * 10;
+		temp_res = (int)after_point & 1;
+		bits_arr[array_tracker] = temp_res;
+		++i;
+		--j;
+		++array_tracker;
+	}
+	
+	i=0;
+	
+	/*printing whole*/
+	while(i < (sizeof(float) * NO_OF_BITS))
+	{
+	/*separator for print*/
+	if(1 == i || 9 == i)
+	{
+		printf("|");
+	}
+	printf("%d", bits_arr[i]);
+	
+	++i;
+	}
+	printf("\n\nS|Exponent|Mantissa\n");
 }
 
 

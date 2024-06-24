@@ -2,6 +2,8 @@
 #include "ws8.h"
 
 #define ARRAY_SIZE (10)
+#define MANTISSA_SIZE (23)
+#define EXPONENT_SIZE (8)
 
 int main()
 {
@@ -92,6 +94,12 @@ int main()
 	printf("NumberOfSetBits(2) - Expecting to get 1;\nFunction output: %u\n", NumberOfSetBits(2));
 	printf("NumberOfSetBitsLoop(7) - Expecting to get 3;\nFunction output: %u\n", NumberOfSetBitsLoop(7));
 	printf("\n\n");
+	printf("*************TESTING PrintFLoat FUNCTION**************\n");
+	printf("PrintFLoat(5.5)\nFunction output: %u\n", NumberOfSetBits(5.5));
+	PrintFLoat(5.5);
+	printf("PrintFLoat(12.75)\nFunction output: %u\n", NumberOfSetBits(12.75));
+	PrintFLoat(12.75);
+	
 	
 	return 0;
 }
