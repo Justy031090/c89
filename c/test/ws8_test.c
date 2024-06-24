@@ -92,7 +92,7 @@ int main()
 	printf("NumberOfSetBits(2) - Expecting to get 1;\nFunction output: %u\n", NumberOfSetBits(2));
 	printf("NumberOfSetBitsLoop(7) - Expecting to get 3;\nFunction output: %u\n", NumberOfSetBitsLoop(7));
 	printf("\n\n");
-
+	PrintFLoat(5.2);
 	
 	return 0;
 }
