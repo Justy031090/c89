@@ -1,38 +1,35 @@
 #include <stdio.h> /*printf*/
 #include "ws8.h"
 
-#define NO_OF_BITS (8)
+#define _32BIT (32)
 #define MANTISSA_SIZE (23)
 #define EXPONENT_SIZE (8)
+#define SET (1)
+#define UNSET (0)
+#define SIZE_OF_ARRAY (10)
 
-/*When y is a Negative value - the behavior will be undefined*/
-long Pow2(unsigned int x, unsigned int y)
+int Pow2(unsigned int x, unsigned int y)
 {	
-	return 0 == y ? x : x*(2<<(y-1));
+	return x*(1<<y);
 }
 
-long IsPow2Loop(unsigned int n)
+int IsPow2Loop(unsigned int n)
 {
 	while(n > 3 && n%2 == 0){
 		n>>=1;
 	}
-	return 2 == n ? 1 : 0;
+	return 2 == n ? SET : UNSET;
 }
 
-long IsPow2(unsigned int num)
+int IsPow2(unsigned int n)
 {
-	num = ((num & 0xAAAAAAAA) >> 1) + (num & 0x55555555);
-	num = ((num & 0xCCCCCCCC) >> 2) + (num & 0x33333333);
-	num = ((num & 0xF0F0F0F0) >> 4) + (num & 0x0F0F0F0F);
-	num = ((num & 0xFF00FF00) >> 8) + (num & 0x00FF00FF);
-	num = (num >> 16) + (num & 0x0000FFFF);
 	
-	return 1 == num ? 1:0;
+	return 0 == (n & (n-1)) ? SET : UNSET;
 }
 
-long AddOne(int n )
+int AddOne(int n )
 {
-	return ( 0 == n % 2) ? n|1 : -(-n & ~1);
+	return -(~n);
 }
 void IsThreeOn(unsigned int numbers[])
 {
@@ -40,16 +37,16 @@ void IsThreeOn(unsigned int numbers[])
 	int i = 0;
 	int num = 0;
 	
-	for(;i<10; i++)
+	for(;i<SIZE_OF_ARRAY; i++)
 	{
 		num = numbers[i];
 		while(num > 0)
 		{
-			if(num % 2 != 0)
+			if(num & 1)
 			{
 				count++;
 			}
-			num = num >> 1 ;
+			num >>= 1;
 		}
 		if (count == 3)
 		{
@@ -62,7 +59,7 @@ void IsThreeOn(unsigned int numbers[])
 unsigned int ByteMirrorLoop(unsigned int n)
 {	
 	unsigned int reversed = 0, i=0;
-	while((i < sizeof(unsigned int) * NO_OF_BITS))
+	while(i < _32BIT)
 	{
 		reversed <<= 1;
 		reversed = reversed | (n&1);
@@ -87,18 +84,18 @@ int SixAndTwoOn(unsigned char ch)
 {
 	int second_bit = (ch >> 1) & 1;
 	int sixth_bit = (ch >> 5) & 1;
-	return second_bit == 1 && sixth_bit == 1 ? 1: 0 ;
+	return second_bit == SET && sixth_bit == SET ? SET : UNSET ;
 }
 
 int SixOrTwoOn(unsigned char ch)
 {
 	int second_bit = ch >> 1;
 	int sixth_bit = ch >> 5;
-	return ((second_bit & 1) != 0) || ((sixth_bit & 1) != 0) ? 1 : 0 ;
+	return ((second_bit & 1) != UNSET) || ((sixth_bit & 1) != UNSET) ? SET : UNSET;
 }
 
 
-int SwapThreeAndFive(unsigned char ch)
+char SwapThreeAndFive(unsigned char ch)
 {	int res = 0;					  /* e.g */
 	int res2 = 0;				      /* 010(0)0(1)01 */											
 	char third_bit = ch >> 2;         /* 00010101 */
@@ -113,28 +110,23 @@ int SwapThreeAndFive(unsigned char ch)
 
 int DivisionOfSixteen(unsigned int num)
 {
-	/* e.g */
-	/*00100001 --> 00100000*/
-	/*00010110 --> 00010000*/
-	/*00010001 --> 00010000*/
-	num >>=3;
-	num = num & ~1;
-	num <<=3;
+	num >>=4;
+	num <<=4;
 	return num;
 }
 
-void SwapValues(unsigned int num1, unsigned int num2)
+void SwapValues(unsigned int *num1, unsigned int *num2)
 {
 	/*(A^B)^A = B */
-	num1 ^= num2; /*stores temp in num 1*/
-	num2 ^= num1; /*XOR temp with num 2 - gives num 1*/
-	num1 ^= num2; /*XOR temp with num 1 - gives num 2*/
+	*num1 ^= *num2; /*stores temp in num 1*/
+	*num2 ^= *num1; /*XOR temp with num 2 - gives num 1*/
+	*num1 ^= *num2; /*XOR temp with num 1 - gives num 2*/
 }
 
 int NumberOfSetBitsLoop(unsigned int num)
 {
 	unsigned int i = 0, count = 0;
-	for(; i<(sizeof(unsigned int) * NO_OF_BITS); ++i, num>>=1 )
+	for(; i<_32BIT; ++i, num>>=1 )
 	{
 		if((num & 1) == 1)
 		{
@@ -212,7 +204,7 @@ void PrintFLoat(float fnum)
 	i=0;
 	
 	/*printing whole*/
-	while(i < (sizeof(float) * NO_OF_BITS))
+	while(i < _32BIT)
 	{
 	/*separator for print*/
 	if(1 == i || 9 == i)
