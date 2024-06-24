@@ -15,6 +15,5 @@ int DivisionOfSixteen(unsigned int num);
 void SwapValues(unsigned int num1, unsigned int num2);
 int NumberOfSetBitsLoop(unsigned int num);
 int NumberOfSetBits(unsigned int num);
-void PrintFLoat(float fnum);
 
 #endif /* __WS8_H__ */
