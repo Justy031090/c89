@@ -1,3 +1,7 @@
+/******************************************************************************
+***********************REVIEWD BY YUVAL****************************************
+******************************************************************************/
+
 #include <stdio.h> /*printf*/
 #include "ws8.h"
 
@@ -154,7 +158,7 @@ void PrintFLoat(float fnum)
 	int temp_res = 0;
 	unsigned int i = 0;
 	int j = EXPONENT_SIZE - 1;
-	int bits_arr[34];
+	int bits_arr[_32BIT];
 	int num = 0;
 	float after_point = 0;
 	
@@ -187,7 +191,7 @@ void PrintFLoat(float fnum)
 	temp_res = 0;
 	
 	i=0;
-	j=MANTISSA_SIZE -2;
+	j=MANTISSA_SIZE-2;
 	
 
 	/*mantissa*/
@@ -206,16 +210,17 @@ void PrintFLoat(float fnum)
 	/*printing whole*/
 	while(i < _32BIT)
 	{
-	/*separator for print*/
-	if(1 == i || 9 == i)
-	{
-		printf("|");
-	}
-	printf("%d", bits_arr[i]);
+		/*separator for print*/
+		if(1 == i || 9 == i)
+		{
+			printf(" | ");
+		}
+		printf("%d", bits_arr[i]);
 	
-	++i;
+		++i;
 	}
-	printf("\n\nS|Exponent|Mantissa\n");
+	
+	printf("\nS | Exponent | Mantissa\n");
 }
 
 

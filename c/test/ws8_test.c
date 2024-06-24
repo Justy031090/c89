@@ -2,8 +2,6 @@
 #include "ws8.h"
 
 #define ARRAY_SIZE (10)
-#define MANTISSA_SIZE (23)
-#define EXPONENT_SIZE (8)
 
 int main()
 {
