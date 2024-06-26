@@ -1,11 +1,14 @@
 #ifndef __WS10_H__
 #define __WS10_H__
 
+#define MAX2(a,b) ((a) > (b) ? (a) : (b))
+#define MAX3(a,b,c) ((c) > (MAX2(a,b)) ? (C) : (MAX2(a,b)))
+
 typedef struct funcs funcs_t;
 
 typedef struct element
 {
-    int data;
+    void *data;
     funcs_t *funcs;
 }element_t;
 
