@@ -14,33 +14,41 @@ typedef struct r_g {
 	float chemistry;
 } real_grades_t;
 
-struct student {
+typedef struct student {
 	char *firstname;
 	char *lastname;
 	float sports;
 	humanistic_grades_t *h_g;
 	real_grades_t *r_g;
-};
+} Student;
 struct h_g michael_hg = {99.8, 60.00, 13.5};
 struct r_g michael_rg = {99.9, 98.00, 97.7};
-struct student Michael = {"Michael", "Bar", 99.20, &michael_hg, &michael_rg};
+Student Michael = {"Michael", "Bar", 99.20, &michael_hg, &michael_rg};
 
 int WriteToBin()
 {	
 	int length = 0;
-	char *buffer = NULL;
-	FILE *file = fopen("test.bin", "a+b");
+	Student *notmichael;
+	FILE *file;
+	file = fopen("test.bin", "a+b");
 	fwrite(&Michael,1000,1,file);
 	fclose(file);
 	
 	file = fopen("test.bin", "rb");
-	fseek(file, 0, SEEK_END);
-	length = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	buffer = (char *)malloc(length);
+	notmichael =malloc(sizeof(Student));
 	
-	file = fopen("test.bin", "rb");
-	fread(buffer,1,sizeof(buffer), file);
+	fread(&notmichael->firstname, sizeof(notmichael->firstname), 1, file);
+	fread(&notmichael->lastname, sizeof(notmichael->lastname), 1, file);
+	fread(&notmichael->sports, sizeof(notmichael->sports), 1, file);
+	fread(&notmichael->h_g->sociology, sizeof(notmichael->h_g->sociology), 1, file);
+	fread(&notmichael->h_g->sociology, sizeof(notmichael->h_g->sociology), 1, file);
+	fread(&notmichael->h_g->sociology, sizeof(notmichael->h_g->sociology), 1, file);
+	fread(&notmichael->r_g->math, sizeof(notmichael->r_g->math), 1, file);
+	fread(&notmichael->r_g->math, sizeof(notmichael->r_g->math), 1, file);
+	fread(&notmichael->r_g->math, sizeof(notmichael->r_g->math), 1, file);
+	
+	printf("%s\n", notmichael.firstname);
+	
 	fclose(file);
 	
 	return 0;
@@ -50,7 +58,7 @@ int WriteToBin()
 int main()
 {
 	WriteToBin();
-	printf("%s\n%s\n%.3f\n%.3f\n", Michael.firstname, Michael.lastname, Michael.sports, Michael.h_g->sociology);
+	/*printf("%s\n%s\n%.3f\n%.3f\n", Michael.firstname, Michael.lastname, Michael.sports, Michael.h_g->sociology);*/
 	
 	return 0;
 }

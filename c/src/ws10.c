@@ -7,19 +7,20 @@
 #define ERROR (0)
 
 
-static int AddInt(element_t *arr, int to_add)
+
+static exit_code AddInt(element_t *arr, int to_add)
 {
 	*(int *)&arr->data += to_add;
 	return SUCCESS;
 }
 
-static int AddFloat(element_t *arr, int to_add)
+static exit_code AddFloat(element_t *arr, int to_add)
 {
 	*(float *)&arr->data += (float)to_add; 
 	return SUCCESS;
 }
 
-static int AddString(element_t *arr, int to_add)
+static exit_code AddString(element_t *arr, int to_add)
 {	
 	char *tmp = NULL;
 	char string_num[NUM_LEN];
@@ -29,7 +30,7 @@ static int AddString(element_t *arr, int to_add)
 	tmp = (char *)realloc((char *)arr->data, length + strlen(string_num));
 	if(NULL == tmp)
 	{
-		return ERROR;
+		return MEM_FAIL;
 	}
 	
 	strcat(tmp, string_num);
@@ -82,14 +83,14 @@ void InitFloat(float x, element_t *arr)
 	arr->funcs = &ForFloat;
 }
 
-int InitString(char *x, element_t *arr)
+exit_code InitString(char *x, element_t *arr)
 {
 	arr->data = (char *)malloc(sizeof(x));
 	if(NULL == arr->data)
 	{
-		return ERROR;
+		return MEM_FAIL;
 	}
-	strncpy((arr->data), x, strlen(x));
+	strcpy((arr->data), x);
 	arr->funcs = &ForString;
 	return SUCCESS;
 }
@@ -104,7 +105,7 @@ void PrintAll(element_t *arr, int num_of_element)
 }
 
 
-int AddAll(element_t *arr, int num_of_element, int to_add)
+exit_code AddAll(element_t *arr, int num_of_element, int to_add)
 {
 	int i=0;
 	int flag = SUCCESS;

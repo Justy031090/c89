@@ -6,6 +6,10 @@
 #define SIZE_OF(var) ((((size_t)(&var)+1)-(size_t)(&var)))
 #define TYPE_SIZE(type) (SIZE_OF( __typeof__(type))) /*not quite there*/
 
+typedef enum exit_codes {
+	MEM_FAIL = -1, ERROR, SUCCESS
+} exit_code;
+
 typedef struct funcs funcs_t;
 
 typedef struct element
@@ -27,10 +31,10 @@ struct funcs
 void InitArray(element_t *arr, int size);
 void InitInt(int, element_t *);
 void InitFloat(float, element_t *);
-int InitString(char *, element_t *);
+exit_code InitString(char *, element_t *);
 
 void PrintAll(element_t *arr, int num_of_element);
-int AddAll(element_t *arr, int num_of_element, int to_add); 
+exit_code AddAll(element_t *arr, int num_of_element, int to_add); 
 void CleanAll(element_t *arr, int num_of_element);
 
 #endif /* __WS10_H__ */
