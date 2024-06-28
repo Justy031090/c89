@@ -2,7 +2,7 @@
 #define __WS10_H__
 
 #define MAX2(a,b) ((a) > (b) ? (a) : (b))
-#define MAX3(a,b,c) ((c) > (MAX2(a,b)) ? (C) : (MAX2(a,b)))
+#define MAX3(a,b,c) ((c) > (MAX2(a,b)) ? (c) : (MAX2(a,b)))
 #define SIZE_OF(var) ((((size_t)(&var)+1)-(size_t)(&var)))
 #define TYPE_SIZE(type) (SIZE_OF( __typeof__(type)))
 
@@ -24,10 +24,10 @@ struct funcs
 	Add_t add;    
 	Clean_t clean;
 };
-
-void InitInt(int x, element_t *arr);
-void InitFloat(float x, element_t *arr);
-int InitString(char *x, element_t *arr);
+void InitArray(element_t *arr, int size);
+void InitInt(int, element_t *);
+void InitFloat(float, element_t *);
+int InitString(char *, element_t *);
 
 void PrintAll(element_t *arr, int num_of_element);
 int AddAll(element_t *arr, int num_of_element, int to_add); 
