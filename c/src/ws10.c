@@ -90,7 +90,7 @@ exit_code InitString(char *x, element_t *arr)
 	{
 		return MEM_FAIL;
 	}
-	strcpy((arr->data), x);
+	strncpy((arr->data), x, strlen(x));
 	arr->funcs = &ForString;
 	return SUCCESS;
 }

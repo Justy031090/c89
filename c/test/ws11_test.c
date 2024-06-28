@@ -1,22 +1,41 @@
+
+#include <stdio.h> /*printf*/
+#include <stdlib.h> /*malloc*/
 #include "ws11.h"
 
 
 int main ()
-{
-	char *buffer = "Hello World OK !";
-	char *buffer2[17];
-	FILE *file;
-	file = fopen("test.bin","wb+");
-	fwrite(&buffer,strlen(buffer),1,file);
-	fclose(file);
+{	
+	char *filename = "test.bin";
+	Student Michael = {
+		"Michael",
+		"Bar",
+		99.20,
+		{55.2, 59.3, 58.4},
+		{55.2, 59.3, 58.4}
+	};
 	
-	file = fopen("test.bin", "rb");
-	fread(buffer2,1,sizeof(buffer2), file);
-	fclose(file);
+	Student *NotMichael = malloc(sizeof(Student));
+	if(NULL == NotMichael)
+	{
+		return -1;
+	}
+
+	WriteToBin(filename, Michael);
+	ReadFromBin(filename, NotMichael);
 	
-	printf("%s\n", *buffer2);
+	printf("%s\n", NotMichael->firstname);
+	printf("%s\n", NotMichael->lastname);
+	printf("%.3f\n", NotMichael->sports);
+	printf("%.3f\n", NotMichael->r_g.chemistry);
+	printf("%.3f\n", NotMichael->r_g.physics);
+	printf("%.3f\n", NotMichael->r_g.math);
+	printf("%.3f\n", NotMichael->h_g.sociology);
+	printf("%.3f\n", NotMichael->h_g.psychology);
+	printf("%.3f\n", NotMichael->h_g.literature);
 	
-	
+	free(NotMichael);
+	NotMichael = NULL;
 	
 	return 0;
 }
