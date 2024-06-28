@@ -4,7 +4,7 @@
 #define MAX2(a,b) ((a) > (b) ? (a) : (b))
 #define MAX3(a,b,c) ((c) > (MAX2(a,b)) ? (c) : (MAX2(a,b)))
 #define SIZE_OF(var) ((((size_t)(&var)+1)-(size_t)(&var)))
-#define TYPE_SIZE(type) (SIZE_OF( __typeof__(type)))
+#define TYPE_SIZE(type) (SIZE_OF( __typeof__(type))) /*not quite there*/
 
 typedef struct funcs funcs_t;
 

@@ -30,6 +30,8 @@ int main ()
 	InitString(tests_string, arr+2);
 	AddAll(arr, 10, 10);
 	PrintAll(arr, 10);
+	CleanAll(arr, 10);
+	PrintAll(arr, 10);
 
 	printf("\n\n");
 

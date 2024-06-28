@@ -1,36 +1,41 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
+#include <string.h> /*strlen, strcat*/
+#include <stdlib.h> /*realloc, malloc*/
+#include <stdio.h> /*printf, sprintf*/
 #include "ws10.h"
+#define NUM_LEN (9)
+#define SUCCESS (1)
+#define ERROR (0)
 
 
 static int AddInt(element_t *arr, int to_add)
 {
 	*(int *)&arr->data += to_add;
-	return 1; 
+	return SUCCESS;
 }
 
 static int AddFloat(element_t *arr, int to_add)
 {
 	*(float *)&arr->data += (float)to_add; 
-	return 1;
+	return SUCCESS;
 }
 
 static int AddString(element_t *arr, int to_add)
 {	
 	char *tmp = NULL;
-	size_t total_length = strlen((char *)arr->data)+sizeof(int);
-	tmp = (char *)realloc(arr->data, total_length);
+	char string_num[NUM_LEN];
+	size_t length = strlen((char *)arr->data);
+	sprintf(string_num, "%d", to_add);
 	
+	tmp = (char *)realloc((char *)arr->data, length + strlen(string_num));
 	if(NULL == tmp)
 	{
-		return 0;
+		return ERROR;
 	}
-	arr->data = tmp;
-	sprintf((char *)arr->data+total_length, "%d", to_add);
 	
-	return 1;
+	strcat(tmp, string_num);
+	arr->data = tmp;
+	
+	return SUCCESS;
 }
 
 
@@ -42,7 +47,7 @@ static void CleanString(element_t *arr)
 
 static void CleanNum(element_t *arr)
 {
-	;
+	(void)arr;
 }
 static void PrintInt (element_t *arr)
 {
@@ -82,11 +87,11 @@ int InitString(char *x, element_t *arr)
 	arr->data = (char *)malloc(sizeof(x));
 	if(NULL == arr->data)
 	{
-		return 0;
+		return ERROR;
 	}
 	strncpy((arr->data), x, strlen(x));
 	arr->funcs = &ForString;
-	return 1;
+	return SUCCESS;
 }
 
 void PrintAll(element_t *arr, int num_of_element)
@@ -102,18 +107,18 @@ void PrintAll(element_t *arr, int num_of_element)
 int AddAll(element_t *arr, int num_of_element, int to_add)
 {
 	int i=0;
-	int flag = 1;
+	int flag = SUCCESS;
 	while(i<num_of_element)
 	{
 		flag = arr->funcs->add(arr, to_add);
-		if(1 != flag)
+		if(SUCCESS != flag)
 		{
-			return 0;
+			return ERROR;
 		}
 		++i;
 		++arr;
 	}
-	return flag;
+	return SUCCESS;
 }
 
 void CleanAll(element_t *arr, int num_of_element)
