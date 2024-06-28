@@ -28,11 +28,11 @@ int main ()
 	InitInt(5, arr);
 	InitFloat(3.222222, arr+1);
 	InitString(tests_string, arr+2);
+	AddAll(arr, 10, 10);
 	PrintAll(arr, 10);
-	AddAll(arr, 10, 5);
+
 	printf("\n\n");
-	CleanAll(arr, 10);
-	PrintAll(arr, 10);
+
 	
 	/*loop over, use cleanup*/
 	return 0;

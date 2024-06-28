@@ -20,15 +20,15 @@ static int AddFloat(element_t *arr, int to_add)
 static int AddString(element_t *arr, int to_add)
 {	
 	char *tmp = NULL;
-	int total_length = strlen((char *)arr->data) +1;
-	tmp = (char *)realloc(arr->data, sizeof(int) + total_length);
+	size_t total_length = strlen((char *)arr->data)+sizeof(int);
+	tmp = (char *)realloc(arr->data, total_length);
 	
 	if(NULL == tmp)
 	{
 		return 0;
 	}
 	arr->data = tmp;
-	sprintf((char *)arr->data, "%d", to_add);
+	sprintf((char *)arr->data+total_length, "%d", to_add);
 	
 	return 1;
 }
