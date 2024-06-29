@@ -1,11 +1,12 @@
+/******************************************************************************
+***********************REVIEWD BY YONATAN**************************************
+******************************************************************************/
+
 #include <string.h> /*strlen, strcat*/
 #include <stdlib.h> /*realloc, malloc*/
 #include <stdio.h> /*printf, sprintf*/
 #include "ws10.h"
 #define NUM_LEN (9)
-#define SUCCESS (1)
-#define ERROR (0)
-
 
 
 static exit_code AddInt(element_t *arr, int to_add)
@@ -22,19 +23,20 @@ static exit_code AddFloat(element_t *arr, int to_add)
 
 static exit_code AddString(element_t *arr, int to_add)
 {	
-	char *tmp = NULL;
+	size_t new_len = 0;
+	size_t curr_len = strlen((char *) arr->data);
 	char string_num[NUM_LEN];
-	size_t length = strlen((char *)arr->data);
 	sprintf(string_num, "%d", to_add);
 	
-	tmp = (char *)realloc((char *)arr->data, length + strlen(string_num));
-	if(NULL == tmp)
+	new_len = curr_len + strlen(string_num) +1;
+	
+	arr->data = (char *)realloc(arr->data, new_len);
+	if(NULL == arr->data)
 	{
 		return MEM_FAIL;
 	}
 	
-	strcat(tmp, string_num);
-	arr->data = tmp;
+	strcat(arr->data, string_num);
 	
 	return SUCCESS;
 }
@@ -44,6 +46,7 @@ static void CleanString(element_t *arr)
 {
 	free(arr->data);
 	arr->data = NULL;
+	InitInt(0, arr);
 }
 
 static void CleanNum(element_t *arr)
@@ -85,12 +88,12 @@ void InitFloat(float x, element_t *arr)
 
 exit_code InitString(char *x, element_t *arr)
 {
-	arr->data = (char *)malloc(sizeof(x));
+	arr->data = (char *)malloc(strlen(x) + 1);
 	if(NULL == arr->data)
 	{
 		return MEM_FAIL;
 	}
-	strncpy((arr->data), x, strlen(x));
+	strcpy(arr->data, x);
 	arr->funcs = &ForString;
 	return SUCCESS;
 }
