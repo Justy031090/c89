@@ -12,8 +12,8 @@ int WriteToBin(char *filename, Student Michael)
         return -1;
     };
 
-	fwrite(Michael.firstname, sizeof(char),MAX_NAME_LEN , file);
-	fwrite(Michael.lastname, sizeof(char), MAX_NAME_LEN, file);
+	fwrite(&Michael.firstname, sizeof(char),MAX_NAME_LEN , file);
+	fwrite(&Michael.lastname, sizeof(char), MAX_NAME_LEN, file);
 	fwrite(&Michael.sports, sizeof(float), 1, file);
 	fwrite(&Michael.h_g.sociology,sizeof(float) , 1, file);
 	fwrite(&Michael.h_g.psychology, sizeof(float), 1, file);
