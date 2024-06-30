@@ -26,9 +26,8 @@ exit_code WriteToBin(char *filename, Student Michael)
 	fclose(file);
 	
 	if (TOTAL_STRUCT_SIZE != num_of_writes)
-	{	printf("failed in fwrite\n, %d\n", num_of_writes);
-		remove(filename);
-		return FAILED_TO_WRITE;
+	{	
+		return SUCCESS == remove(filename) ? FAILED_TO_WRITE : MEM_FAIL;
 	}
 	
 	return SUCCESS;
@@ -57,7 +56,6 @@ exit_code ReadFromBin(char *filename, Student *NotMichael)
 	
 	if (TOTAL_STRUCT_SIZE != num_of_reads)
 	{
-		printf("failed in fread\n");
 		return FAILED_TO_READ;
 	}
 	
