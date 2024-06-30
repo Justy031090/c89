@@ -1,22 +1,25 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#define EIGHT_BIT (8)
+#define WORD_SIZE (8)
 
 void *MemSet(void *str, int c, size_t n)
 {	
 	int i = 0;
 	unsigned char *p = str;
-	size_t to_align_start = (size_t)p%(EIGHT_BIT);
+	size_t to_align_start = (size_t)p%(WORD_SIZE);
 	
 	/*fill the unaligned first n-bytes, byte by byte*/
-	for(;0 < to_align_start; --to_align_start, --n, ++p)
+	if(0 != to_align_start && n > 8)
 	{
-		*p = c;
+		for(;0 < to_align_start; --to_align_start, --n, ++p)
+		{
+			*p = c;
+		}
 	}
 	
 	/*Copy chunks of words*/
-	for(; i <(n/EIGHT_BIT); --n, ++p, ++i)
+	for(; i <(n/WORD_SIZE); --n, ++p, ++i)
 	{
 		*p = c;
 	}
@@ -35,16 +38,20 @@ void *MemCpy(void *dest ,const void *src, size_t n)
 	size_t i = 0;
 	char *p = (char *)src;
 	char *q = (char *)dest;
-	size_t to_align_start = (size_t)src%(EIGHT_BIT);
+	size_t to_align_start = (size_t)src%(WORD_SIZE);
 	
 	/*fill the unaligned first n-bytes, byte by byte*/
-	for(;0 < to_align_start; --to_align_start, --n, ++p, ++q)
+	
+	if(0 != to_align_start && n > 8)
 	{
-		*q = *p;
+		for(;0 < to_align_start; --to_align_start, --n, ++p, ++q)
+		{
+			*q = *p;
+		}
 	}
 	
 	/*Copy chunks of words*/
-	for(; i < (n/8); --n, ++p, ++q)
+	for(; i <(n/WORD_SIZE); --n, ++p, ++q)
 	{
 		*q = *p;	
 	}
@@ -59,43 +66,57 @@ void *MemCpy(void *dest ,const void *src, size_t n)
 	return dest;
 }
 
-void *MemCpy(void *dest ,const void *src, size_t n)
+
+
+
+void *MemMove(void *dest ,const void *src, size_t n)
 {
 	size_t i = 0;
 	char *p = (char *)src;
 	char *q = (char *)dest;
-	size_t to_align_start = (size_t)src%(EIGHT_BIT);
+	size_t to_align_start = (size_t)src%(WORD_SIZE);
 	
-	/*fill the unaligned first n-bytes, byte by byte*/
-	for(;0 < to_align_start; --to_align_start, --n, ++p, ++q)
+	/* p-----q overlap*/
+	if(p > q && q-p < n)
 	{
-		*q = *p;
+		for(i = n-1; i>=0 ; --i)
+		{
+			q[i] = p[i];
+		}
+		q[n] = '\0';
+		return dest;
+	}
+	i = 0;
+	
+	/* q-----p overlap*/
+	if(p < q && p-q < n)
+	{
+		for(i = 0; i<n; ++i)
+		{
+			q[i] = p[i];
+		}
+		q[n] = '\0';
+		return dest;
 	}
 	
-	/*Copy chunks of words*/
-	for(; i < (n/8); --n, ++p, ++q)
-	{
-		*q = *p;	
-	}
-	
-	/*fill the unaligned last n-bytes, byte by byte*/
-	for(; 0 < n; --n, ++p, ++q)
-	{
-			*q = *p;
-	}
-	*q = '\0';
-	
+	/* no overlaps :) */
+	MemCpy(dest, src, n);
 	return dest;
 }
-
-
 
 int main()
 {	
 	char *source = "Hello World";
 	char destination[13];
 	
-	MemCpy(destination, source, 13);
+	printf("%s\n", (char *)MemMove(destination, source, 12));
+	printf("%s\n", (char *)MemMove(destination, source, 1));
+	printf("%s\n", (char *)MemMove(destination, source, 0));
+	printf("%s\n", (char *)MemMove(destination, source, 11));
+	printf("%s\n", (char *)MemMove(destination, source, 13));
+	printf("%s\n", (char *)MemMove(destination, source, 6));
+
+
 	
 	
 	return 0;
