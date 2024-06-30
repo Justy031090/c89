@@ -2,6 +2,16 @@
 #define __WS11_H__
 
 #define MAX_NAME_LEN (10)
+#define TOTAL_STRUCT_SIZE (27)
+
+typedef enum e_c {
+	MEM_FAIL = -4,
+	FAILED_TO_OPEN,
+	FAILED_TO_WRITE,
+	FAILED_TO_READ,
+	SUCCESS
+} exit_code;
+
 
 typedef struct h_g {
 	float sociology;
@@ -15,18 +25,23 @@ typedef struct r_g {
 	float chemistry;
 } real_grades_t;
 
+typedef struct grades {
+	float sports;
+	humanistic_grades_t h_g;
+	real_grades_t r_g;
+} grades;
+
 
 typedef struct student {
 	char firstname[MAX_NAME_LEN];
 	char lastname[MAX_NAME_LEN];
-	float sports;
-	humanistic_grades_t h_g;
-	real_grades_t r_g;
+	grades grades;
+	
 } Student;
 
 
-int WriteToBin(char *filename, Student);
-int ReadFromBin(char *filename, Student*);
+exit_code WriteToBin(char *filename, Student);
+exit_code ReadFromBin(char *filename, Student*);
 
 
 #endif /* __WS11_H__ */

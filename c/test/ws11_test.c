@@ -10,15 +10,17 @@ int main ()
 	Student Michael = {
 		"Michael",
 		"Bar",
-		99.20,
-		{55.2, 59.3, 58.4},
-		{55.2, 59.3, 58.4}
+		{
+			99.5,
+			{55.2, 59.3, 58.4},
+			{55.2, 59.3, 58.4}
+		}
 	};
-	
-	Student *NotMichael = malloc(sizeof(Student));
+	size_t msize = sizeof(Michael);
+	Student *NotMichael =  malloc(msize);
 	if(NULL == NotMichael)
 	{
-		return -1;
+		return MEM_FAIL;
 	}
 
 	WriteToBin(filename, Michael);
@@ -26,13 +28,13 @@ int main ()
 	
 	printf("%s\n", NotMichael->firstname);
 	printf("%s\n", NotMichael->lastname);
-	printf("%.3f\n", NotMichael->sports);
-	printf("%.3f\n", NotMichael->r_g.chemistry);
-	printf("%.3f\n", NotMichael->r_g.physics);
-	printf("%.3f\n", NotMichael->r_g.math);
-	printf("%.3f\n", NotMichael->h_g.sociology);
-	printf("%.3f\n", NotMichael->h_g.psychology);
-	printf("%.3f\n", NotMichael->h_g.literature);
+	printf("%.3f\n", NotMichael->grades.sports);
+	printf("%.3f\n", NotMichael->grades.r_g.chemistry);
+	printf("%.3f\n", NotMichael->grades.r_g.physics);
+	printf("%.3f\n", NotMichael->grades.r_g.math);
+	printf("%.3f\n", NotMichael->grades.h_g.sociology);
+	printf("%.3f\n", NotMichael->grades.h_g.psychology);
+	printf("%.3f\n", NotMichael->grades.h_g.literature);
 	
 	free(NotMichael);
 	NotMichael = NULL;
