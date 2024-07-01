@@ -2,8 +2,6 @@
 #define __WS12_H__
 
 #include <stddef.h> /*size_t*/
-#define WORD_SIZE (8)
-
 
 
 void *MemSet(void *str, int c, size_t n);

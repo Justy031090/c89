@@ -1,22 +1,32 @@
+#include <stdint.h>
+#include <assert.h>
+
 #include "ws12.h"
+#define WORD_SIZE (8)
+
+
+
+/*asserts*/
+/*if n > strlen return*/
 
 void *MemSet(void *str, int c, size_t n)
 {	
+	
+	
 	size_t i = 0;
-	unsigned char *p = str;
+	char *p = (char *)str;
 	size_t to_align_start = (size_t)p%(WORD_SIZE);
+	assert(NULL != str);
+
 	
-	if(0 != to_align_start && n > WORD_SIZE)
+	for(;0 < to_align_start && n >= WORD_SIZE; --to_align_start,  ++p)
 	{
-		for(;0 < to_align_start; --to_align_start, --n, ++p)
-		{
 			*p = c;
-		}
+			--n;
 	}
-	
-	for(; i <(n/WORD_SIZE); --n, ++p, ++i)
+	for(; i <(n/WORD_SIZE);++i, n=n- WORD_SIZE, p = p + WORD_SIZE)
 	{
-		*p = c;
+		*(int8_t *)p = *(int8_t *)c;	
 	}
 	
 	for(; 0 < n; --n, ++p)
@@ -27,31 +37,43 @@ void *MemSet(void *str, int c, size_t n)
 	return str;
 }
 
+
 void *MemCpy(void *dest ,const void *src, size_t n)
 {
+	
 	size_t i = 0;
 	char *p = (char *)src;
 	char *q = (char *)dest;
 	size_t to_align_start = (size_t)src%(WORD_SIZE);
+	assert(NULL != src);
 	
-	if(0 != to_align_start && n >= WORD_SIZE)
+	if(n > strlen(src))
 	{
-		for(;0 < to_align_start; --to_align_start, --n, ++p, ++q)
-		{
-			*q = *p;
-		}
+		return p;
 	}
 	
-	for(; i <(n/WORD_SIZE); --n, ++p, ++q)
+	for(;0 < to_align_start && n >= WORD_SIZE ; --to_align_start,  ++p, ++q)
 	{
-		*q = *p;	
+		*q = *p;
+		--n;
 	}
 	
-	for(; 0 < n; --n, ++p, ++q)
+	for(i = 0 ;i < (n/WORD_SIZE); i++)
 	{
-			*q = *p;
+		*(int8_t *)q = *(int8_t *)p;	
+		n = n - 8;
+		p = p + 8;
+		q = q + 8;
 	}
-	*q = '\0';
+	
+	for(; 0 < n; )
+	{
+		*q = *p;
+		++p;
+		++q;
+		--n;
+	}
+	
 	
 	return dest;
 }
@@ -59,10 +81,12 @@ void *MemCpy(void *dest ,const void *src, size_t n)
 
 void *MemMove(void *dest ,const void *src, size_t n)
 {
+	
 	size_t i = 0;
 	char *frm = (char *)src;
 	char *to = (char *)dest;
 	
+	assert(NULL != src);
 	if((frm > to) && (to-frm) < (long int) n)
 	{
 		for(i = n-1; i > 0; --i)
@@ -74,7 +98,6 @@ void *MemMove(void *dest ,const void *src, size_t n)
 		return dest;
 	}
 	
-	/* q-----p overlap*/
 	if((frm < to) && (frm-to) < (long int) n)
 	{
 		for(i = 0; i < n; ++i)
@@ -86,9 +109,10 @@ void *MemMove(void *dest ,const void *src, size_t n)
 		return dest;
 	}
 	
-	/* no overlaps :) */
 	MemCpy(dest, src, n);
+	
 	return dest;
 }
+
 
 
