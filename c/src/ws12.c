@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "ws12.h"
@@ -83,32 +84,55 @@ void *MemMove(void *dest ,const void *src, size_t n)
 {
 	
 	size_t i = 0;
-	char *frm = (char *)src;
-	char *to = (char *)dest;
-	
+	char *src_ = (char *)src;
+	char *dest_ = (char *)dest;
+	size_t to_align_start = 0;
 	assert(NULL != src);
-	if((frm > to) && (to-frm) < (long int) n)
+	
+	
+	if(n > strlen(src))
 	{
-		for(i = n-1; i > 0; --i)
-		{
-			to[i] = frm[i];
-		}
-		
-		to[n] = '\0';
-		return dest;
+		return src_;
 	}
 	
-	if((frm < to) && (frm-to) < (long int) n)
+
+	
+	
+	/*Destination overlaps with Source*/
+	/*Need to align & copy from the end to the start*/
+	if((src_ > dest_) && (dest_ - src_) < (long int) n)
 	{
-		for(i = 0; i < n; ++i)
+		dest_ = dest_ + n;
+		src_ = src_ +n ;
+		to_align_start = WORD_SIZE - ((size_t)src%(WORD_SIZE));
+		
+		/*copy untill first word boundary backwards*/
+		for(;0 < to_align_start && n >= WORD_SIZE ; --to_align_start,  --dest_, --src_)
 		{
-			to[i] = frm[i];
+			*dest_ = *src_;
+			--n;
 		}
 		
-		to[n] = '\0';
-		return dest;
+		/*copy word-size chunks backwards*/
+		for(i = 0 ;i < (n/WORD_SIZE); i++)
+		{
+			n = n - WORD_SIZE;
+			src_ = src_ - WORD_SIZE;
+			dest_ = dest_ - WORD_SIZE;
+			*(int8_t *)dest_ = *(int8_t *)src_;	
+		}
+		/*copy the left bytes backwards*/
+		for(; 0 < n; )
+		{
+			*dest_ = *src_;
+			--dest_;
+			--src_;
+			--n;
+		}
+		return dest_;
 	}
 	
+	/*Source overlaps with Destination*/
 	MemCpy(dest, src, n);
 	
 	return dest;

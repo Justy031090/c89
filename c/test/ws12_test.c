@@ -5,7 +5,7 @@
 int main()
 {	
 	char *source = "Hello World";
-	char destination[16];
+	char destination[16] = {0};
 	int i = 0;
 	
 	/*
@@ -19,8 +19,8 @@ int main()
 	*/
 	while(i<16)
 	{
-		printf("%s\n", (char *)MemCpy(destination, source, i));
-		printf("%s\n\n", (char *)memcpy(destination, source, i));
+		printf("%s\n", (char *)MemMove(destination, source, i));
+		printf("%s\n\n", (char *)memmove(destination, source, i));
 		i++;
 	}
 
