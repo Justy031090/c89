@@ -9,22 +9,23 @@ void *MemSet(void *str, int c, size_t n)
 {	
 	size_t i = 0;
 	char *p = (char *)str;
-	size_t to_align_start = (size_t)p%(WORD_SIZE);
+	size_t to_align_start = (size_t)str%(WORD_SIZE);
 	assert(NULL != str);
-
-	for(;0 < to_align_start && n >= WORD_SIZE; --to_align_start)
+	
+	if(n >=WORD_SIZE)
 	{
+		for(;0 < to_align_start ; --to_align_start)
+		{
 			*p = c;
 			--n;
 			++p;
+		}
+		for(; i < (n/WORD_SIZE); ++i)
+		{
+			*(int8_t *)p = (int8_t)c;
+		}
 	}
-	for(; i <(n/WORD_SIZE); ++i)
-	{
-		*(int8_t *)p = *(int8_t *)c;	
-		n = n - WORD_SIZE;
-		p = p + WORD_SIZE;
-	}
-	
+
 	for(; 0 < n; --n)
 	{
 		*p = c;
