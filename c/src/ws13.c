@@ -1,13 +1,17 @@
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+
+
 
 static int val(char c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
 	else
-		return c - 'A' + 10;
+		return toupper(c) - 'A' + 10;
 }
 char *IntToString(int x, char *str, int base)
 {	
@@ -66,15 +70,71 @@ int StringToInt(char *str, int base)
 	return result;
 }
 
-
-
-
-int main ()
-
+void ThreeArr (char *arr1, char *arr2, char *arr3)
 {
-	char buff[10];
-	char *test = "FF";
-	printf("%s\n", IntToString(255, buff, 16));
-	printf("%d\n", StringToInt(test, 16));
+	int arr[128] = {0};
+	size_t i = 0;
+	
+	while(i<strlen(arr1))
+	{
+		arr[arr1[i]] = arr1[i];
+		i++;
+	}
+	
+	i = 0;
+	
+	while(i<(strlen(arr3)))
+	{
+		if(arr[arr3[i]] != 0)
+		{
+			arr[arr3[i]] = 0;
+		}
+		i++;
+	}
+	i = 0;
+	while(i<strlen(arr2))
+	{
+		if(arr[arr2[i]] != 0)
+		{
+			printf("%d\n",arr[arr2[i]]);
+		}
+		i++;
+	}
+}
+
+int IsLittleEndian()
+{	
+	int n = 1;
+	if(*(char *)&n == 1)
+	{
+		printf("LITTLE");
+	}
+	else
+		printf("BIG");
+		
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
