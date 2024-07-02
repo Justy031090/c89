@@ -5,13 +5,16 @@
 
 #include "ws13.h"
 #define BASE_TEN (10)
+#define ASCII (128)
+#define MAX_BASE (37)
+#define MIN_BASE (1)
 
 static int val(char c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
 	else
-		return toupper(c) - 'A' + 10;
+		return toupper(c) - 'A' + BASE_TEN;
 }
 
 char *IntToString(int x, char *str, int base)
@@ -23,7 +26,7 @@ char *IntToString(int x, char *str, int base)
 	char *ptr = str;
 	char *sptr = str;
 	
-	assert(base > 1 && base < 37);
+	assert(base > MIN_BASE && base < MAX_BASE);
 	assert(NULL != str);
 	
 	if(x < 0)
@@ -35,15 +38,15 @@ char *IntToString(int x, char *str, int base)
 	*ptr = '\0';
 	++ptr;
 	
-	while(x != 0)
+	while(0 != x)
 	{
 		res = x % base;
 		x = x / base;
-		*ptr = res > 9 ? res + 'A' - 10 : res + '0';
+		*ptr = res > 9 ? res + 'A' - BASE_TEN : res + '0';
 		++ptr;
 	}	
 		
-	if(neg_flag == 1&& base == 10)
+	if(neg_flag == 1&& base == BASE_TEN)
 	{
 		*ptr = '-';
 		++ptr;
@@ -68,7 +71,7 @@ int StringToInt(char *str, int base)
 {	
 	int result = 0;
 	
-	assert(base > 1 && base < 37);
+	assert(base > MIN_BASE && base < MAX_BASE);
 	assert(NULL != str);
 	
 	while(*str)
@@ -80,21 +83,21 @@ int StringToInt(char *str, int base)
 }
 
 
-char IntToString10(int x, char *str)
+char *IntToString10(int x, char *str)
 {
 	assert(NULL != str);
-	return IntoToString(x, *str, BASE_TEN);
+	return IntToString(x, str, BASE_TEN);
 }
 
-char StringToInt10(char *str)
+int StringToInt10(char *str)
 {
 	assert(NULL != str);
-	return StringToInt(*str, BASE_TEN);
+	return StringToInt(str, BASE_TEN);
 }
 
 void ThreeArr (char *arr1, char *arr2, char *arr3)
 {
-	int arr[128] = {0};
+	int arr[ASCII] = {0};
 	size_t i = 0;
 	
 	while(i<strlen(arr1))
