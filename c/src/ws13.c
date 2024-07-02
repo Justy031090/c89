@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <stdio.h> /*printf*/
+#include <string.h> /*strlen*/
+#include <ctype.h> /*tolower*/
+#include <assert.h> /*assert*/
 
-
-
+#include "ws13.h"
+#define BASE_TEN (10)
 
 static int val(char c)
 {
@@ -13,13 +13,18 @@ static int val(char c)
 	else
 		return toupper(c) - 'A' + 10;
 }
+
 char *IntToString(int x, char *str, int base)
 {	
+	
 	int res = 0;
 	int neg_flag = 0;
 	int temp = 0;
 	char *ptr = str;
 	char *sptr = str;
+	
+	assert(base > 1 && base < 37);
+	assert(NULL != str);
 	
 	if(x < 0)
 	{
@@ -62,12 +67,29 @@ char *IntToString(int x, char *str, int base)
 int StringToInt(char *str, int base)
 {	
 	int result = 0;
+	
+	assert(base > 1 && base < 37);
+	assert(NULL != str);
+	
 	while(*str)
 	{
 		result = (result * base) + val(*str);
 		++str;
 	}
 	return result;
+}
+
+
+char IntToString10(int x, char *str)
+{
+	assert(NULL != str);
+	return IntoToString(x, *str, BASE_TEN);
+}
+
+char StringToInt10(char *str)
+{
+	assert(NULL != str);
+	return StringToInt(*str, BASE_TEN);
 }
 
 void ThreeArr (char *arr1, char *arr2, char *arr3)
@@ -77,7 +99,7 @@ void ThreeArr (char *arr1, char *arr2, char *arr3)
 	
 	while(i<strlen(arr1))
 	{
-		arr[arr1[i]] = arr1[i];
+		arr[(int)arr1[i]] = arr1[i];
 		i++;
 	}
 	
@@ -85,18 +107,18 @@ void ThreeArr (char *arr1, char *arr2, char *arr3)
 	
 	while(i<(strlen(arr3)))
 	{
-		if(arr[arr3[i]] != 0)
+		if(0 != arr[(int)arr3[i]])
 		{
-			arr[arr3[i]] = 0;
+			arr[(int)arr3[i]] = 0;
 		}
 		i++;
 	}
 	i = 0;
 	while(i<strlen(arr2))
 	{
-		if(arr[arr2[i]] != 0)
+		if(0 != (int)arr[(int)arr2[i]])
 		{
-			printf("%d\n",arr[arr2[i]]);
+			printf("%d\n",arr[(int)arr2[i]]);
 		}
 		i++;
 	}
