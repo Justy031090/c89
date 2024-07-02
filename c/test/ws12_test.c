@@ -5,7 +5,11 @@
 int main()
 {	
 	char *source = "Hello World";
+	char *source2 = "Hello World";
 	char destination[16] = {0};
+	char destination2[16] = {0};
+	char destination3[16] = {0};
+	char destination4[16] = {0};
 	int i = 0;
 	
 	/*
@@ -19,8 +23,12 @@ int main()
 	*/
 	while(i<16)
 	{
-		printf("%s\n", (char *)MemMove(destination, source, i));
-		printf("%s\n\n", (char *)memmove(destination, source, i));
+		/*
+		
+		printf("%s\n", (char *)memset(destination2, 'c', 12));
+		printf("%s\n\n", (char *)memmove(destination4, source, i));
+		printf("%s\n", (char *)MemMove(destination3, source2, i));*/
+		printf("%s\n", (char *)MemSet(destination, 'c', 17));
 		i++;
 	}
 
