@@ -1,5 +1,13 @@
-#include <stddef.h> /**/
-#include <assert.h>
+/*
+(\.../)		..
+(=';'=) .. code reviewd by Raz.S ..
+(")-("))	..
+*/
+
+
+
+#include <stddef.h> /*size_t*/
+#include <assert.h>/*assert*/
 #include "ws14.h"
 
 #define NIB_SIZE (4)
