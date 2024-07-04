@@ -8,6 +8,7 @@
 
 #include <stddef.h> /*size_t*/
 #include <assert.h>/*assert*/
+#include <limits.h> /*char_bit*/
 #include "ws14.h"
 
 #define NIB_SIZE (4)

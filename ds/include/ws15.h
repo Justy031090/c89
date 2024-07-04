@@ -28,6 +28,6 @@ void StackPop(stack_t *stack);
 void *StackPeek(const stack_t *stack);
 int StackIsEmpty(const stack_t *stack);
 size_t StackSize(const stack_t *stack);
-size_t StackCapacity(const stack_t *stack);
+size_t StackCapacity(const stack_t *stack);;
 
 #endif /*__DS2_H__*/

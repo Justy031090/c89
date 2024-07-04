@@ -1,3 +1,6 @@
+#include <limits.h> /*char_bit*/
+#include <stdio.h> /*print*/
+#include <stddef.h> /*size_t*/
 
 #include "ws14.h"
 #define SIZE ((sizeof(size_t)) * (CHAR_BIT))
