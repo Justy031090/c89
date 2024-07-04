@@ -8,8 +8,7 @@
 int BitArrGet(bit_arr_t arr, size_t idx)
 {
 	assert(idx >= 0 && idx <= SIZE);
-	arr >>= (idx);
-	return arr & 1;
+	return (arr>>=idx) & 1;
 }
 
 int BitArrCountOn(bit_arr_t arr)
@@ -92,25 +91,13 @@ bit_arr_t MirrorLut(bit_arr_t arr,  bit_arr_t LUT)
 	int i = 0;
 	bit_arr_t mirror = 0;
     
-    for (;i < CHAR_BIT ; ++i)
+    for (;i < SIZE/NIBBLE ; ++i)
     {
     	mirror = (mirror<< NIB_SIZE) | lut[arr & 15];
     	arr >>= NIB_SIZE;
     }
    	return mirror;
 }
-
-bit_arr_t CountOnLut(bit_arr_t arr,  bit_arr_t LUT) 
-{
-	int i = 0;
-    for (;i < CHAR_BIT ; ++i)
-    {
-    	arr = (arr<< NIB_SIZE) & lut[arr & 15];
-    	arr >>= NIB_SIZE;
-    }
-   	return arr;
-} 
-
 
 int CountOnLut(bit_arr_t arr,  bit_arr_t bit_lut[]) 
 {
