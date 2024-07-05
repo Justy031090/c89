@@ -13,32 +13,35 @@ typedef struct stack
 
 stack_t *StackCreate(size_t capacity, size_t size_of_element)
 {
-	static stack_t stack;
-	stack.peek = (char *)malloc(size_of_element * capacity);
-	if(NULL == stack.peek)
+	
+	stack_t stack = (stack_t *)malloc(sizeof(stack_t));
+	if(NULL == stack)
 	{
-		free(stack.peek);
+		return NULL;
+	}
+	stack->peek = (char *)malloc(size_of_element * capacity);
+	if(NULL == stack->peek)
+	{
 		return NULL;
 	}
 	
-	stack.size = 0;
-	stack.size_of_elemenet = size_of_element;
-	size.capacity = capacity;
+	stack->size = 0;
+	stack->size_of_elemenet = size_of_element;
+	size->capacity = capacity;
 	
-	return &stack;
+	return stack;
 }
 
 void StackDestroy(stack_t *stack)
 {
-	if(0 == stack->size)
+	if(0 != stack->size)
 	{
-		free(stack->peek);
+		free(stack->peek - ((stack->size-1))*stack->size_of_element);
 	} 
 	
 	else
 	{
-		stack->peek -= ((stack->size) *(stack->size_of_element))
-		free(stack->peek);
+		free(stack->peek - ((stack->size)*stack->size_of_element);
 	}
 }
 
@@ -55,7 +58,7 @@ void *StackPeek(const stack_t *stack)
 
 int StackIsEmpty(const stack_t *stack)
 {
-	return stack->size == 0 ? 1:0;
+	return 0 == stack->size ? 1:0;
 }
 
 size_t StackCapacity(const stack_t *stack)
@@ -65,9 +68,40 @@ size_t StackCapacity(const stack_t *stack)
 
 void StackPush(const void *val, stack_t *stack)
 {
+	size_t i = 0;
+	char *add_val = (char *)val;
+	char *peekc = stack->peek;
 	
+	if(stack->size >= stack->capacity)
+	{
+		return ;
+	}
+	if( 0 != stack->size )
+	{
+		stack->peek = stack->peek + size_of_element;
+	}
+	
+	while(i<stack->size_of_element)
+	{
+		peekc[i] = add_val[i];
+		++i;
+	}
+	stack->size = stack->size + 1;
 }
-void StackPop(stack_t *stack);
+void StackPop(stack_t *stack)
+{
+	if(0 == stack->size)
+	{
+		return;
+	}
+	if(1 == stack->size)
+	{
+		stack->size = 0;
+		return;
+	}
+	stack->peek = stack->peek - stack->size_of_element;
+	stack->size = stack->size - 1;
+}
 
 
 
