@@ -1,8 +1,9 @@
 #include <stddef.h> /*size_t*/
+#include <stdlib.h> /*malloc*/
 
 
 typedef struct stack
-{
+{ 
     char *peek;
     size_t size;
     size_t size_of_element;
@@ -14,7 +15,7 @@ typedef struct stack
 stack_t *StackCreate(size_t capacity, size_t size_of_element)
 {
 	
-	stack_t stack = (stack_t *)malloc(sizeof(stack_t));
+	stack_t *stack = (stack_t *)malloc(sizeof(stack_t));
 	if(NULL == stack)
 	{
 		return NULL;
@@ -26,8 +27,8 @@ stack_t *StackCreate(size_t capacity, size_t size_of_element)
 	}
 	
 	stack->size = 0;
-	stack->size_of_elemenet = size_of_element;
-	size->capacity = capacity;
+	stack->size_of_element = size_of_element;
+	stack->capacity = capacity;
 	
 	return stack;
 }
@@ -36,13 +37,14 @@ void StackDestroy(stack_t *stack)
 {
 	if(0 != stack->size)
 	{
-		free(stack->peek - ((stack->size-1))*stack->size_of_element);
+		free(stack->peek - ((stack->size-1) * stack->size_of_element));
 	} 
 	
 	else
 	{
-		free(stack->peek - ((stack->size)*stack->size_of_element);
+		free(stack->peek - ((stack->size)*stack->size_of_element));
 	}
+	free(stack);
 }
 
 size_t StackSize(const stack_t *stack)
@@ -78,7 +80,7 @@ void StackPush(const void *val, stack_t *stack)
 	}
 	if( 0 != stack->size )
 	{
-		stack->peek = stack->peek + size_of_element;
+		stack->peek = stack->peek + stack->size_of_element;
 	}
 	
 	while(i<stack->size_of_element)
