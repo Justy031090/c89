@@ -2,7 +2,7 @@
 #include <stdio.h> /*print*/
 #include <stddef.h> /*size_t*/
 
-#include "ws14.h"
+#include "bitarray.h"
 #define SIZE ((sizeof(size_t)) * (CHAR_BIT))
 #define ARRAY_BIT_SIZE (65)
 
