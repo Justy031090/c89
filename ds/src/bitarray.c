@@ -13,11 +13,14 @@
 
 #define NIB_SIZE (4)
 #define SIZE ((sizeof(size_t)) * (CHAR_BIT))
+#define MAX_NIBBLE_VALUE (15)
+#define NIBBLE_OPTIONS (16)
+#define SET (1)
 
 int BitArrGet(bit_arr_t arr, size_t idx)
 {
-	assert(idx >= 0 && idx <= SIZE);
-	return (arr>>=idx) & 1;
+	assert(idx <= SIZE);
+	return (arr>>=idx) & SET;
 }
 
 int BitArrCountOn(bit_arr_t arr)
@@ -39,20 +42,20 @@ int BitArrCountOff(bit_arr_t arr)
 
 bit_arr_t BitArrSetOn(bit_arr_t arr, size_t idx)
 {
-	assert(idx >= 0 && idx <= SIZE);
-	return arr | (1<<idx);
+	assert(idx <= SIZE);
+	return arr | (SET<<idx);
 }
 
 bit_arr_t BitArrSetOff(bit_arr_t arr, size_t idx)
 {
-	assert(idx >= 0 && idx <= SIZE);
-	return arr & (~(1<<idx));
+	assert(idx <= SIZE);
+	return arr & (~(SET<<idx));
 }
 
 bit_arr_t BitArrFlip(bit_arr_t arr, size_t idx)
 {
-	assert(idx >= 0 && idx <= SIZE);
-	return arr ^ (1<<idx);
+	assert(idx <= SIZE);
+	return arr ^ (SET<<idx);
 }
 
 bit_arr_t BitArrResetAll(bit_arr_t arr)
@@ -89,7 +92,7 @@ char *BitArrToString(bit_arr_t arr, char *dest)
 	bit_arr_t tmp = Mirror(arr);
 	while(i<SIZE)
 	{
-		dest[i] = (tmp>>i)&1 == 1 ? '1' : '0';
+		dest[i] = (tmp>>i) & SET == 1 ? '1' : '0';
 		++i;
 	}
 	return dest;
@@ -102,7 +105,7 @@ bit_arr_t MirrorLut(bit_arr_t arr,  bit_arr_t LUT)
     
     for (;i < SIZE/NIBBLE ; ++i)
     {
-    	mirror = (mirror<< NIB_SIZE) | lut[arr & 15];
+    	mirror = (mirror<< NIB_SIZE) | lut[arr & MAX_NIBBLE_VALUE];
     	arr >>= NIB_SIZE;
     }
    	return mirror;
@@ -113,15 +116,15 @@ int CountOnLut(bit_arr_t arr,  bit_arr_t bit_lut[])
 	int count = 0;
     while( 0 != arr)
     {
-    	count += lut[arr & 15];
+    	count += lut[arr & MAX_NIBBLE_VALUE];
     	arr >>= NIB_SIZE;
     }
    	return count;
 } 
 
 
-static bit_arr_t lut[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
-static bit_arr_t bit_lut[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+static bit_arr_t lut[NIBBLE_OPTIONS] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+static bit_arr_t bit_lut[NIBBLE_OPTIONS] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
 static bit_arr_t Mirror64 (bit_arr_t arr)
 { 

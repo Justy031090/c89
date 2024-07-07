@@ -1,3 +1,9 @@
+/*
+(\.../)		..
+(=';'=) .. code reviewd by Johnatan.I ..
+(")-("))	..
+*/
+
 #include <stddef.h> /*size_t*/
 #include <stdlib.h> /*malloc*/
 #include <assert.h> /*assert*/
