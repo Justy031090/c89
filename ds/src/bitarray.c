@@ -1,10 +1,8 @@
-/*
-(\.../)		..
-(=';'=) .. code reviewd by Raz.S ..
-(")-("))	..
+/*      ..  authored by Michael Bar
+(\.../)		.. 02.07.2024
+(=';'=) .. reviewd by Raz.S ..
+(")-("))	.. 03.07.2024
 */
-
-
 
 #include <stddef.h> /*size_t*/
 #include <assert.h>/*assert*/
@@ -97,20 +95,20 @@ char *BitArrToString(bit_arr_t arr, char *dest)
 	return dest;
 }
 
-bit_arr_t MirrorLut(bit_arr_t arr,  bit_arr_t LUT) 
+bit_arr_t MirrorLut(bit_arr_t arr,  bit_arr_t mirror_LUT) 
 {
 	int i = 0;
 	bit_arr_t mirror = 0;
     
     for (;i < SIZE/NIBBLE ; ++i)
     {
-    	mirror = (mirror<< NIB_SIZE) | lut[arr & MAX_NIBBLE_VALUE];
+    	mirror = (mirror<< NIB_SIZE) | mirror_LUT[arr & MAX_NIBBLE_VALUE];
     	arr >>= NIB_SIZE;
     }
    	return mirror;
 }
 
-int CountOnLut(bit_arr_t arr,  bit_arr_t bit_lut[]) 
+int CountOnLut(bit_arr_t arr,  bit_arr_t bit_LUT[]) 
 {
 	int count = 0;
     while( 0 != arr)
@@ -122,8 +120,8 @@ int CountOnLut(bit_arr_t arr,  bit_arr_t bit_lut[])
 } 
 
 
-static bit_arr_t lut[NIBBLE_OPTIONS] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
-static bit_arr_t bit_lut[NIBBLE_OPTIONS] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+static bit_arr_t mirror_LUT[NIBBLE_OPTIONS] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+static bit_arr_t bit_LUT[NIBBLE_OPTIONS] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
 static bit_arr_t Mirror64 (bit_arr_t arr)
 { 
