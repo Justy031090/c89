@@ -38,16 +38,14 @@ stack_t *StackCreate(size_t capacity, size_t size_of_element)
 
 void StackDestroy(stack_t *stack)
 {
+	assert(NULL !=stack);
 	if(0 != stack->size)
 	{
 		free(stack->peek - ((stack->size-1) * stack->size_of_element));
 	} 
-	
-	else
-	{
-		free(stack->peek - ((stack->size)*stack->size_of_element));
-	}
+	free(stack->peek);
 	free(stack);
+	stack = NULL;
 }
 
 size_t StackSize(const stack_t *stack)
@@ -56,7 +54,6 @@ size_t StackSize(const stack_t *stack)
 	return stack->size;
 }
 
-/*check to return ?*/
 void *StackPeek(const stack_t *stack)	
 {
 	assert(NULL !=stack);
