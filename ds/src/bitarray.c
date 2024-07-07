@@ -36,8 +36,7 @@ int BitArrCountOn(bit_arr_t arr)
 
 int BitArrCountOff(bit_arr_t arr)
 {
-	int on = CountOn(arr);
-	return SIZE - on;
+	return SIZE - CountOn(arr);
 }
 
 bit_arr_t BitArrSetOn(bit_arr_t arr, size_t idx)
@@ -92,7 +91,7 @@ char *BitArrToString(bit_arr_t arr, char *dest)
 	bit_arr_t tmp = Mirror(arr);
 	while(i<SIZE)
 	{
-		dest[i] = (tmp>>i) & SET == 1 ? '1' : '0';
+		dest[i] = (tmp>>i) & SET == SET ? '1' : '0';
 		++i;
 	}
 	return dest;
