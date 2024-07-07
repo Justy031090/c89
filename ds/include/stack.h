@@ -4,13 +4,6 @@
 
 typedef struct stack stack_t;
 
-/* For each fun add:
-description
-params
-return value 
-time complexity 
-space complexity 
-*/
 stack_t *StackCreate(size_t capacity, size_t size_of_element);
 void StackDestroy(stack_t *stack);
 void StackPush(const void *val, stack_t *stack);

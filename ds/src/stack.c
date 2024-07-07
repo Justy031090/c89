@@ -4,13 +4,13 @@
 #include "stack.h"
 
 
-typedef struct stack
+struct stack
 { 
     char *peek;
     size_t size;
     size_t size_of_element;
     size_t capacity;
-} stack_t;
+} new_stack;
 
 
 
