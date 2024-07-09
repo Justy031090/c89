@@ -8,10 +8,13 @@
 #define GROWTH_FACTOR (1.5)
 #define MIN_VECTOR_SIZE (2)
 
-static enum status
+enum status
 {
 	MEM_FAIL = -1, FAIL, SUCCESS
 };
+static int Resize(dvector_t *d_vector, size_t new_capacity);
+
+
 
 struct dvector
 {
@@ -73,27 +76,6 @@ void DVectorDestroy(dvector_t *d_vector)
 	free(d_vector);
 }
 
-int DVectorReserve(dvector_t *d_vector, size_t new_capacity)
-{
-	char *arr = NULL;
-	size_t to_allocate = new_capacity * d_vector->size_of_element;
-	assert(NULL !=d_vector);
-	if(new_capacity < d_vector->capacity)
-	{
-		return FAIL;
-	}
-	arr = (char *)realloc(d_vector->d_vector_arr, to_allocate);
-	if(NULL == arr)
-	{
-		return MEM_FAIL;
-	}
-	
-	d_vector->d_vector_arr = arr;
-	d_vector->capacity = new_capacity;
-	
-	return SUCCESS;
-}
-
 int DVectorPushBack(dvector_t *d_vector, const void *data)
 {
 	int reserve = -1;
@@ -103,7 +85,7 @@ int DVectorPushBack(dvector_t *d_vector, const void *data)
 	
 	assert(NULL !=d_vector);
 	
-	if(size_to_check = d_vector->capacity)
+	if((size_to_check) == (d_vector->capacity))
 	{
 		reserve = DVectorReserve(d_vector, d_vector->capacity*GROWTH_FACTOR);
 		if(0 == reserve)
@@ -120,27 +102,6 @@ int DVectorPushBack(dvector_t *d_vector, const void *data)
 }
 
 
-int DVectorShrink(dvector_t *d_vector)
-{
-	char *arr = NULL;
-	size_t to_allocate = d_vector->size_of_element * d_vector->size * GROWTH_FACTOR;
-	assert(NULL !=d_vector);
-	if((d_vector->size * MIN_VECTOR_SIZE) < (d_vector->capacity))
-	{
-		arr = (char *)realloc(d_vector->d_vector_arr ,to_allocate);
-		if(NULL == arr)
-		{
-			return MEM_FAIL;
-		}
-		
-		d_vector->capacity = to_allocate / d_vector->size_of_element;
-		d_vector->d_vector_arr = arr;
-	}
-	
-	return SUCCESS;
-}
-
-
 
 int DVectorPopBack(dvector_t *d_vector)
 {
@@ -152,8 +113,6 @@ int DVectorPopBack(dvector_t *d_vector)
 	{
 		return FAIL;
 	}
-	
-	
 	to_pop = NULL;
 	d_vector-> size = d_vector->size -1;
 	shrink = DVectorShrink(d_vector);
@@ -162,11 +121,47 @@ int DVectorPopBack(dvector_t *d_vector)
 	
 }
 
-
-static void Resize()
+int DVectorShrink(dvector_t *d_vector)
 {
-	
+	size_t to_allocate = d_vector->size_of_element * d_vector->size * GROWTH_FACTOR;
+	assert(NULL !=d_vector);
+	if((d_vector->size * MIN_VECTOR_SIZE) < (d_vector->capacity))
+	{
+		return Resize(d_vector, to_allocate);
+	}
+	return SUCCESS;
 }
+
+
+
+int DVectorReserve(dvector_t *d_vector, size_t new_capacity)
+{
+	size_t to_allocate = new_capacity * d_vector->size_of_element;
+	assert(NULL !=d_vector);
+	if(new_capacity < d_vector->capacity)
+	{
+		return FAIL;
+	}
+
+	return Resize(d_vector, to_allocate);
+}
+
+
+
+static int Resize(dvector_t *d_vector, size_t new_capacity)
+{
+	char *arr = NULL;
+	arr = (char *)realloc(d_vector->d_vector_arr, new_capacity);
+	if(NULL == arr)
+	{
+		return MEM_FAIL;
+	}
+	d_vector->d_vector_arr = arr;
+	d_vector->capacity = new_capacity;
+	return SUCCESS;
+}
+
+
 
 
 
