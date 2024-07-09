@@ -1,3 +1,9 @@
+/*					Dynamic Vector Implementation.
+(\.../)		.. Authored by Michael Bar 08/07/2024
+(=';'=) .. code reviewd by Oran.S 09/07/2024..
+(")-("))	..
+*/
+
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /*malloc, realloc*/
 #include <string.h> /*memcpy*/
@@ -36,6 +42,8 @@ dvector_t *DVectorCreate(size_t capacity, size_t size_of_element)
 	vector->d_vector_arr = (char *)malloc(size_of_element * capacity);
 	if(NULL == vector->d_vector_arr)
 	{
+		free(vector);
+		vector = NULL;
 		return NULL;
 	}
 	
@@ -74,6 +82,8 @@ void DVectorDestroy(dvector_t *d_vector)
 	assert(NULL !=d_vector);
 	free(d_vector->d_vector_arr);
 	free(d_vector);
+	d_vector->d_vector_arr = NULL;
+	d_vector = NULL;
 }
 
 int DVectorPushBack(dvector_t *d_vector, const void *data)
@@ -123,16 +133,15 @@ int DVectorPopBack(dvector_t *d_vector)
 
 int DVectorShrink(dvector_t *d_vector)
 {
-	size_t to_allocate = d_vector->size_of_element * d_vector->size * GROWTH_FACTOR;
+	size_t to_allocate = 0;
 	assert(NULL !=d_vector);
 	if((d_vector->size * MIN_VECTOR_SIZE) < (d_vector->capacity))
 	{
+		to_allocate = d_vector->size_of_element * d_vector->size * GROWTH_FACTOR;
 		return Resize(d_vector, to_allocate);
 	}
 	return SUCCESS;
 }
-
-
 
 int DVectorReserve(dvector_t *d_vector, size_t new_capacity)
 {
