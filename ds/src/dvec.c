@@ -1,8 +1,19 @@
 #include <stddef.h> /* size_t */
-#define GROWTH_FACTOR (2)
+#include <stdlib.h> /*malloc, realloc*/
+#include <string.h> /*memcpy*/
+#include <assert.h> /*assert*/
 
+#include "dvec.h"
 
-struct d_vector
+#define GROWTH_FACTOR (1.5)
+#define MIN_VECTOR_SIZE (2)
+
+static enum status
+{
+	MEM_FAIL = -1, FAIL, SUCCESS
+};
+
+struct dvector
 {
     char *d_vector_arr;
     size_t size;
@@ -10,135 +21,152 @@ struct d_vector
     size_t capacity;
 };
 
-
-
 dvector_t *DVectorCreate(size_t capacity, size_t size_of_element)
 {
-	dvector_t *vector = (d_vec_t *)malloc(sizeof(d_vec_t);
+	
+	dvector_t *vector = (dvector_t *)malloc(sizeof(dvector_t));
+	assert(size_of_element > 0);
 	if(NULL == vector)
 	{
 		return NULL;
-	} 
+	}
 	vector->d_vector_arr = (char *)malloc(size_of_element * capacity);
-	if(NULL == vector->d_dector_arr)
+	if(NULL == vector->d_vector_arr)
 	{
 		return NULL;
 	}
 	
+	vector->capacity = capacity;
 	vector->size_of_element = size_of_element;
-	vector->capacity = capacity * GROWTH_FACTOR;
 	vector->size = 0;
-		
+	
+	if(vector->capacity < MIN_VECTOR_SIZE)
+	{
+		vector->capacity = MIN_VECTOR_SIZE;
+	}
+	
 	return vector;
 }
 
 size_t DVectorCapacity(const dvector_t *d_vector)
 {
+	assert(NULL !=d_vector);
 	return d_vector->capacity;
 }
 size_t DVectorSize(const dvector_t *d_vector)
 {
+	assert(NULL !=d_vector);
 	return d_vector->size;
 }
 
 void *DVectorGet(const dvector_t *d_vector, size_t idx)
 {
-	return d_vector->d_vector_arr[idx];
+	assert(NULL !=d_vector);
+	assert(idx <= d_vector->size);
+	return (void *)d_vector->d_vector_arr[idx];
 }
 
 void DVectorDestroy(dvector_t *d_vector)
 {
-	if( 0 != d_vector->size)
-	{
-		free(d_vector->d_vector_arr - ((d_vector->size -1) * d_vector->size_of_element);
-	}
+	assert(NULL !=d_vector);
 	free(d_vector->d_vector_arr);
-	free(d_vector)
+	free(d_vector);
 }
 
 int DVectorReserve(dvector_t *d_vector, size_t new_capacity)
 {
 	char *arr = NULL;
-	size_t to_allocate = new_capacity * d_vector->size_of_element * GROWTH_FACTOR;
-	if(new_capacity < dvector_t->capacity)
+	size_t to_allocate = new_capacity * d_vector->size_of_element;
+	assert(NULL !=d_vector);
+	if(new_capacity < d_vector->capacity)
 	{
-		return 0;
+		return FAIL;
 	}
 	arr = (char *)realloc(d_vector->d_vector_arr, to_allocate);
 	if(NULL == arr)
 	{
-		return 0;
+		return MEM_FAIL;
 	}
-	d_vector->d_vector_arr = arr;
-	d_vector->capacity = new_capacity * GROWTH_FACTOR;
 	
-	return 1;
+	d_vector->d_vector_arr = arr;
+	d_vector->capacity = new_capacity;
+	
+	return SUCCESS;
 }
-
-
 
 int DVectorPushBack(dvector_t *d_vector, const void *data)
 {
 	int reserve = -1;
-	int size_to_check = (d_vector->size * d_vector->size_of_element)+d_vector->size_of_element;
+	size_t size_to_check = d_vector->size +1;
 	char *new_data = (char *)data;
-	char *dest = d_vector->d_vector_arr[size*size_of_element +1];
+	char *dest = NULL;
 	
-	if(size_to_check >= d_vector->capacity)
+	assert(NULL !=d_vector);
+	
+	if(size_to_check = d_vector->capacity)
 	{
-		reserve = DVectorReserve(d_vector, (d_vector->capacity * GROWTH_FACTOR));
+		reserve = DVectorReserve(d_vector, d_vector->capacity*GROWTH_FACTOR);
 		if(0 == reserve)
 		{
-			return 0;
+			return MEM_FAIL;
 		}
 	}
-	memcpy(dest, new_data ,size_of_element);
-	++dvector_t->size;
+	dest = (char *)d_vector->d_vector_arr + (d_vector->size);
+	memcpy(dest, new_data ,d_vector->size_of_element);
+	d_vector->size = d_vector->size +1;
+
 	
-	return 1;
+	return SUCCESS;
 }
 
 
 int DVectorShrink(dvector_t *d_vector)
 {
 	char *arr = NULL;
-	int min_cap = d_vector->size_of_element * d_vector_size;
-	size_t to_allocate = d_vector->size_of_element * d_vector_size / GROWTH_FACTOR;
-	
-	if(min_cap > to_allocate)
+	size_t to_allocate = d_vector->size_of_element * d_vector->size * GROWTH_FACTOR;
+	assert(NULL !=d_vector);
+	if((d_vector->size * MIN_VECTOR_SIZE) < (d_vector->capacity))
 	{
 		arr = (char *)realloc(d_vector->d_vector_arr ,to_allocate);
 		if(NULL == arr)
 		{
-			return 0;
+			return MEM_FAIL;
 		}
 		
-		d_vector->capacity = to_allocate;
+		d_vector->capacity = to_allocate / d_vector->size_of_element;
 		d_vector->d_vector_arr = arr;
 	}
 	
-	return 1;
+	return SUCCESS;
 }
 
 
 
 int DVectorPopBack(dvector_t *d_vector)
 {
-	int srhink = 0;
-	int to_allocate = (d_vector->size * (d_vector->size_of_element-1)) * GROWTH_FACTOR;
+	char *to_pop = d_vector->d_vector_arr + d_vector->size;
+	int shrink = 0;
+	assert(NULL !=d_vector);
+	
 	if(0 == d_vector->size)
 	{
-		return 0;
+		return FAIL;
 	}
-	d_vector->d_vector_arr[d_vector->size * d_vector->size_of_element+1] = NULL;
-	--d_vector-> size;
 	
+	
+	to_pop = NULL;
+	d_vector-> size = d_vector->size -1;
 	shrink = DVectorShrink(d_vector);
 	
-	return shrink;
+	return shrink == 0 ? MEM_FAIL : SUCCESS;
 	
 }
 
+
+static void Resize()
+{
+	
+}
 
 
 
