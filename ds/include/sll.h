@@ -1,7 +1,7 @@
 #ifndef __SLL_H__
 #define __SLL_H__
 
-
+typedef struct sll sll_t;
 typedef struct node node_t;
 typedef node_t *sll_iterator_t;
 
@@ -18,9 +18,9 @@ sll_t *SLLCreate(void);
 
 void SLLDestroy(sll_t *sll);
 
-status_t SLLInsert(sll_iterator_t *iter, const void *data);
+sll_iterator_t *SLLInsert(sll_iterator_t *iter, const void *data, sll_t *sll);
 
-void SLLSetData(sll_iterator_t *iter, const void *data);
+void SLLSetData(sll_iterator_t *iter, void *data);
 
 void *SLLGetData(const sll_iterator_t *iter);
 
@@ -32,7 +32,7 @@ int SLLIsEmpty(const sll_t *sll);
 
 sll_iterator_t *SLLRemove(sll_iterator_t *iter);
 
-sll_iterator_t *SLLBegin(const sll_t *sll);
+sll_iterator_t *SLLBegin(sll_t *sll);
 
 sll_iterator_t *SLLEnd(const sll_t *sll);
 

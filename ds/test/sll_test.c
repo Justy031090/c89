@@ -2,14 +2,37 @@
 
 #include "sll.h"
 
-
+int Match (void *num1, void *num2)
+{
+	return 0;
+}
 
 int main ()
 {
 	size_t size = 0;
-	sll_t *sll = SLLCreate()
-	size = SLLSize(sll);
-	printf("%lu\n", size);
+	int dat = 5;
+	int data = 15;
+	int getdata = 0;
+	int *ptr_to_data = &dat;
+	int *ptr_to_data2 = &data;
+	sll_iterator_t *nd = NULL;
+	sll_iterator_t *nd2 = NULL;
+	sll_iterator_t *nd3 = NULL;
+	sll_iterator_t *nd4= NULL;
+	is_match_t match = Match;
+
+	sll_t *sll = SLLCreate();
+	
+	nd = SLLBegin(sll);
+	/*nd == dummy*/
+	nd2 = SLLInsert(nd2, ptr_to_data, sll);
+	/*insert before dummy*/
+	nd3 = SLLInsert(nd2, ptr_to_data2, sll);
+	
+	printf("Is Equal %lu\n", SLLIsEqual(nd, nd3));
+	nd4 = SLLFind(nd3, nd2, match, ptr_to_data);
+	
+	/*SLLDestroy(sll);*/
 	
 	return 0;
 }
@@ -18,30 +41,8 @@ int main ()
 
 
 
-
-void SLLDestroy(sll_t *sll);
-
-status_t SLLInsert(sll_iterator_t *iter, const void *data);
-
-void SLLSetData(sll_iterator_t *iter, const void *data);
-
-void *SLLGetData(const sll_iterator_t *iter);
-
+/*
 sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param);
-
-size_t SLLSize(const sll_t *sll);
-
-int SLLIsEmpty(const sll_t *sll);
-
 sll_iterator_t *SLLRemove(sll_iterator_t *iter);
-
-sll_iterator_t *SLLBegin(const sll_t *sll);
-
-sll_iterator_t *SLLEnd(const sll_t *sll);
-
-sll_iterator_t *SLLNext(sll_iterator_t *iter);
-
-int SLLIsEqual(const sll_iterator_t *iter1, const sll_iterator_t *iter2);
-
-void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t *action_func, void *param);
+void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t *action_func, void *param);*/
 

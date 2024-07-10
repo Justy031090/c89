@@ -1,30 +1,31 @@
-
-
-
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "sll.h"
 
 
 typedef struct node
 {
 	void *data;
 	node_t *next;
-}node_t;
+}node;
 
 typedef struct sll
 {
 	node_t *head;
 	node_t *tail;
-} sll_t;
+}sll;
 
 
 sll_t *SLLCreate(void)
 {
-	sll_t new_sll = malloc(sizeof(sll));
-	node_t dummy = malloc(sizeof(node));
+	
+	sll_t *new_sll = malloc(sizeof(sll));
+	node_t *dummy = malloc(sizeof(node));
 	if(NULL == new_sll || NULL == dummy)
 	{
 		return NULL;
 	}
-	
 	dummy->next = NULL;
 	dummy->data = NULL;
 	new_sll->head = dummy;
@@ -37,7 +38,7 @@ size_t SLLSize(const sll_t *sll)
 {
 	size_t size = 0;
 	node_t *counter = sll->head;
-	while(NULL != start->next)
+	while(NULL != counter->next)
 	{
 		counter = counter->next;
 		++size;
@@ -53,80 +54,84 @@ int SLLIsEmpty(const sll_t *sll)
 
 sll_iterator_t *SLLEnd(const sll_t *sll)
 {
-	node_t *end_node = sll->head;
-	while(NULL != start->next)
-	{
-		end_node = end_node->next;
-	}
-	/*should return the iterator*/
-	return end_node;
+	return (sll_iterator_t *)sll->tail;
 }
 
-sll_iterator_t *SLLBegin(const sll_t *sll)
+sll_iterator_t *SLLBegin(sll_t *sll)
 {
-	
-	return sll->head;
+	return &sll->head;
 }
 
 void *SLLGetData(const sll_iterator_t *iter)
 {
-	return iter->data;
+	
+	return  (*iter)->data;
 }
 
-void SLLSetData(sll_iterator_t *iter, const void *data)
+void SLLSetData(sll_iterator_t *iter, void *data)
 {
-	iter->data = data;
+	(*iter)->data = data;
 }
 
 sll_iterator_t *SLLNext(sll_iterator_t *iter)
 {
-	return iter->next;
+	
+	return &(*iter)->next;
 }
 int SLLIsEqual(const sll_iterator_t *iter1, const sll_iterator_t *iter2)
 {
-	return iter1->data == iter2->data ? 1:0;
+	char *data1 = NULL;
+	char *data2 = NULL;
+	if(((*iter1)->data == NULL) || ((*iter2)->data == NULL))
+		{ return 0; }
+	data1 = (char *)(*iter1)->data;
+	data2 = (char *)(*iter2)->data;
+	printf("%d\n%d\n", *data1, *data2);
+	
+	return *data1 == *data2 ? 1 : 0;
 }
 
 sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param)
 {
-	sll_iterator_t *next = from;
-	while(next != to)
+	sll_iterator_t next = (sll_iterator_t)from;
+	while((next)->data != (*to)->data)
 	{
-		if(is_match(param) == next->data)
+		if(is_match((int *)param, (int*)next->data))
 		{
-			return next;
+			return (sll_iterator_t *)next;
 		}
 		next = next->next;
 	}
-	return 
+	return (sll_iterator_t *)next;
 }
 
-status_t SLLInsert(sll_iterator_t *iter, const void *data)
+sll_iterator_t *SLLInsert(sll_iterator_t *iter, const void *data, sll_t *sll)
 {
-	sll_iterator_t new_node = malloc(sizeof(node));
+	node_t *new_node =(node_t *)malloc(sizeof(node_t));
+	printf("AFTER MALLOC");
 	if(NULL == new_node)
 	{
-		return MEM_FAIL;
+		return &sll->tail;
 	}
-	if(NULL == iter->next)
-	{
-		sll->head = iter;
-	}
-	else
-	{
-		new_node->next = iter->next;
-	}
-	new_node->data = data;
-	iter->next = new_node;
+
+	new_node->next = (*iter)->next;   
+	new_node->data = (*iter)->data;
+	(*iter)->data = (void*)data;
+	(*iter)->next = new_node;
 	
-	return SUCCESS;
+	if(NULL == new_node->next)
+	{
+		sll->tail = new_node;
+	}
+
+	return iter;
 }
 
 sll_iterator_t *SLLRemove(sll_iterator_t *iter)
 {
-	sll_iterator tmp = iter->next;
-	iter->data = tmp->data;
-	iter->next = tmp->next;
+	sll_iterator_t tmp = (*iter)->next;
+	(*iter)->data = tmp->data;
+	(*iter)->next = tmp->next;
 	free(tmp);
 	tmp = NULL;
 	return iter;
@@ -137,15 +142,19 @@ sll_iterator_t *SLLRemove(sll_iterator_t *iter)
 
 void SLLDestroy(sll_t *sll)
 {	
-	/**********CHECK****************/
 	sll_iterator_t start = sll->head;
+	sll_iterator_t tmp = start->next;
 	while(NULL != start->next)
 	{
-		free(start->next);
-	/**********CHECK****************/
+		free(start);
+		start = tmp;
+		tmp = start->next;
 	}
+	free(sll->tail);
+	sll->tail = NULL;
 	free(sll);
 	sll = NULL;
+	
 	
 }
 
