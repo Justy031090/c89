@@ -61,7 +61,7 @@ int main ()
 	
 	
 
-	/*SLLDestroy(sll);*/
+	SLLDestroy(sll);
 	
 	return 0;
 }

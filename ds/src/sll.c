@@ -40,6 +40,9 @@ size_t SLLSize(const sll_t *sll)
 {
 	size_t size = 0;
 	node_t *counter = sll->head;
+	
+	assert(NULL != sll);
+	
 	while(NULL != counter->next)
 	{
 		counter = counter->next;
@@ -98,6 +101,11 @@ int SLLIsEqual(const sll_iterator_t iter1, const sll_iterator_t iter2)
 sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 {
 	node_t *new_node =(node_t *)malloc(sizeof(node_t));
+	
+	assert(NULL != data);
+	assert(NULL != sll);
+	assert(NULL != iter);
+	
 	if(NULL == new_node)
 	{
 		return sll->tail;
@@ -119,6 +127,10 @@ sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
 {
 	sll_iterator_t tmp = iter->next;
+	
+	assert(NULL != sll);
+	assert(NULL != iter);
+	
 	iter->data = tmp->data;
 	iter->next = tmp->next;
 	free(tmp);
@@ -130,6 +142,9 @@ void SLLDestroy(sll_t *sll)
 {	
 	sll_iterator_t start = sll->head;
 	sll_iterator_t tmp = start->next;
+	
+	assert(NULL != sll);
+	
 	while(NULL != start->next)
 	{
 		free(start);
