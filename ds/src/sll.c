@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+
 #include "sll.h"
 
 
@@ -52,74 +54,73 @@ int SLLIsEmpty(const sll_t *sll)
 	return sll->head == sll->tail ? 1 : 0;
 }
 
-sll_iterator_t *SLLEnd(const sll_t *sll)
+sll_iterator_t SLLEnd(const sll_t *sll)
 {
-	return (sll_iterator_t *)sll->tail;
+	return (sll_iterator_t)sll->tail;
 }
 
-sll_iterator_t *SLLBegin(sll_t *sll)
+sll_iterator_t SLLBegin(const sll_t *sll)
 {
-	return (sll_iterator_t*)&(sll->head);
+	return (sll_iterator_t)sll->head;
 }
 
-void *SLLGetData(const sll_iterator_t *iter)
+void *SLLGetData(const sll_iterator_t iter)
 {
 	
-	return  (*iter)->data;
+	return  iter->data;
 }
 
-void SLLSetData(sll_iterator_t *iter, void *data)
+void SLLSetData(sll_iterator_t iter, const void *data)
 {
-	(*iter)->data = data;
+	iter->data = (void *)data;
 }
 
-sll_iterator_t *SLLNext(sll_iterator_t *iter)
+sll_iterator_t SLLNext(sll_iterator_t iter)
 {
 	
-	return &(*iter)->next;
+	return iter->next;
 }
-int SLLIsEqual(const sll_iterator_t *iter1, const sll_iterator_t *iter2)
+int SLLIsEqual(const sll_iterator_t iter1, const sll_iterator_t iter2)
 {	
 	char *data1 =NULL;
 	char *data2 = NULL;
-	if(NULL == (*iter1)->data || NULL == (*iter2)->data)
+	if(NULL == iter1->data || NULL == iter2->data)
 	{
-		printf("Something Is Null\n");
 		return 0;
 	}
 		
-	data1 = (char *)(*iter1)->data;
-	data2 = (char *)(*iter2)->data;
+	data1 = (char *)iter1->data;
+	data2 = (char *)iter2->data;
 	
 	return *data1 == *data2 ? 1 : 0;
 }
 
-sll_iterator_t *SLLInsert(sll_iterator_t *iter, const void *data, sll_t *sll)
+sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 {
 	node_t *new_node =(node_t *)malloc(sizeof(node_t));
 	if(NULL == new_node)
 	{
-		return &sll->tail;
+		return sll->tail;
 	}
 	
-	if(NULL == (*iter)->next)
+	if(NULL == iter->next)
 	{
 		sll->tail = new_node;
 	}
 
-	new_node->next = (*iter)->next;   
-	new_node->data = (*iter)->data;
-	(*iter)->data = (void *)data;
-	(*iter)->next = new_node;
+	new_node->next = iter->next;   
+	new_node->data = iter->data;
+	iter->data = (void *)data;
+	iter->next = new_node;
 
 	return SLLNext(iter);
 }
 
-sll_iterator_t *SLLRemove(sll_iterator_t *iter)
+sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
 {
-	sll_iterator_t tmp = (*iter)->next;
-	(*iter)->data = tmp->data;
-	(*iter)->next = tmp->next;
+	sll_iterator_t tmp = iter->next;
+	iter->data = tmp->data;
+	iter->next = tmp->next;
 	free(tmp);
 	tmp = NULL;
 	return iter;
@@ -141,36 +142,44 @@ void SLLDestroy(sll_t *sll)
 	sll = NULL;
 }
 
-sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param)
+sll_iterator_t SLLFind(const sll_iterator_t from, const sll_iterator_t to, is_match_t is_match, void *param)
 {
-	node_t *next_node = (*from)->next;
-	node_t *start_node = *from;
-	node_t *end_node = (*to)->next;
+
+	node_t *start_node = from;
+	node_t *end_node = to;
 	
-	while(next_node != end_node && NULL != next_node)
+	assert(NULL != from);
+	assert(NULL != to);
+	assert(NULL != param);
+	
+	while(start_node != end_node)
 	{
-		if(is_match((void *)start_node->data, (void *)param))
-		{
-			return (sll_iterator_t *)start_node;
+		if(1 == is_match(start_node->data, param))
+		{	
+			return (sll_iterator_t)start_node;
 		}
-		start_node = next_node;
-		next_node = start_node->next;
+		start_node = start_node->next;
 		
 	}
-	return (sll_iterator_t *)&from;
+	return (sll_iterator_t)from;
 }
 
-void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t action_func, void *param)
+int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t action_func, void *param)
 {
-	node_t *next_node = (*from)->next;
-	node_t *start_node = *from;
-	node_t *end_node = (*to)->next;
+	int counter = 0;
+	node_t *start_node = from;
+	node_t *end_node = to;
 	
-	while(next_node != end_node && NULL != next_node)
+	assert(NULL != from);
+	assert(NULL != to);
+	assert(NULL != param);
+	
+	while(NULL != start_node && start_node != end_node)
 	{
-		action_func((void *)start_node->data, (void *)param);
+		counter += action_func((void *)start_node->data, (void *)param);
+		start_node = start_node->next;
 	}
-	
+	return counter;
 }
 
 
