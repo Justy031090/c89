@@ -13,25 +13,27 @@ int main ()
 	int dat = 5;
 	int data = 15;
 	int getdata = 0;
+	int onemore = 1245;
 	int *ptr_to_data = &dat;
 	int *ptr_to_data2 = &data;
+	int *ptr_to_data3 = &onemore;
 	sll_iterator_t *nd = NULL;
 	sll_iterator_t *nd2 = NULL;
 	sll_iterator_t *nd3 = NULL;
 	sll_iterator_t *nd4= NULL;
+	sll_iterator_t *nd5= NULL;
 	is_match_t match = Match;
 
 	sll_t *sll = SLLCreate();
-	
 	nd = SLLBegin(sll);
-	/*nd == dummy*/
-	nd2 = SLLInsert(nd2, ptr_to_data, sll);
-	/*insert before dummy*/
-	nd3 = SLLInsert(nd2, ptr_to_data2, sll);
+	nd2 = SLLInsert(nd, ptr_to_data3, sll);
+	nd3 = SLLInsert(nd2, ptr_to_data3, sll);
+	nd4 = SLLInsert(nd, ptr_to_data3, sll);
 	
-	printf("Is Equal %lu\n", SLLIsEqual(nd, nd3));
-	nd4 = SLLFind(nd3, nd2, match, ptr_to_data);
 	
+	nd5 = SLLFind(nd2, nd, match, ptr_to_data);
+	
+
 	/*SLLDestroy(sll);*/
 	
 	return 0;

@@ -59,7 +59,7 @@ sll_iterator_t *SLLEnd(const sll_t *sll)
 
 sll_iterator_t *SLLBegin(sll_t *sll)
 {
-	return &sll->head;
+	return (sll_iterator_t*)&(sll->head);
 }
 
 void *SLLGetData(const sll_iterator_t *iter)
@@ -79,52 +79,40 @@ sll_iterator_t *SLLNext(sll_iterator_t *iter)
 	return &(*iter)->next;
 }
 int SLLIsEqual(const sll_iterator_t *iter1, const sll_iterator_t *iter2)
-{
-	char *data1 = NULL;
+{	
+	char *data1 =NULL;
 	char *data2 = NULL;
-	if(((*iter1)->data == NULL) || ((*iter2)->data == NULL))
-		{ return 0; }
+	if(NULL == (*iter1)->data || NULL == (*iter2)->data)
+	{
+		printf("Something Is Null\n");
+		return 0;
+	}
+		
 	data1 = (char *)(*iter1)->data;
 	data2 = (char *)(*iter2)->data;
-	printf("%d\n%d\n", *data1, *data2);
 	
 	return *data1 == *data2 ? 1 : 0;
-}
-
-sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param)
-{
-	sll_iterator_t next = (sll_iterator_t)from;
-	while((next)->data != (*to)->data)
-	{
-		if(is_match((int *)param, (int*)next->data))
-		{
-			return (sll_iterator_t *)next;
-		}
-		next = next->next;
-	}
-	return (sll_iterator_t *)next;
 }
 
 sll_iterator_t *SLLInsert(sll_iterator_t *iter, const void *data, sll_t *sll)
 {
 	node_t *new_node =(node_t *)malloc(sizeof(node_t));
-	printf("AFTER MALLOC");
 	if(NULL == new_node)
 	{
 		return &sll->tail;
 	}
-
-	new_node->next = (*iter)->next;   
-	new_node->data = (*iter)->data;
-	(*iter)->data = (void*)data;
-	(*iter)->next = new_node;
 	
-	if(NULL == new_node->next)
+	if(NULL == (*iter)->next)
 	{
 		sll->tail = new_node;
 	}
 
-	return iter;
+	new_node->next = (*iter)->next;   
+	new_node->data = (*iter)->data;
+	(*iter)->data = (void *)data;
+	(*iter)->next = new_node;
+
+	return SLLNext(iter);
 }
 
 sll_iterator_t *SLLRemove(sll_iterator_t *iter)
@@ -136,9 +124,6 @@ sll_iterator_t *SLLRemove(sll_iterator_t *iter)
 	tmp = NULL;
 	return iter;
 }
-
-
-
 
 void SLLDestroy(sll_t *sll)
 {	
@@ -154,11 +139,33 @@ void SLLDestroy(sll_t *sll)
 	sll->tail = NULL;
 	free(sll);
 	sll = NULL;
+}
+
+sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param)
+{
+	sll_iterator_t next = (sll_iterator_t)from;
+	while((next)->data != (*to)->data)
+	{
+		if(is_match((char *)next->data, (char *)param))
+		{
+			return (sll_iterator_t *)next;
+		}
+		next = next->next;
+	}
+	return (sll_iterator_t *)next;
+}
+
+void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t action_func, void *param)
+{
+	node_t *next_node = (*from)->next;
+	node_t *start_node = *from;
+	node_t *end_node = (*to)->next;
 	
+	while(next_node != end_node)
+	{
+		action_func((char *)start_node->data, (char*)param);
+	}
 	
 }
 
-
-
-void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t *action_func, void *param);
 
