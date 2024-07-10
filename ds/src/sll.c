@@ -143,16 +143,21 @@ void SLLDestroy(sll_t *sll)
 
 sll_iterator_t *SLLFind(const sll_iterator_t *from, const sll_iterator_t *to, is_match_t is_match, void *param)
 {
-	sll_iterator_t next = (sll_iterator_t)from;
-	while((next)->data != (*to)->data)
+	node_t *next_node = (*from)->next;
+	node_t *start_node = *from;
+	node_t *end_node = (*to)->next;
+	
+	while(next_node != end_node && NULL != next_node)
 	{
-		if(is_match((char *)next->data, (char *)param))
+		if(is_match((void *)start_node->data, (void *)param))
 		{
-			return (sll_iterator_t *)next;
+			return (sll_iterator_t *)start_node;
 		}
-		next = next->next;
+		start_node = next_node;
+		next_node = start_node->next;
+		
 	}
-	return (sll_iterator_t *)next;
+	return (sll_iterator_t *)&from;
 }
 
 void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t action_func, void *param)
@@ -161,9 +166,9 @@ void *SLLForEach(const sll_iterator_t *from, const sll_iterator_t *to, action_t 
 	node_t *start_node = *from;
 	node_t *end_node = (*to)->next;
 	
-	while(next_node != end_node)
+	while(next_node != end_node && NULL != next_node)
 	{
-		action_func((char *)start_node->data, (char*)param);
+		action_func((void *)start_node->data, (void *)param);
 	}
 	
 }
