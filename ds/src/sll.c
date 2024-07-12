@@ -6,30 +6,37 @@
 #include "sll.h"
 
 
-typedef struct node
+struct node
 {
 	void *data;
 	node_t *next;
-}node;
+};
 
-typedef struct sll
+struct sll
 {
 	node_t *head;
 	node_t *tail;
-}sll;
+};
 
 
 sll_t *SLLCreate(void)
 {
-	
-	sll_t *new_sll = malloc(sizeof(sll));
-	node_t *dummy = malloc(sizeof(node));
-	if(NULL == new_sll || NULL == dummy)
+	node_t *dummy = NULL;
+	sll_t *new_sll = malloc(sizeof(sll_t));
+	if(NULL == new_sll)
 	{
 		return NULL;
 	}
+	dummy = malloc(sizeof(node_t));
+	if(NULL == dummy)
+	{
+		free(new_sll);
+		return NULL;
+	}
+	
 	dummy->next = NULL;
 	dummy->data = NULL;
+	
 	new_sll->head = dummy;
 	new_sll->tail = dummy;
 	
@@ -54,40 +61,45 @@ size_t SLLSize(const sll_t *sll)
 
 int SLLIsEmpty(const sll_t *sll)
 {
+	assert(NULL != sll);
 	return sll->head == sll->tail ? 1 : 0;
 }
 
 sll_iterator_t SLLEnd(const sll_t *sll)
 {
-	return (sll_iterator_t)sll->tail;
+	assert(NULL != sll);
+	return sll->tail;
 }
 
 sll_iterator_t SLLBegin(const sll_t *sll)
 {
-	return (sll_iterator_t)sll->head;
+	assert(NULL != sll);
+	return sll->head;
 }
 
 void *SLLGetData(const sll_iterator_t iter)
 {
-	
+	assert(NULL != iter);
 	return  iter->data;
 }
 
 void SLLSetData(sll_iterator_t iter, const void *data)
 {
+	assert(NULL != iter);
+	assert(NULL != data);
 	iter->data = (void *)data;
 }
 
 sll_iterator_t SLLNext(sll_iterator_t iter)
 {
-	
+	assert(NULL != iter);
 	return iter->next;
 }
 int SLLIsEqual(const sll_iterator_t iter1, const sll_iterator_t iter2)
 {	
-	char *data1 =NULL;
+	char *data1 = NULL;
 	char *data2 = NULL;
-	if(NULL == iter1->data || NULL == iter2->data)
+	if(NULL == iter1->data || NULL == iter2->data || NULL == iter1 || NULL == iter2)
 	{
 		return 0;
 	}
@@ -111,48 +123,55 @@ sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 		return sll->tail;
 	}
 	
-	if(NULL == iter->next)
+	new_node->data = iter->data;
+	new_node->next = iter->next;   
+	iter->data = (void *)data;
+	iter->next = new_node;
+	
+	if (iter == sll->tail)
 	{
 		sll->tail = new_node;
 	}
 
-	new_node->next = iter->next;   
-	new_node->data = iter->data;
-	iter->data = (void *)data;
-	iter->next = new_node;
-
-	return SLLNext(iter);
+	return new_node;
 }
 
 sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
 {
-	sll_iterator_t tmp = iter->next;
+	sll_iterator_t tmp = NULL;
+	if(NULL == iter->next || NULL == sll || NULL == iter)
+	{
+		return NULL;
+	}
 	
-	assert(NULL != sll);
-	assert(NULL != iter);
-	
+	tmp = iter->next;
 	iter->data = tmp->data;
 	iter->next = tmp->next;
+	if(tmp == sll->tail)
+	{
+		sll->tail = iter;
+	}
+	
 	free(tmp);
 	tmp = NULL;
-	return iter;
+	
+	return SLLNext(iter);
 }
 
 void SLLDestroy(sll_t *sll)
 {	
-	sll_iterator_t start = sll->head;
-	sll_iterator_t tmp = start->next;
+	sll_iterator_t current = sll->head;
+	sll_iterator_t next = NULL;
 	
 	assert(NULL != sll);
 	
-	while(NULL != start->next)
+	while(NULL != current)
 	{
-		free(start);
-		start = tmp;
-		tmp = start->next;
+		next = current->next;
+		free(current);
+		current = next;
 	}
-	free(sll->tail);
-	sll->tail = NULL;
+	
 	free(sll);
 	sll = NULL;
 }
@@ -166,15 +185,15 @@ sll_iterator_t SLLFind(const sll_iterator_t from, const sll_iterator_t to, is_ma
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != param);
+	assert(NULL != is_match);
 	
 	while(start_node != end_node)
 	{
 		if(1 == is_match(start_node->data, param))
 		{	
-			return (sll_iterator_t)start_node;
+			return start_node;
 		}
 		start_node = start_node->next;
-		
 	}
 	return (sll_iterator_t)from;
 }
@@ -188,10 +207,11 @@ int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t acti
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != param);
+	assert(NULL != action_func);
 	
-	while(NULL != start_node && start_node != end_node)
+	while(start_node != end_node)
 	{
-		counter += action_func((void *)start_node->data, (void *)param);
+		counter += action_func(start_node->data, param);
 		start_node = start_node->next;
 	}
 	return counter;
