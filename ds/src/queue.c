@@ -52,11 +52,13 @@ queue_t *QueueCreate(void)
 
 void *QueuePeek(const queue_t *queue)
 {
+	assert(NULL != queue);
 	return queue->sll->tail->data;
 }
 
 int QueueIsEmpty(const queue_t *queue)
 {
+	assert(NULL != queue);
 	return queue->sll->head == queue->sll->tail ? 1 : 0;
 }
 
@@ -64,6 +66,7 @@ size_t QueueSize(const queue_t *queue)
 {
 	size_t counter = 0;
 	node_t *current = queue->sll->head;
+	assert(NULL != queue);
 	
 	while(NULL != current)
 	{
@@ -76,6 +79,7 @@ size_t QueueSize(const queue_t *queue)
 int Enqueue(queue_t *queue, const void *val)
 {
 	node_t *new_node = malloc(sizeof(node_t));
+	assert(NULL != queue);
 	if(NULL == new_node)
 	{
 		return 0;
@@ -97,6 +101,7 @@ int Enqueue(queue_t *queue, const void *val)
 void Dequeue(queue_t *queue)
 {
 	node_t *tmp = queue->sll->head;
+	assert(NULL != queue);
 	queue->sll->head = tmp->next;
 	free(tmp);
 	tmp = NULL;
@@ -107,6 +112,7 @@ void QueueDestroy(queue_t *queue)
 	
 	node_t *current =  NULL;
 	node_t *next = NULL;
+	assert(NULL != queue);
 	if(QueueIsEmpty(queue) == 1)
 	{
 		free(queue->sll);
@@ -136,6 +142,8 @@ void QueueDestroy(queue_t *queue)
 
 queue_t *QueueApend(queue_t *queue_src, queue_t *queue_dest)
 {
+	assert(NULL != queue_src);
+	assert(NULL != queue_dest);
 	queue_dest->sll->tail->next = queue_src->sll->head;
 	queue_dest->sll->tail = queue_src->sll->tail;
 	queue_src->sll->head = NULL;
