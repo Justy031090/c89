@@ -198,5 +198,12 @@ space complexity - O(1)
 
 int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t action_func, void *param);
 
+/* SLL Exercise questions
+space O(1), time O(n);
+*/
+node_t *FindIntersection(node_t *head_1, node_t *head_2);
+int HasLoop(const node_t *head);
+node_t *Flip(node_t *head)
+
 
 #endif /*__SLL_H__*/
