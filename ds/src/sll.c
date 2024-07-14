@@ -56,7 +56,7 @@ size_t SLLSize(const sll_t *sll)
 	
 	assert(NULL != sll);
 	
-	while(NULL != counter->next)
+	while(counter != sll->tail)
 	{
 		counter = counter->next;
 		++size;
@@ -122,19 +122,17 @@ sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 		return sll->tail;
 	}
 	
-	if (iter == sll->tail)
-	{
-		sll->tail = new_node;
-	}
-	
 	new_node->data = iter->data;
 	new_node->next = iter->next;   
 	iter->data = (void *)data;
 	iter->next = new_node;
 	
+	if (iter == sll->tail)
+	{
+		sll->tail = new_node;
+	}
 
-
-	return iter;
+	return SLLNext(iter);
 }
 
 sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
@@ -194,9 +192,13 @@ sll_iterator_t SLLFind(const sll_iterator_t from, const sll_iterator_t to, is_ma
 		{	
 			return start_node;
 		}
-		start_node = start_node->next;
+		start_node = SLLNext(start_node);
 	}
-	return (sll_iterator_t)from;
+	if(start_node != end_node)
+	{
+		return start_node;
+	}
+	return NULL;
 }
 
 int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t action_func, void *param)
@@ -212,7 +214,7 @@ int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t acti
 	
 	while(start_node != end_node)
 	{
-		counter += action_func(start_node->data, param);
+		counter = (0 == action_func(start_node->data, param)) ? counter +1 : counter;
 		start_node = start_node->next;
 	}
 	return counter;
@@ -307,5 +309,21 @@ sll_iterator_t FindIntersection(sll_iterator_t head_1, sll_iterator_t head_2)
 	
 	return NULL;
 
+}
+
+sll_t *SllAppend(sll_t *sll_src, sll_t *sll_dest)
+{
+	assert(NULL != sll_src);
+	assert(NULL != sll_dest);
+	
+	sll_dest->tail->data = sll_src->head->data;
+	sll_dest->tail->next = sll_src->head->next;
+	sll_src->head->data = NULL;
+	sll_src->head->next = NULL;
+	
+	sll_dest->tail = sll_src->tail;
+	sll_src->tail = sll_src->head;
+	
+	return sll_dest;
 }
 
