@@ -85,7 +85,7 @@ void *SLLGetData(const sll_iterator_t iter)
 
 void SLLSetData(sll_iterator_t iter, const void *data)
 {
-	assert(NULL != iter);
+	assert(NULL != iter->data);
 	assert(NULL != data);
 	iter->data = (void *)data;
 }

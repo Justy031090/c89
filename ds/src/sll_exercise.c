@@ -10,12 +10,18 @@ typedef struct node
 
 node_t *Flip(node_t *head)
 {
-	node_t SecNode = head->next->next;
-	node_t NextNode = head->next;
-	// 1-2-3-4-5-6-X
-	// T
-	// T = &2
-	// 1d
+	node_t prev = NULL;
+	node_t next = NULL
+	node_t current = head;
+	
+	while(NULL != current)
+	{
+		next = current->next;
+		current->next = prev;
+		prev = current;
+		current = next;
+	}
+	head = prev;
 }
 
 
@@ -38,6 +44,70 @@ int HasLoop(const node_t *head)
 
 node_t *FindIntersection(node_t *head_1, node_t *head_2)
 {
-	// 1 2 3 4 5 6 7 X
-	// 1 2 3         X
+	int len1 = 0;
+	int len2 = 0;
+	node_t *counter1 = head1;
+	node_t *counter2 = head2;
+	
+	while(counter1 != NULL)
+	{
+		counter1 = counter1->next;
+		++len1;
+	}
+	
+	while(counter2 != NULL)
+	{
+		counter2 = counter2->next;
+		++len2;
+	}
+	
+	len1 = len1-len2;
+	if(len1 < len2)
+	{
+		while(len1 > 0)
+		{
+			head_1 = head_1->next;
+			--len1;
+		}
+	}
+	else
+	{
+		while(len2>0)
+		{
+			head_2 = head_2->next;
+			--len2;
+		}
+	}
+	
+	while(head_1 != NULL)
+	{
+		if(head_1 == head_2)
+		{
+			return head_1;
+		}
+		head_1 = head_1->next;
+		head_2 = head_2->next;
+	}
+	
+	return NULL;
+
+}
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

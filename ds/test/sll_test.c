@@ -229,8 +229,8 @@ int main ()
 	
 	printf("\n\n\n");
 	
+	SLLSetData(nd1, &data);
 	SLLSetData(nd2, &data);
-	SLLSetData(nd4, &data);
 	SLLSetData(nd3, &set_data);
 	nd6 = SLLFind(nd4, nd1, match, &set_data);
 	get_data = *(int *)SLLGetData(nd3);
@@ -252,10 +252,10 @@ int main ()
 	nd5 = SLLInsert(nd2, ptr_to_data2, sll);
 	nd6 = SLLInsert(nd5, ptr_to_data2, sll);
 	
-	get_data = SLLForEach(nd1,nd6,action,&multiplier);
+	get_data = SLLForEach(nd1,nd6,print,&multiplier);
 
 	printf("SLL For Each\n");
-	if(get_data == 4)
+	if(get_data == 8)
 	{
 		
 		printf("Successfully !\n");
@@ -271,16 +271,3 @@ int main ()
 	
 	return 0;
 }
-
-
-
-
-
-/*
-
-void SLLDestroy(sll_t *sll);
-
-
-int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t action_func, void *param);
-*/
-
