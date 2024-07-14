@@ -19,7 +19,8 @@ int Action (void *data, void *param)
 int ActionPrint(void *data, void *param)
 {
 	(void)param;
-	printf("%d\n", *(int*)data);
+	printf("%p\n", data);
+	return 0;
 }
 
 
@@ -34,6 +35,10 @@ int main ()
 	sll_iterator_t nd6= NULL;
 	sll_iterator_t nd7= NULL;
 	sll_iterator_t nd8= NULL;
+	sll_iterator_t nd9= NULL;
+	sll_iterator_t nd10= NULL;
+	sll_iterator_t nd11= NULL;
+	sll_iterator_t nd12= NULL;
 	
 	size_t size_before = 0;
 	size_t size_middle = 0;
@@ -59,6 +64,7 @@ int main ()
 	action_t print = ActionPrint;
 
 	sll_t *sll = SLLCreate();
+	sll_t *sll2 = SLLCreate();
 	size_before = SLLSize(sll);
 	printf("SLL Create\n");
 	if(NULL != sll)
@@ -266,6 +272,33 @@ int main ()
 	}
 	
 	printf("\n\n\n");
+	
+	
+	nd7 = SLLBegin(sll2);
+	nd8 = SLLInsert(nd7, &set_data, sll2);
+	nd9 = SLLInsert(nd8, &data, sll2);
+	nd10 = SLLInsert(nd9, &multiplier, sll2);
+	nd11 = SLLInsert(nd1, &multiplier, sll2);
+	
+	
+	SLLForEach(nd7,nd10,print,&multiplier);
+	
+	Flip(sll2);
+	
+	SLLForEach(nd7,nd10,print,&multiplier);
+	
+	
+	nd12 = FindIntersection(nd1, nd11);
+	
+	
+	if(NULL == nd12)
+	{
+		printf("FindIntersection failed\n");
+	}
+	else
+	{
+		printf("Commond node found %p\n", nd12);
+	}
 	
 	SLLDestroy(sll);
 	

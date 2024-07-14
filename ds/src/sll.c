@@ -122,17 +122,19 @@ sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 		return sll->tail;
 	}
 	
+	if (iter == sll->tail)
+	{
+		sll->tail = new_node;
+	}
+	
 	new_node->data = iter->data;
 	new_node->next = iter->next;   
 	iter->data = (void *)data;
 	iter->next = new_node;
 	
-	if (iter == sll->tail)
-	{
-		sll->tail = new_node;
-	}
 
-	return new_node;
+
+	return iter;
 }
 
 sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
@@ -154,7 +156,7 @@ sll_iterator_t SLLRemove(sll_iterator_t iter, sll_t *sll)
 	free(tmp);
 	tmp = NULL;
 	
-	return SLLNext(iter);
+	return iter;
 }
 
 void SLLDestroy(sll_t *sll)
@@ -215,11 +217,14 @@ int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t acti
 	}
 	return counter;
 }
-node_t *Flip(node_t *head)
+
+
+
+sll_iterator_t Flip(sll_t *sll)
 {
-	node_t prev = NULL;
-	node_t next = NULL
-	node_t current = head;
+	sll_iterator_t prev = NULL;
+	sll_iterator_t next = NULL;
+	sll_iterator_t current = sll->head;
 	
 	while(NULL != current)
 	{
@@ -228,16 +233,20 @@ node_t *Flip(node_t *head)
 		prev = current;
 		current = next;
 	}
-	head = prev;
+	sll->head->next = sll->tail;
+	sll->head = sll->tail->next;
+	sll->tail->next = NULL;
+	
+	return prev;
 }
 
 
-int HasLoop(const node_t *head)
+int HasLoop(const sll_iterator_t head)
 {
-	node_t ptr1 = head->next;
-	node_t ptr2 = head->z->next;
+	sll_iterator_t ptr1 = head;
+	sll_iterator_t ptr2 = head->next;
 	
-	while(NULL != ptr1)
+	while(NULL != ptr1 && NULL != ptr2)
 	{
 		if(ptr1->next == ptr2->next)
 			return 1;
@@ -249,12 +258,12 @@ int HasLoop(const node_t *head)
 }
 
 
-node_t *FindIntersection(node_t *head_1, node_t *head_2)
+sll_iterator_t FindIntersection(sll_iterator_t head_1, sll_iterator_t head_2)
 {
 	int len1 = 0;
 	int len2 = 0;
-	node_t *counter1 = head1;
-	node_t *counter2 = head2;
+	sll_iterator_t counter1 = head_1;
+	sll_iterator_t counter2 = head_2;
 	
 	while(counter1 != NULL)
 	{

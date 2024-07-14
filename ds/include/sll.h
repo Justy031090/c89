@@ -159,7 +159,7 @@ space complexity - O(1)
 sll_iterator_t SLLEnd(const sll_t *sll);
 
 
-* SLLNext:
+/* SLLNext:
 Description - move iterator to next node.
 Params:
 	sll_iterator_t iter - iterator pointer.
@@ -171,7 +171,7 @@ space complexity - O(1)
 sll_iterator_t SLLNext(sll_iterator_t iter);
 
 
-* SLLIsEqual:
+/* SLLIsEqual:
 Description - compare two nodes.
 Params:
 	const sll_iterator_t iter1 - iterator.
@@ -201,9 +201,9 @@ int SLLForEach(const sll_iterator_t from, const sll_iterator_t to, action_t acti
 /* SLL Exercise questions
 space O(1), time O(n);
 */
-node_t *FindIntersection(node_t *head_1, node_t *head_2);
-int HasLoop(const node_t *head);
-node_t *Flip(node_t *head)
+sll_iterator_t FindIntersection(sll_iterator_t head_1, sll_iterator_t head_2);
+int HasLoop(const sll_iterator_t head);
+sll_iterator_t Flip(sll_t *sll);
 
 
 #endif /*__SLL_H__*/
