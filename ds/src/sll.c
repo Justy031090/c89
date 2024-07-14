@@ -103,17 +103,10 @@ sll_iterator_t SLLNext(sll_iterator_t iter)
 }
 int SLLIsEqual(const sll_iterator_t iter1, const sll_iterator_t iter2)
 {	
-	char *data1 = NULL;
-	char *data2 = NULL;
-	if(NULL == iter1->data || NULL == iter2->data || NULL == iter1 || NULL == iter2)
-	{
-		return 0;
-	}
-		
-	data1 = (char *)iter1->data;
-	data2 = (char *)iter2->data;
-	
-	return *data1 == *data2 ? 1 : 0;
+
+	assert(NULL != iter1);
+	assert(NULL != iter2);	
+	return iter1 == iter2 ? 1 : 0;
 }
 
 sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
