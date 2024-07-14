@@ -80,6 +80,7 @@ int Enqueue(queue_t *queue, const void *val)
 	{
 		return 0;
 	}
+	
 	if(queue->sll->head == NULL)
 	{
 		queue->sll->head = new_node;
@@ -103,18 +104,34 @@ void Dequeue(queue_t *queue)
 
 void QueueDestroy(queue_t *queue)
 {
-	node_t *current = queue->sll->head;
-	node_t *next = queue->sll->head->next;
-	while(NULL != next)
+	
+	node_t *current =  NULL;
+	node_t *next = NULL;
+	if(QueueIsEmpty(queue) == 1)
 	{
-		free(current);
-		current = next;
-		next = current->next;
+		free(queue->sll);
+		queue->sll = NULL;
+		free(queue);
+		queue = NULL;
+		return;
 	}
-	free(current);
-	free(queue);
-	current = NULL;
-	queue = NULL;
+	else
+	{
+		current =  queue->sll->head;
+		next =  queue->sll->head->next;
+		while(NULL != next)
+		{
+			free(current);
+			current = next;
+			next = current->next;
+		}
+		free(current);
+		current = NULL;
+		free(queue->sll);
+		queue->sll = NULL;
+		free(queue);
+		queue = NULL;
+	}
 }
 
 queue_t *QueueApend(queue_t *queue_src, queue_t *queue_dest)
