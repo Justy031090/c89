@@ -230,7 +230,7 @@ int main ()
 	printf("\n\n\n");
 	
 	SLLSetData(nd1, &data);
-	SLLSetData(nd2, &data);
+	SLLSetData(nd4, &data);
 	SLLSetData(nd3, &set_data);
 	nd6 = SLLFind(nd4, nd1, match, &set_data);
 	get_data = *(int *)SLLGetData(nd3);
