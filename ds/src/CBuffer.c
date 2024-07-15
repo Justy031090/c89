@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "CBuffer.h"
 
+#define BYTE_SIZE (8)
 struct cbuffer
 {
 	size_t capacity;
@@ -55,7 +56,7 @@ size_t  CBufferBufSize(const cbuffer_t *buffer)
 
 size_t CBufferFreeSpace(const cbuffer_t *buffer)
 {
-	return buffer->capacity - ((buffer->write_idx +1) % buffer->capacity);
+	return buffer->capacity - (buffer->write_idx - buffer->read_idx);
 }
 
 ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
@@ -72,17 +73,16 @@ ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
 	if(0 == free_space)
 		return -1;
 	
-	while(n_bytes > 0 && buffer->write_idx > buffer->read_idx )
+	while(n_bytes > 0)
 	{
 		
 		buffer->buffer[buffer->write_idx] = *source;
 		++source;
-		buffer->read_idx = (buffer->write_idx +1) % buffer->capacity;
+		buffer->write_idx = (buffer->write_idx +1) % buffer->capacity;
 		++written_bytes;
 		--n_bytes;
 		
 	}
-	buffer->capacity = buffer->capacity - written_bytes;
 	return written_bytes;
 }
 ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
@@ -96,7 +96,7 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 	if(1 == CBufferIsEmpty(buffer))
 		return -1;
 	
-	while(n_bytes > 0 && buffer->read_idx < buffer->write_idx)
+	while(n_bytes > 0 )
 	{
 		buffer->buffer[buffer->read_idx] = destionation[read_bytes];
 		buffer->read_idx = (buffer->read_idx +1) % buffer->capacity;
@@ -110,7 +110,6 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 		buffer->write_idx = -1;
 	}
 	
-	buffer->capacity = buffer->capacity + read_bytes;
 	return read_bytes;
 }
 
