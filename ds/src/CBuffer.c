@@ -4,29 +4,28 @@
 (")-("))	..
 */
 
+#include <stdlib.h>
 #include "CBuffer.h"
 
 struct cbuffer
 {
 	size_t capacity;
-	size_t front;
-	size_t rear;
+	size_t read_idx;
+	size_t write_idx;
 	char buffer[1];
 };
 
 cbuffer_t *CBufferCreate(size_t capacity)
 {
-	char *buff = malloc(sizeof(cbuffer.buffer) + capacity);
-	cbuffer_t new_buffer = malloc(sizeof(cbuffer_t);
+	cbuffer_t *new_buffer = malloc(sizeof(cbuffer_t) + capacity);
 	if(NULL == new_buffer)
 	{
-		return NULL:
+		return NULL;
 	}
 	
-	new_buffer.rear = -1;
-	new_buffer.front = -1;
-	new_buffer.capacity = capacity;
-	new_buffer.buffer =  *buff;
+	new_buffer->write_idx = -1;
+	new_buffer->read_idx = -1;
+	new_buffer->capacity = capacity;
 	
 	return new_buffer;
 }
@@ -34,8 +33,6 @@ cbuffer_t *CBufferCreate(size_t capacity)
 
 void CBufferDestroy(cbuffer_t *buffer)
 {
-	free(buffer.buffer);
-	buffer.buffer = NULL;
 	free(buffer);
 	buffer = NULL;	
 }
@@ -43,7 +40,7 @@ void CBufferDestroy(cbuffer_t *buffer)
 
 int CBufferIsEmpty(const cbuffer_t *buffer)
 {
-	if(buffer.rear == -1 && buffer.front == -1)
+	if(buffer->write_idx == -1 && buffer->read_idx == -1)
 	{
 		return 1;
 	}
@@ -53,61 +50,67 @@ int CBufferIsEmpty(const cbuffer_t *buffer)
 
 size_t  CBufferBufSize(const cbuffer_t *buffer)
 {
-	return buffer.capacity;
+	return buffer->capacity;
 }
 
 size_t CBufferFreeSpace(const cbuffer_t *buffer)
 {
-	size_t space = buffer.front-buffer.back;
-	return space > 0 ? space : -space;
+	return buffer->capacity - ((buffer->write_idx +1) % buffer->capacity);
 }
 
-ssize_t write(cbuffer_t *buffer, size_t n_bytes, const void *src)
+ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
 {
 	char *source = (char *)src;
 	size_t free_space = CBufferFreeSpace(buffer);
 	ssize_t written_bytes = 0;
 	if(1 == CBufferIsEmpty(buffer))
 	{
-		buffer.rear = 0;
-		buffer.front = 0;
+		buffer->write_idx = 0;
+		buffer->read_idx = 0;
 	}
 	
 	if(0 == free_space)
 		return -1;
 	
-	while(n_bytes > 0 )
+	while(n_bytes > 0 && buffer->write_idx > buffer->read_idx )
 	{
-		buffer.buffer[rear] = source;
+		
+		buffer->buffer[buffer->write_idx] = *source;
 		++source;
-		++buffer.rear;
+		buffer->read_idx = (buffer->write_idx +1) % buffer->capacity;
 		++written_bytes;
 		--n_bytes;
+		
 	}
+	buffer->capacity = buffer->capacity - written_bytes;
 	return written_bytes;
 }
-ssize_t read(cbuffer_t *buffer, size_t n_bytes, void *dst)
+ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 {
-	char *destionation = (char *)src;
+	char *destionation = (char *)dst;
 	ssize_t read_bytes = 0;
+	int is_empty_after_read = 0;
+	
+	if(CBufferFreeSpace(buffer) == buffer->capacity - 1)
+		is_empty_after_read = 1;
 	if(1 == CBufferIsEmpty(buffer))
 		return -1;
 	
-	while(n_bytes > 0 )
+	while(n_bytes > 0 && buffer->read_idx < buffer->write_idx)
 	{
-
-		buffer.buffer[front] = destionation[read_bytes];
-		++buffer.front;
+		buffer->buffer[buffer->read_idx] = destionation[read_bytes];
+		buffer->read_idx = (buffer->read_idx +1) % buffer->capacity;
 		++read_bytes;
 		--n_bytes;
 	}
 	
-	if(CBufferFreeSpace(buffer) == buffer.capacity - 1)
+	if(1 == is_empty_after_read)
 	{
-		buffer.front = -1;
-		buffer.read = -1;
+		buffer->read_idx = -1;
+		buffer->write_idx = -1;
 	}
-		
+	
+	buffer->capacity = buffer->capacity + read_bytes;
 	return read_bytes;
 }
 
