@@ -98,7 +98,7 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 	
 	while(n_bytes > 0 )
 	{
-		buffer->buffer[buffer->read_idx] = destionation[read_bytes];
+		destionation[read_bytes] = buffer->buffer[buffer->read_idx];
 		buffer->read_idx = (buffer->read_idx +1) % buffer->capacity;
 		++read_bytes;
 		--n_bytes;

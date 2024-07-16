@@ -14,6 +14,8 @@ int main ()
 	size_t free2 = -1;
 	size_t free3 = -1;
 	size_t free4 = -1;
+	ssize_t write = 0;
+	ssize_t read = 0;
 	
 	
 	cbuffer_t *buffer = CBufferCreate(80);
@@ -34,13 +36,13 @@ int main ()
 	else
 		printf("Is Empty Function Failed\n");
 		
-	CBufferWrite(buffer, 8, &x);
+	write = CBufferWrite(buffer, 8, &x);
 	free3 = CBufferFreeSpace(buffer);
-	CBufferRead(buffer, 8, read_buffer);
-	
+	read = CBufferRead(buffer, 8, read_buffer);
+	printf("Read Buffer    %lu    , %lu\n", (int)read_buffer[0], (int)read_buffer[1]);
+	printf("Write & Read    %ld    , %ld\n", write, read);
 	free4 = CBufferFreeSpace(buffer);
 	
-	printf("%d   %d   %d   %d\n", free1, free2, free3, free4);
 	if(free1 == 80 && free2 == 72 && free3 == 64 && free4 == 72)
 		printf("Free Space Checked Succesfully\n");
 	else
