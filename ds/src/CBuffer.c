@@ -81,7 +81,7 @@ ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
 	if(0 == free_space)
 		return -1;
 	
-	while(n_bytes > 0)
+	while(n_bytes > 0 && CbufferFreeSpace(buffer) > 0);
 	{
 		
 		buffer->buffer[buffer->write_idx] = *source;
@@ -107,7 +107,7 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 	if(1 == CBufferIsEmpty(buffer))
 		return -1;
 	
-	while(n_bytes > 0 )
+	while(n_bytes > 0 && buffer->read_idx != buffer->write_idx)
 	{
 		destionation[read_bytes] = buffer->buffer[buffer->read_idx];
 		buffer->read_idx = (buffer->read_idx +1) % buffer->capacity;
