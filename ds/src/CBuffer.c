@@ -1,10 +1,11 @@
 /*					Dynamic Vector Implementation.
 (\.../)		.. Authored by Michael Bar 15/07/2024
-(=';'=) .. code reviewd by ..
+(=';'=) .. code reviewd by Yonatan I. 16/07/2024..
 (")-("))	..
 */
 
-#include <stdlib.h>
+#include <stdlib.h> /*Malloc*/
+#include <assert.h>
 #include "CBuffer.h"
 
 #define BYTE_SIZE (8)
@@ -34,6 +35,8 @@ cbuffer_t *CBufferCreate(size_t capacity)
 
 void CBufferDestroy(cbuffer_t *buffer)
 {
+
+	assert(NULL != buffer);	
 	free(buffer);
 	buffer = NULL;	
 }
@@ -41,6 +44,7 @@ void CBufferDestroy(cbuffer_t *buffer)
 
 int CBufferIsEmpty(const cbuffer_t *buffer)
 {
+	assert(NULL != buffer);	
 	if(buffer->write_idx == -1 && buffer->read_idx == -1)
 	{
 		return 1;
@@ -51,11 +55,13 @@ int CBufferIsEmpty(const cbuffer_t *buffer)
 
 size_t  CBufferBufSize(const cbuffer_t *buffer)
 {
+	assert(NULL != buffer);	
 	return buffer->capacity;
 }
 
 size_t CBufferFreeSpace(const cbuffer_t *buffer)
 {
+	assert(NULL != buffer);	
 	return buffer->capacity - (buffer->write_idx - buffer->read_idx);
 }
 
@@ -64,6 +70,8 @@ ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
 	char *source = (char *)src;
 	size_t free_space = CBufferFreeSpace(buffer);
 	ssize_t written_bytes = 0;
+	assert(NULL != buffer);
+	assert(NULL != src);
 	if(1 == CBufferIsEmpty(buffer))
 	{
 		buffer->write_idx = 0;
@@ -90,6 +98,9 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 	char *destionation = (char *)dst;
 	ssize_t read_bytes = 0;
 	int is_empty_after_read = 0;
+	
+	assert(NULL != buffer);
+	assert(NULL != src);
 	
 	if(CBufferFreeSpace(buffer) == buffer->capacity - 1)
 		is_empty_after_read = 1;

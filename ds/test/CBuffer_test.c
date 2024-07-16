@@ -9,7 +9,7 @@ int main ()
 	size_t is_empty_2 = -1;
 	long int x = 8;
 	size_t size1 = -1;
-	int read_buffer[80];
+	int read_buffer[180];
 	size_t free1 = -1;
 	size_t free2 = -1;
 	size_t free3 = -1;
@@ -38,8 +38,8 @@ int main ()
 		
 	write = CBufferWrite(buffer, 8, &x);
 	free3 = CBufferFreeSpace(buffer);
-	read = CBufferRead(buffer, 8, read_buffer);
-	printf("Read Buffer    %lu    , %lu\n", (int)read_buffer[0], (int)read_buffer[1]);
+	read = CBufferRead(buffer, 16, read_buffer);
+	printf("Read Buffer    %lu    , %lu\n", (long int)read_buffer[0],(long int)read_buffer[1]);
 	printf("Write & Read    %ld    , %ld\n", write, read);
 	free4 = CBufferFreeSpace(buffer);
 	
