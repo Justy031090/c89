@@ -1,14 +1,13 @@
-/*					Dynamic Vector Implementation.
-(\.../)		.. Authored by Michael Bar 15/07/2024
-(=';'=) .. code reviewd by Yonatan I. 16/07/2024..
-(")-("))	..
+/*			.. Circular Buffer Implementation ..
+(\.../)		.. Authored by Michael Bar 15/07/2024 .. 
+(=';'=) 	.. code reviewd by Yonatan I. 16/07/2024..
+(")-("))	.. The only hard day was yesterday ! ..
 */
 
 #include <stdlib.h> /*Malloc*/
 #include <assert.h>
 #include "CBuffer.h"
 
-#define BYTE_SIZE (8)
 struct cbuffer
 {
 	size_t capacity;
