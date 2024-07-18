@@ -1,5 +1,31 @@
 #include <stdio.h>
 #include "dll.h"
+
+
+int Match (void *num1, void *num2)
+{
+	if(num1 && num2)
+		return *(int *)num1 == *(int *)num2 ? 1 : 0 ;
+	return 0;
+}
+
+size_t Action (void *data, void *param)
+{
+	if(NULL != data && NULL !=param)
+		return (*(int *)data) * (*(int *)param);
+	return 0;
+} 
+
+size_t ActionPrint(void *data, void *param)
+{
+	(void)param;
+	printf("%p\n", data);
+	return 0;
+}
+
+
+
+
 int main ()
 {
 	
@@ -18,8 +44,13 @@ int main ()
 	dll_iterator_t iter6 = NULL;
 	dll_iterator_t iter7 = NULL;
 	dll_iterator_t iter8 = NULL;
+	is_match_t match = Match;
+	action_t action = Action;
+	action_t print = ActionPrint;
 	
 	dll_t *dll = DLLCreate();
+	dll_t *dll2 = DLLCreate();
+	dll_t *dll3 = DLLCreate();
 	if(NULL != dll)
 	{
 		printf("TEST FOR DLLCreate FUNCTION SUCCESFULLY\n");
@@ -68,43 +99,48 @@ int main ()
 	{
 		printf("TEST FOR SIZE FUNCTION FAILED\n");
 	}
+	iter1 = DLLBegin(dll);
+	iter2 = DLLEnd(dll);
+	iter4 = DLLPushBack(dll, &data2);
+	iter5 = DLLFind(iter1, iter2, match, &data2);
+	if(iter4==iter5)
+	{
+		printf("TEST FOR FIND FUNCTION SUCCESS\n");
+	}
+	else
+	{
+		printf("TEST FOR FIND FUNCTION FAILED\n");
+	}
+	iter2 = DLLEnd(dll);
+	size1 = DLLForEach(iter1, iter2, print, &data1);
+	if(size1 == 2)
+	{
+		printf("TEST FOR FOR EACH FUNCTION SUCCESS\n");
+	}
+	else
+	{
+		printf("TEST FOR FOR EACH FUNCTION FAILED\n");
+	}
 	
-	DLLFind
-	DLLForEach
-	DLLMultiFilnd
-	DLLSpliced
+	DLLPushBack(dll, &data2);
+	DLLPushBack(dll, &data1);
+	DLLPushBack(dll, &data1);
+	DLLPushBack(dll, &data2);
+	iter2 = DLLEnd(dll);
+	iter3 = DLLPrev(iter2);
+	iter4 = DLLNext(iter1);
 	
+	iter6 = DLLMultiFind(iter1, iter2, match, &data2, dll2);
+	size1 = DLLSize(dll2);
+	if(size1 == 3)
+	{
+		printf("TEST FOR MULTI FIND FUNCTION SUCCESS\n");
+	}
+	else
+	{
+		printf("TEST FOR MULTI FIND FUNCTION FAILED\n");
+	}
 	
-	
-	DLLDestroy(dll);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	DLLDestroy(dll);	
 	return 0;
 }

@@ -252,7 +252,7 @@ size_t DLLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t a
 	}
 	return counter;
 }
-dll_iterator_t DLLMultiFilnd(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param, dll_t *dest)
+dll_iterator_t DLLMultiFind(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param, dll_t *dest)
 {
 	dll_iterator_t runner = from;
 	dll_iterator_t end_node = to;

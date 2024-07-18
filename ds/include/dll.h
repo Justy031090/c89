@@ -266,7 +266,7 @@ return value - dll_iterator_t - last value found.
 time complexity - O(n)
 space complexity - O(n)
 */
-dll_iterator_t DLLMultiFilnd(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param, dll_t *dest);
+dll_iterator_t DLLMultiFind(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param, dll_t *dest);
 
 
 /* DLLSpliced:
