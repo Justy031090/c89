@@ -29,7 +29,7 @@ dll_t *DLLCreate(void)
 		return NULL;
 	}
 	
-	dll_iterator_t dummy_end = malloc(sizeof(node_t));
+	dummy_end = malloc(sizeof(node_t));
 	
 	if (NULL == dummy_start)
 	{
@@ -49,7 +49,7 @@ dll_t *DLLCreate(void)
 	dummy_start->data = NULL;
 	dummy_start->prev = NULL;
 	dummy_start->next = dummy_end;
-	dummy_end->prev = dummy_begin;
+	dummy_end->prev = dummy_start;
 	dummy_end->next = NULL;
 	dummy_end->data = NULL;
 	new_dll->head = dummy_start;
@@ -82,26 +82,13 @@ void DLLDestroy(dll_t *dll)
 int DLLIsEmpty(const dll_t *dll)
 {
 	assert(NULL != dll);
-	return dll->head == dll->tail;
+	return dll->head->next == dll->tail;
 }
 
 dll_iterator_t DLLBegin(dll_t *dll)
 {
-	dll_iterator_t new_node = NULL;
 	assert(NULL != dll);
-	if(NULL == dll->head)
-	{
-		new_node = malloc(sizeof(node_t));
-		if(NULL == new_node)
-		{
-			return NULL;
-		}
-		dll->head = new_node;
-		new_node->prev = NULL;
-		new_node->next = NULL;
-		return new_node;
-	}
-	return dll->head;
+	return dll->head->next;
 }
 
 dll_iterator_t DLLEnd(const dll_t *dll)
@@ -204,7 +191,7 @@ size_t DLLSize(const dll_t *dll)
 	dll_iterator_t runner = NULL;
 	assert(NULL != dll);
 	
-	for(runner = dll->head; runner != dll->tail; runner = DLLNext(runner), ++counter);
+	for(runner = DLLBegin((dll_t *)dll); runner != dll->tail; runner = DLLNext(runner), ++counter);
 	
 	return counter;
 }

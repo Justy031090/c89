@@ -32,6 +32,7 @@ int main ()
 	is_empty1 = DLLIsEmpty(dll);
 	
 	iter1 = DLLBegin(dll);
+	iter2 = DLLInsert(iter1, &data1, dll);
 	
 	is_empty2 = DLLIsEmpty(dll);
 	if(is_empty1 && !is_empty2)
@@ -43,11 +44,10 @@ int main ()
 		printf("TEST FOR DLLIsEmpty FUNCTION FAILED\n");
 	}
 	
-	iter1 = DLLInsert(iter1, &data1, dll);
-	printf("CHECK AFTER ITER1");
+	
 	DLLPushFront(dll, &data2);
 	DLLPushBack(dll, &data2);
-	
+	iter3 = DLLInsert(iter2, &data1, dll);
 	size2 = DLLSize(dll);
 	
 	DLLRemove(iter1, dll);
