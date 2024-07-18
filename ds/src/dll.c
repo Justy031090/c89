@@ -1,5 +1,6 @@
 #include <stddef.h> /* size_t */
-#include <stlib.h> /* malloc */
+#include <stdlib.h> /* malloc */
+#include <assert.h>
 
 #include "dll.h"
 
@@ -20,17 +21,39 @@ typedef struct node
 
 dll_t *DLLCreate(void)
 {
-	dll_t new_dll = malloc(sizeof(dll_t));
-	if (NULL == new_dll)
+	dll_t *new_dll = NULL;
+	dll_iterator_t dummy_end = NULL;
+	dll_iterator_t dummy_start = malloc(sizeof(node_t));
+	if (NULL == dummy_start)
 	{
 		return NULL;
 	}
 	
+	dll_iterator_t dummy_end = malloc(sizeof(node_t));
 	
-	/*check if need to make with dummy*/
+	if (NULL == dummy_start)
+	{
+		free(dummy_start);
+		return NULL;
+	}
 	
-	new_dll->head = NULL;
-	new_dll->tail = NULL;
+	new_dll = malloc(sizeof(dll_t));
+	
+	if (NULL == new_dll)
+	{
+		free(dummy_end);
+		free(dummy_start);
+		return NULL;
+	}
+		
+	dummy_start->data = NULL;
+	dummy_start->prev = NULL;
+	dummy_start->next = dummy_end;
+	dummy_end->prev = dummy_begin;
+	dummy_end->next = NULL;
+	dummy_end->data = NULL;
+	new_dll->head = dummy_start;
+	new_dll->tail = dummy_end;
 	return new_dll;
 }
 
@@ -38,8 +61,8 @@ dll_t *DLLCreate(void)
 
 void DLLDestroy(dll_t *dll)
 {
-	dll_iter_t curr = NULL;
-	dll_iter_t next = NULL;
+	dll_iterator_t curr = NULL;
+	dll_iterator_t next = NULL;
 	
 	assert(NULL != dll);
 	
@@ -62,9 +85,22 @@ int DLLIsEmpty(const dll_t *dll)
 	return dll->head == dll->tail;
 }
 
-dll_iterator_t DLLBegin(const dll_t *dll)
+dll_iterator_t DLLBegin(dll_t *dll)
 {
+	dll_iterator_t new_node = NULL;
 	assert(NULL != dll);
+	if(NULL == dll->head)
+	{
+		new_node = malloc(sizeof(node_t));
+		if(NULL == new_node)
+		{
+			return NULL;
+		}
+		dll->head = new_node;
+		new_node->prev = NULL;
+		new_node->next = NULL;
+		return new_node;
+	}
 	return dll->head;
 }
 
@@ -111,7 +147,7 @@ dll_iterator_t DLLPushFront(dll_t *dll, void *data)
 	{
 		return NULL;
 	}
-	new_node->next = sll->head;
+	new_node->next = dll->head;
 	new_node->prev = NULL;
 	new_node->data = (void*)data;
 	dll->head = new_node;
@@ -168,7 +204,7 @@ size_t DLLSize(const dll_t *dll)
 	dll_iterator_t runner = NULL;
 	assert(NULL != dll);
 	
-	for(runner = DLLBegin(dll); runner != DLLEnd(dll); runner = DLLNext(runner), ++counter);
+	for(runner = dll->head; runner != dll->tail; runner = DLLNext(runner), ++counter);
 	
 	return counter;
 }
@@ -188,27 +224,22 @@ dll_iterator_t DLLInsert(dll_iterator_t iter, const void *data, dll_t *dll)
 	assert(NULL != iter);
 	assert(NULL != dll);
 	
-	if(iter == sll->tail)
+	if(NULL == iter->prev)
 	{
-		return DLLPushBack(dll);
-	}
-	if(iter == sll->head)
-	{
-		return DLLPushFront(dll);
+		return dll->tail;
 	}
 	
 	new_node = malloc(sizeof(node_t));
 	if(NULL == new_node)
 	{
-		return NULL;
+		return dll->tail;
 	}
 	
-	new_node->next = iter->next;
-	new_node->data = iter->data;
-	new_node->prev = iter;
-	iter->data = (void *)data;
-	iter->next->prev = new_node;
-	iter->next = new_node;
+	new_node->prev = iter->prev;
+	new_node->next = iter;
+	iter->prev->next = new_node;
+	iter->prev = new_node;
+	new_node->data = (void *)data;
 	
 	return new_node;
 	
@@ -222,10 +253,13 @@ dll_iterator_t DLLRemove(dll_iterator_t iter, dll_t *dll)
 	assert(NULL != iter);
 	assert(NULL != dll);
 	
-	next = iter->next;
-	prev = iter->prev;
-	next->next = prev;
-	prev->prev = next;
+	if(NULL == iter->next || NULL == iter->prev)
+	{
+		return dll->tail;
+	}
+	
+	iter->next->prev = iter->prev;
+	iter->prev->next = iter->next;
 	
 	free(iter);
 	iter = NULL;
@@ -236,8 +270,8 @@ dll_iterator_t DLLRemove(dll_iterator_t iter, dll_t *dll)
 
 dll_iterator_t DLLFind(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param)
 {
-	node_t *runner = from;
-	node_t *end_node = to;
+	dll_iterator_t runner = from;
+	dll_iterator_t end_node = to;
 	
 	assert(NULL != from);
 	assert(NULL != to);
@@ -261,8 +295,8 @@ dll_iterator_t DLLFind(const dll_iterator_t from, const dll_iterator_t to, is_ma
 size_t DLLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t action_func, const void *param)
 {
 	size_t counter = 0;
-	node_t *runner = from;
-	node_t *end_node = to;
+	dll_iterator_t runner = from;
+	dll_iterator_t end_node = to;
 	
 	assert(NULL != from);
 	assert(NULL != to);
@@ -271,15 +305,15 @@ size_t DLLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t a
 	
 	while(runner != end_node)
 	{
-		counter = (0 == action_func(runner->data, param)) ? counter +1 : counter;
+		counter = (0 == action_func(runner->data, (void *)param)) ? counter +1 : counter;
 		runner = DLLNext(runner);
 	}
 	return counter;
 }
 dll_iterator_t DLLMultiFilnd(const dll_iterator_t from, const dll_iterator_t to, is_match_t is_match, void *param, dll_t *dest)
 {
-	node_t *runner = from;
-	node_t *end_node = to;
+	dll_iterator_t runner = from;
+	dll_iterator_t end_node = to;
 	
 	assert(NULL != from);
 	assert(NULL != to);
@@ -304,14 +338,14 @@ dll_iterator_t DLLMultiFilnd(const dll_iterator_t from, const dll_iterator_t to,
 dll_iterator_t DLLSpliced(dll_iterator_t from, const dll_iterator_t to, dll_iterator_t dest)
 {
 
-	node_t *end_node = to->prev;
+	dll_iterator_t end_node = to->prev;
 	
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != dest);
 	
 	to->prev = from->prev;
-	from-prev->next = to;
+	from->prev->next = to;
 	from->prev = dest->prev;
 	dest->prev = end_node;
 	from->prev->next = from;

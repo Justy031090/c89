@@ -147,7 +147,7 @@ return value - dll_iterator_t - first valid node (not dummy)
 time complexity - O(1)
 space complexity - O(1)
 */
-dll_iterator_t DLLBegin(const dll_t *dll);
+dll_iterator_t DLLBegin(dll_t *dll);
 
 
 /* DLLEnd:
