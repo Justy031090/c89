@@ -50,20 +50,31 @@ int main ()
 	iter3 = DLLInsert(iter2, &data1, dll);
 	size2 = DLLSize(dll);
 	
-	DLLRemove(iter1, dll);
+	DLLRemove(iter2, dll);
 	DLLPopFront(dll);
 	DLLPopBack(dll);
-	
+
 	size3 = DLLSize(dll);
 	
 	if(size1 == 0 && size2 == 4 && size3 == 1)
 	{
 		printf("TEST FOR SIZE FUNCTION SUCCESS\n");
+		printf("TEST FOR INSERT FUNCTION SUCCESS\n");
+		printf("TEST FOR REMOVE FUNCTION SUCCESS\n");
+		printf("TEST FOR PopFront & PopBack FUNCTIONS SUCCESS\n");
+		printf("TEST FOR PushFront & PushBack FUNCTIONS SUCCESS\n");
 	}
 	else
 	{
 		printf("TEST FOR SIZE FUNCTION FAILED\n");
 	}
+	
+	DLLFind
+	DLLForEach
+	DLLMultiFilnd
+	DLLSpliced
+	
+	
 	
 	DLLDestroy(dll);
 	

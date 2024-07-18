@@ -124,65 +124,20 @@ void DLLSetData(dll_iterator_t iter, const void *data)
 }
 dll_iterator_t DLLPushFront(dll_t *dll, void *data)
 {
-	dll_iterator_t new_node = NULL;
-	
-	assert(NULL != dll);
-	assert(NULL != data);
-	
-	new_node = malloc(sizeof(node_t));
-	if(NULL == new_node)
-	{
-		return NULL;
-	}
-	new_node->next = dll->head;
-	new_node->prev = NULL;
-	new_node->data = (void*)data;
-	dll->head = new_node;
-	
-	return new_node;
+	return DLLInsert(DLLBegin(dll), data, dll);
 }
 dll_iterator_t DLLPushBack(dll_t *dll, void *data)
 {
-	dll_iterator_t new_node = NULL;
-	
-	assert(NULL != dll);
-	assert(NULL != data);
-	
-	new_node = malloc(sizeof(node_t));
-	if(NULL == new_node)
-	{
-		return NULL;
-	}
-	
-	new_node->next = NULL;
-	new_node->prev = dll->tail;
-	dll->tail->next = new_node;
-	new_node->data = (void*)data;
-	dll->tail = new_node;
-	
-	return new_node;
+	return DLLInsert(DLLEnd(dll), data, dll);
 }
 
 dll_iterator_t DLLPopFront(dll_t *dll)
 {
-	dll_iterator_t new_head = NULL;
-	assert(NULL != dll);
-	new_head = dll->head->next;
-	free(dll->head);
-	dll->head = new_head;
-	
-	return new_head;
+	return DLLRemove(DLLBegin(dll), dll);
 }
 dll_iterator_t DLLPopBack(dll_t *dll)
 {
-	dll_iterator_t new_tail = NULL;
-	assert(NULL != dll);
-	new_tail = dll->tail->prev;
-	new_tail->next = NULL;
-	free(dll->tail);
-	dll->tail = new_tail;
-	
-	return new_tail;
+	return DLLRemove(DLLEnd(dll)->prev, dll);
 }
 
 size_t DLLSize(const dll_t *dll)
@@ -308,15 +263,15 @@ dll_iterator_t DLLMultiFilnd(const dll_iterator_t from, const dll_iterator_t to,
 	assert(NULL != is_match);
 	assert(NULL != dest);
 	
-	while(runner != end_node)
+	while(NULL != runner)
 	{
-		if(1 == is_match(runner->data, param))
-		{	
-			DLLEnd(dest)->next = runner;
-			dest->tail = runner;
+		runner = DLLFind(runner, end_node, is_match, param);
+		if(NULL != runner)
+		{
+			DLLInsert(dest->tail, runner->data, dest);
+			runner = DLLNext(runner);
 		}
 		
-		runner = DLLNext(runner);
 	}
 	
 	return dest->head;
