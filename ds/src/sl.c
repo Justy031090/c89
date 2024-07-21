@@ -130,10 +130,8 @@ size_t SLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t ac
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != action_func);
-	
-	#ifndef NDEBUG
 	assert(NULL != from.sl == to.sl);
-	#endif
+
 	return DLLForEach(from.iter, to.iter, action_func, param);
 }
 
@@ -146,9 +144,7 @@ sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *par
 	assert(NULL != param);
 	assert(NULL != sl);
 	runner = from.iter;
-	#ifndef NDEBUG
 	assert(NULL != from.sl == to.sl);
-	#endif
 	while(1 != DLLIsEqual(to.iter, runner) && 0 > sl->compare_func(DLLGetData(runner), param))
 	{
 		return DLLIterToSlIter(runner, sl);
@@ -163,9 +159,7 @@ sl_iterator_t SLFindCustom(const sl_iterator_t from, const sl_iterator_t to, is_
 	assert(NULL != is_match);
 	assert(NULL != param);
 	res = from;
-	#ifndef NDEBUG
 	assert(NULL != from.sl == to.sl);
-	#endif
 	res.iter = DLLFind(from.iter, to.iter, is_match, param);
 	return res;
 }
