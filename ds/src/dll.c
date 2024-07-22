@@ -1,3 +1,9 @@
+/*					Queue Implementation
+(\.../)		.. Authored by Michael Bar 16/07/2024 ..
+(=';'=) .. code reviewd by Noam 21.08.2024..
+(")-("))	..
+*/
+
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc */
 #include <assert.h>
