@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <stdlib.h> /*malloc*/
 #include <assert.h>
 
 #include "sl.h"
@@ -81,17 +81,19 @@ int SLIsEqual(const sl_iterator_t iter1, const sl_iterator_t iter2)
 {
 	return DLLIsEqual(iter1.iter, iter2.iter);
 }
-sl_iterator_t SLPopFront(sl_t *sl)
+void *SLPopFront(sl_t *sl)
 {
-	dll_iterator_t iter = DLLPopFront(sl->list);
+	void *result = DLLGetData(DLLBegin(sl->list));
 	assert(NULL != sl);	
-	return DLLIterToSlIter(iter, sl);
+	DLLPopFront(sl->list);
+	return result;
 }
-sl_iterator_t SLPopBack(sl_t *sl)
+void *SLPopBack(sl_t *sl)
 {
-	dll_iterator_t iter = DLLPopBack(sl->list);
+	void *result = DLLGetData(DLLPrev(DLLEnd(sl->list)));
 	assert(NULL != sl);	
-	return DLLIterToSlIter(iter, sl);
+	DLLPopBack(sl->list);
+	return result;
 	
 }
 

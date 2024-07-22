@@ -170,7 +170,7 @@ return value - sl_iterator_t.
 time complexity - O(1)
 space complexity - O(1)
 */
-sl_iterator_t SLPopFront(sl_t *sl);
+void *SLPopFront(sl_t *sl);
 
 
 /* SLPopBack:
@@ -181,7 +181,7 @@ return value - sl_iterator_t.
 time complexity - O(1)
 space complexity - O(1)
 */
-sl_iterator_t SLPopBack(sl_t *sl);
+void *SLPopBack(sl_t *sl);
 
 
 /* SLFind:
