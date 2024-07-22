@@ -9,34 +9,11 @@ typedef struct sl sl_t;
 
 struct iterator
 {
-    dll_iterator_t dll_iter;
+    dll_iterator_t iter;
     sl_t *sl;
 };
 
-typedef struct iterator sl_iterator_t
-
-
-/* type of action_t functions:
-Description - action function implemented by the user return count of errors.
-Params:
-	void *data - data from the list.
-	void *param - parameter from the user
-return value - size_t - number of errors.
-*/
-typedef size_t (*action_t)(void *data, void *param);
-
-
-/* type of is_match_t function:
-Description - comparison func the user should implemnt if equal return 1, else return 0.
-Params:
-	void *data - data from the list.
-	void *param - parameter from the user
-return value - int - boolean vlue.
-time complexity - O(n)
-space complexity - O(1)
-*/
-typedef int (*is_match_t)(void *data, void *param);
-
+typedef struct iterator sl_iterator_t;
 
 /* type of compare_func_t function:
 Description - comparison func the user should implemnt as sort criteria.
@@ -93,7 +70,7 @@ return value - sl_iterator_t.
 time complexity - O(1)
 space complexity - O(1)
 */
-sl_iterator_t SLRemove(sl_iterator_t iter);
+sl_iterator_t SLRemove(sl_iterator_t iter, sl_t *sl);
 
 
 /* SLGetData:
@@ -245,7 +222,7 @@ return value - size_t.
 time complexity - O(n)
 space complexity - O(1)
 */
-size_t SLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t action_func, const void *param);
+size_t SLForEach(const sl_iterator_t from, const sl_iterator_t to, action_t action_func, const void *param);
 
 
 /* SLMerge:

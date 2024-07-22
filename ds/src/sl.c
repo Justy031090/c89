@@ -8,12 +8,12 @@ struct sl
 {
 	dll_t *list;
 	compare_func_t compare_func;
-}
+};
 
 static sl_iterator_t DLLIterToSlIter(dll_iterator_t iter, sl_t *sl)
 {
 	sl_iterator_t iterator;
-	iterator.dll_iter = iter;
+	iterator.iter = iter;
 	#ifndef NDEBUG
 	iterator.sl = sl;
 	#endif
@@ -32,7 +32,7 @@ sl_t *SLCreate(compare_func_t compare_func)
 	new_sl->list = DLLCreate();
 	if(NULL == new_sl->list)
 	{
-		free(new_sl)
+		free(new_sl);
 		return NULL;
 	}
 	
@@ -69,53 +69,46 @@ sl_iterator_t SLEnd(const sl_t *sl)
 }
 sl_iterator_t SLNext(sl_iterator_t iter)
 {
-	assert(NULL != iter);
-	iter.dll_iter = DLLNext(iter.dll_iter);
+	iter.iter = DLLNext(iter.iter);
 	return iter;
 }
 sl_iterator_t SLPrev(sl_iterator_t iter)
 {
-	assert(NULL != iter);
-	iter.dll_iter = DLLPrev(iter.dll_iter);
+	iter.iter = DLLPrev(iter.iter);
 	return iter;
 }
 int SLIsEqual(const sl_iterator_t iter1, const sl_iterator_t iter2)
 {
-	assert(NULL != iter1);
-	assert(NULL != iter2);
-	return DLLIsEqual(iter1.dll_iter, iter2.dll_iter);
+	return DLLIsEqual(iter1.iter, iter2.iter);
 }
 sl_iterator_t SLPopFront(sl_t *sl)
 {
 	dll_iterator_t iter = DLLPopFront(sl->list);
 	assert(NULL != sl);	
-	return DLLGetData(iter);
+	return DLLIterToSlIter(iter, sl);
 }
 sl_iterator_t SLPopBack(sl_t *sl)
 {
 	dll_iterator_t iter = DLLPopBack(sl->list);
 	assert(NULL != sl);	
-	return DLLGetData(iter);
+	return DLLIterToSlIter(iter, sl);
 	
 }
 
 sl_iterator_t SLInsert(const void *data, sl_t *sl)
 {
-	sl_iterator_t iter = NULL;
+	sl_iterator_t iter = SLBegin(sl);
 	assert(NULL != data);
 	assert(NULL != sl);
-	
-	iter = SLBegin(sl);
 	
 	while((iter.iter != SLEnd(sl).iter) &&  (sl->compare_func((void*)data, SLGetData(iter)) > 0))
 	{
 		iter = SLNext(iter);
 	}
-	return DLLIterToLIter(DLLInsert(iter.iter, (void*)data, sl->list), sl);
+	return DLLIterToSlIter(DLLInsert(iter.iter, (void*)data, sl->list), sl);
 }
-sl_iterator_t SLRemove(sl_iterator_t iter)
+sl_iterator_t SLRemove(sl_iterator_t iter, sl_t *sl)
 {
-	assert(NULL != sl);
 	iter.iter == DLLRemove(iter.iter, sl->list);
 	return iter;
 }
@@ -124,14 +117,10 @@ void *SLGetData(const sl_iterator_t iter)
 	return DLLGetData(iter.iter);
 }
 
-size_t SLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t action_func, const void *param)
+size_t SLForEach(const sl_iterator_t from, const sl_iterator_t to, action_t action_func, const void *param)
 {
 	assert(NULL != param);
-	assert(NULL != from);
-	assert(NULL != to);
 	assert(NULL != action_func);
-	assert(NULL != from.sl == to.sl);
-
 	return DLLForEach(from.iter, to.iter, action_func, param);
 }
 
@@ -139,12 +128,9 @@ size_t SLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t ac
 sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *param, sl_t *sl)
 {
 	dll_iterator_t runner = NULL;
-	assert(NULL != from);
-	assert(NULL != to);
 	assert(NULL != param);
 	assert(NULL != sl);
 	runner = from.iter;
-	assert(NULL != from.sl == to.sl);
 	while(1 != DLLIsEqual(to.iter, runner) && 0 > sl->compare_func(DLLGetData(runner), param))
 	{
 		return DLLIterToSlIter(runner, sl);
@@ -153,13 +139,9 @@ sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *par
 }
 sl_iterator_t SLFindCustom(const sl_iterator_t from, const sl_iterator_t to, is_match_t is_match, void *param)
 {
-	sl_iterator_t res = NULL;
-	assert(NULL != from);
-	assert(NULL != to);
+	sl_iterator_t res = from;
 	assert(NULL != is_match);
 	assert(NULL != param);
-	res = from;
-	assert(NULL != from.sl == to.sl);
 	res.iter = DLLFind(from.iter, to.iter, is_match, param);
 	return res;
 }
