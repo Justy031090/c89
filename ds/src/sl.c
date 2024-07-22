@@ -1,4 +1,4 @@
-#include <stdlib.h> /*malloc*/
+#include <stdlib.h> /*malloc, free*/
 #include <assert.h>
 
 #include "sl.h"
@@ -111,7 +111,7 @@ sl_iterator_t SLInsert(const void *data, sl_t *sl)
 }
 sl_iterator_t SLRemove(sl_iterator_t iter, sl_t *sl)
 {
-	iter.iter == DLLRemove(iter.iter, sl->list);
+	iter.iter = DLLRemove(iter.iter, sl->list);
 	return iter;
 }
 void *SLGetData(const sl_iterator_t iter)
@@ -135,9 +135,9 @@ sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *par
 	runner = from.iter;
 	while(1 != DLLIsEqual(to.iter, runner) && 0 > sl->compare_func(DLLGetData(runner), param))
 	{
-		return DLLIterToSlIter(runner, sl);
+		runner = DLLNext(runner);
 	}
-	return DLLIterToSlIter(DLLEnd(sl->list), sl);
+	return DLLIterToSlIter(runner, sl);
 }
 sl_iterator_t SLFindCustom(const sl_iterator_t from, const sl_iterator_t to, is_match_t is_match, void *param)
 {

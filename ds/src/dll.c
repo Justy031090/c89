@@ -4,8 +4,7 @@
 (")-("))	..
 */
 
-#include <stddef.h> /* size_t */
-#include <stdlib.h> /* malloc */
+#include <stdlib.h> /* malloc, free */
 #include <assert.h>
 
 #include "dll.h"
@@ -37,7 +36,7 @@ dll_t *DLLCreate(void)
 	
 	dummy_end = malloc(sizeof(node_t));
 	
-	if (NULL == dummy_start)
+	if (NULL == dummy_end)
 	{
 		free(dummy_start);
 		return NULL;
@@ -58,8 +57,10 @@ dll_t *DLLCreate(void)
 	dummy_end->prev = dummy_start;
 	dummy_end->next = NULL;
 	dummy_end->data = NULL;
+	
 	new_dll->head = dummy_start;
 	new_dll->tail = dummy_end;
+	
 	return new_dll;
 }
 
@@ -73,14 +74,13 @@ void DLLDestroy(dll_t *dll)
 	assert(NULL != dll);
 	
 	curr = dll->head;
-	while(NULL != next)
+	while(NULL != curr)
 	{
 		next = curr->next;
 		free(curr);
 		curr = next;
 	}
 	
-	free(curr);
 	free(dll);
 }
 
@@ -118,6 +118,7 @@ dll_iterator_t DLLPrev(dll_iterator_t iter)
 void *DLLGetData(const dll_iterator_t iter)
 {
 	assert(NULL != iter);
+	assert(NULL != iter->data);
 	return iter->data;
 }
 
@@ -210,7 +211,6 @@ dll_iterator_t DLLRemove(dll_iterator_t iter, dll_t *dll)
 	iter->prev->next = iter->next;
 	
 	free(iter);
-	iter = NULL;
 	
 	return next;
 	
