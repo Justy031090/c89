@@ -1,3 +1,19 @@
+/*					Sorted List Implementation.
+(\.../)		.. Authored by Michael Bar 22/07/2024
+(=';'=) .. code reviewd by Johnny.I 23/07/2024..
+(")-("))	..
+*/
+
+
+
+
+/******************************************	
+Changed need to be made
+	-SLInsert should use SLFind
+	-SLFind should use DLLFind
+	-SLPopFront/Back should use SLRemove
+*****************************************/	
+
 #include <stdlib.h> /*malloc, free*/
 #include <assert.h>
 
@@ -103,7 +119,7 @@ sl_iterator_t SLInsert(const void *data, sl_t *sl)
 	assert(NULL != data);
 	assert(NULL != sl);
 	
-	while((iter.iter != SLEnd(sl).iter) &&  (sl->compare_func((void*)data, SLGetData(iter)) > 0))
+	while((iter.iter != SLEnd(sl).iter) &&  (0 < sl->compare_func((void*)data, SLGetData(iter))))
 	{
 		iter = SLNext(iter);
 	}
@@ -123,6 +139,7 @@ size_t SLForEach(const sl_iterator_t from, const sl_iterator_t to, action_t acti
 {
 	assert(NULL != param);
 	assert(NULL != action_func);
+	assert(from.sl == to.sl);
 	return DLLForEach(from.iter, to.iter, action_func, param);
 }
 
@@ -132,6 +149,8 @@ sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *par
 	dll_iterator_t runner = NULL;
 	assert(NULL != param);
 	assert(NULL != sl);
+	assert(from.sl == to.sl);
+	
 	runner = from.iter;
 	while(1 != DLLIsEqual(to.iter, runner) && 0 > sl->compare_func(DLLGetData(runner), param))
 	{
@@ -144,6 +163,7 @@ sl_iterator_t SLFindCustom(const sl_iterator_t from, const sl_iterator_t to, is_
 	sl_iterator_t res = from;
 	assert(NULL != is_match);
 	assert(NULL != param);
+	assert(from.sl == to.sl);
 	res.iter = DLLFind(from.iter, to.iter, is_match, param);
 	return res;
 }
