@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 
-my_uid_t bad_uid = {0,0,0,0};
+const my_uid_t bad_uid = {0,0,0,0};
 
 my_uid_t UIDGenerate()
 {

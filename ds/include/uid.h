@@ -14,7 +14,7 @@ typedef struct uid
 	long ip;
 } my_uid_t;
 
-extern my_uid_t bad_uid; 
+extern const my_uid_t bad_uid; 
 
 my_uid_t UIDGenerate();
 
