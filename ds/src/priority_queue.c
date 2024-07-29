@@ -105,8 +105,10 @@ void PQErase(p_q_t *pq, is_match_t is_match, void *param)
 	start = SLBegin(pq->list);
 	end = SLEnd(pq->list);
 	found = SLFindCustom(start, end, is_match, param);
-	SLRemove(found, pq->list);
-	
+	if(!SLIsEqual(start, found))
+	{
+		SLRemove(found, pq->list);
+	}
 }
 
 
