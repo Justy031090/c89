@@ -4,8 +4,8 @@
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
-#include <stddef.h>
-#include <stdlib.h>
+#include <stddef.h> /**/
+#include <stdlib.h> /*malloc*/
 #include <assert.h>
 
 #include "priority_queue.h"
@@ -14,7 +14,6 @@ struct p_q
 {
 	sl_t *list;
 };
-
 
 p_q_t *PQCreate(compare_func_t priority_func)
 {
@@ -58,7 +57,7 @@ void *PQPeek(const p_q_t *pq)
 	return SLGetData(SLBegin(pq->list));
 }
 
-void *PQPop(p_q_t *pq)
+void *PQDequeue(p_q_t *pq)
 {
 	assert(NULL != pq);
 	return SLPopBack(pq->list);
@@ -66,46 +65,39 @@ void *PQPop(p_q_t *pq)
 
 void PQClear(p_q_t *pq)
 {
-	sl_iterator_t start = NULL;
-	sl_iterator_t next = NULL;
 	size_t size = 0;
 	assert(NULL != pq);
 	
-	start = SLBegin(pq->list);
-	next = SLNext(start);
 	size = SLSize(pq->list);
 	
 	while(0 < size)
 	{
-		SLRemove(start, pq->list);
-		start = next;
-		next = SLNext(start);
+		PQDequeue(pq);
 		--size;
 	}
 }
 
-int PQInsert(const void *data, p_q_t *pq)
+
+int PQEnqueue(const void *data, p_q_t *pq)
 {
-	sl_iterator_t to_insert = NULL;
-	sl_iterator_t start = NULL;
+	sl_iterator_t to_insert;
+	sl_iterator_t tail;
 	int res = 0;
 	assert(NULL != pq);
 	
-	res = SLIsEqual(to_insert, start);
+	
 	to_insert = SLInsert(data, pq->list);
-	start = SLBegin(pq->list);
+	tail = SLEnd(pq->list);
+	res = SLIsEqual(to_insert, tail);
 	
-	if(res)
-		return 0;
-	return 1;
-	
+	return res == 0 ? 1 : 0;
 }
 void PQErase(p_q_t *pq, is_match_t is_match, void *param)
 {
 
-	sl_iterator_t start = NULL;
-	sl_iterator_t end = NULL;
-	sl_iterator_t found = NULL;
+	sl_iterator_t start;
+	sl_iterator_t end;
+	sl_iterator_t found;
 	
 	assert(NULL != pq);
 	assert(NULL != param);

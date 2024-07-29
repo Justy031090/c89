@@ -11,9 +11,9 @@ p_q_t *PQCreate(compare_func_t priority_func);
 
 void PQDestroy(p_q_t *pq);
 
-int PQInsert(const void *data, p_q_t *pq);
+int PQEnqueue(const void *data, p_q_t *pq);
 
-void *PQPop(p_q_t *pq);
+void *PQDequeue(p_q_t *pq);
 
 int PQIsEmpty(const p_q_t *pq);
 

@@ -44,20 +44,20 @@ int main ()
 		printf("IsEmpty 1st success\n");
 	}
 	
-	if (0 != PQInsert(&a, new_pq1))
+	if (0 != PQEnqueue(&a, new_pq1))
 	{
 		printf("Insert success\n");
 	}
 	
-	if (0 != PQInsert(&b, new_pq1))
+	if (0 != PQEnqueue(&b, new_pq1))
 	{
 		printf("Insert success\n");
 	}
-	if (0 != PQInsert(&c, new_pq1))
+	if (0 != PQEnqueue(&c, new_pq1))
 	{
 		printf("Insert success\n");
 	}
-	if (0 != PQInsert(&d, new_pq1))
+	if (0 != PQEnqueue(&d, new_pq1))
 	{
 		printf("Insert success\n");
 	}
@@ -79,7 +79,7 @@ int main ()
 	
 	for(; i < 4; i++)
 	{
-		if (arr[3-i] == (*(test_t *)PQPop(new_pq1)).value)
+		if (arr[3-i] == (*(test_t *)PQDequeue(new_pq1)).value)
 		{
 			printf("Pop success\n");
 		}
@@ -90,19 +90,19 @@ int main ()
 	}
 	
 	printf("AFTER LOOP\n");
-	if (0 != PQInsert(&a, new_pq1))
+	if (0 != PQEnqueue(&a, new_pq1))
 	{
 		printf("Insert success\n");
 	}
-	if (0 != PQInsert(&b, new_pq1))
+	if (0 != PQEnqueue(&b, new_pq1))
 	{
 		printf("Insert success\n");
 	}
-	if (0 != PQInsert(&c, new_pq1))
+	if (0 != PQEnqueue(&c, new_pq1))
 	{
 		printf("Insert success\n");
 	}
-	if (0 != PQInsert(&d, new_pq1))
+	if (0 != PQEnqueue(&d, new_pq1))
 	{
 		printf("Insert success\n");
 	}
@@ -112,11 +112,12 @@ int main ()
 	}
 	
 	PQErase(new_pq1, CompareFunc, &d);
-	if (8 == (*(test_t *)PQPop(new_pq1)).value)
+	
+	if (8 == (*(test_t *)PQDequeue(new_pq1)).value)
 	{
 		printf("Pop success\n");
 	}
-	if (2 == (*(test_t *)PQPop(new_pq1)).value)
+	if (2 == (*(test_t *)PQDequeue(new_pq1)).value)
 	{
 		printf("Erase success\n");
 	}
