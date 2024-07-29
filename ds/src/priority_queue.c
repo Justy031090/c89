@@ -16,7 +16,7 @@ struct p_q
 };
 
 
-p_q_t *PQCreate(priority_func_t priority_func)
+p_q_t *PQCreate(compare_func_t priority_func)
 {
 	p_q_t *new_pq = malloc(sizeof(p_q_t));
 	if(NULL == new_pq)
@@ -68,13 +68,14 @@ void PQClear(p_q_t *pq)
 {
 	sl_iterator_t start = SLBegin(pq->list);
 	sl_iterator_t next = SLNext(start);
-	sl_iterator_t end = SLEnd(pq->list);
+	size_t size = SLSize(pq->list);
 	
-	while(next != end)
+	while(0 < size)
 	{
 		SLRemove(start, pq->list);
 		start = next;
 		next = SLNext(start);
+		--size;
 	}
 }
 
