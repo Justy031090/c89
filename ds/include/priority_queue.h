@@ -21,8 +21,8 @@ size_t PQSize(const p_q_t *pq);
 
 void *PQPeek(const p_q_t *pq);
 
-void clear(p_q_t *pq);
+void PQClear(p_q_t *pq);
 
-void erase(p_q_t *pq, is_match_t is_match, void *param);
+void PQErase(p_q_t *pq, is_match_t is_match, void *param);
 
 #endif

@@ -30,7 +30,7 @@ return value - int - boolean vlue.
 time complexity - O(n)
 space complexity - O(1)
 */
-typedef int (*is_match_t)(void *data, void *param);
+typedef int (*is_match_t)(const void *data, const void *param);
 
 
 

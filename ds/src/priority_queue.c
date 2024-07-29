@@ -66,9 +66,14 @@ void *PQPop(p_q_t *pq)
 
 void PQClear(p_q_t *pq)
 {
-	sl_iterator_t start = SLBegin(pq->list);
-	sl_iterator_t next = SLNext(start);
-	size_t size = SLSize(pq->list);
+	sl_iterator_t start = NULL;
+	sl_iterator_t next = NULL;
+	size_t size = 0;
+	assert(NULL != pq);
+	
+	start = SLBegin(pq->list);
+	next = SLNext(start);
+	size = SLSize(pq->list);
 	
 	while(0 < size)
 	{
@@ -81,9 +86,15 @@ void PQClear(p_q_t *pq)
 
 int PQInsert(const void *data, p_q_t *pq)
 {
-	sl_iterator_t to_insert = SLInsert(data, pq->list);
-	sl_iterator_t start = SLBegin(pq->list);
-	int res = SLIsEqual(to_insert, start);
+	sl_iterator_t to_insert = NULL;
+	sl_iterator_t start = NULL;
+	int res = 0;
+	assert(NULL != pq);
+	
+	res = SLIsEqual(to_insert, start);
+	to_insert = SLInsert(data, pq->list);
+	start = SLBegin(pq->list);
+	
 	if(res)
 		return 0;
 	return 1;
@@ -91,9 +102,17 @@ int PQInsert(const void *data, p_q_t *pq)
 }
 void PQErase(p_q_t *pq, is_match_t is_match, void *param)
 {
-	sl_iterator_t start = SLBegin(pq->list);
-	sl_iterator_t end = SLEnd(pq->list);
-	sl_iterator_t found = SLFindCustom(start, end, is_match, param);
+
+	sl_iterator_t start = NULL;
+	sl_iterator_t end = NULL;
+	sl_iterator_t found = NULL;
+	
+	assert(NULL != pq);
+	assert(NULL != param);
+	
+	start = SLBegin(pq->list);
+	end = SLEnd(pq->list);
+	found = SLFindCustom(start, end, is_match, param);
 	SLRemove(found, pq->list);
 	
 }

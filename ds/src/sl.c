@@ -119,7 +119,7 @@ sl_iterator_t SLInsert(const void *data, sl_t *sl)
 	assert(NULL != data);
 	assert(NULL != sl);
 	
-	while((iter.iter != SLEnd(sl).iter) &&  (0 < sl->compare_func((void*)data, SLGetData(iter))))
+	while((iter.iter != SLEnd(sl).iter) &&  (0 <= sl->compare_func((void*)data, SLGetData(iter))))
 	{
 		iter = SLNext(iter);
 	}
