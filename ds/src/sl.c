@@ -161,7 +161,6 @@ sl_iterator_t SLFind(const sl_iterator_t from, const sl_iterator_t to, void *par
 sl_iterator_t SLFindCustom(const sl_iterator_t from, const sl_iterator_t to, is_match_t is_match, void *param)
 {
 	sl_iterator_t res = from;
-	assert(NULL != is_match);
 	assert(NULL != param);
 	assert(from.sl == to.sl);
 	res.iter = DLLFind(from.iter, to.iter, is_match, param);
