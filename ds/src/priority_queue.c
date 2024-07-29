@@ -66,7 +66,16 @@ void *PQPop(p_q_t *pq)
 
 void PQClear(p_q_t *pq)
 {
-	SLDestroy(pq->list);
+	sl_iterator_t start = SLBegin(pq->list);
+	sl_iterator_t next = SLNext(start);
+	sl_iterator_t end = SLEnd(pq->list);
+	
+	while(next != end)
+	{
+		SLRemove(start, pq->list);
+		start = next;
+		next = SLNext(start);
+	}
 }
 
 int PQInsert(const void *data, p_q_t *pq)
