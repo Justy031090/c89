@@ -1,7 +1,11 @@
 #include "scheduler.h"
 int main ()
 {
-	SCHEDCreate();
+	sd_t *sd1 = SCHEDCreate();
+	
+
+	
+	SCHEDDestroy(sd1);
 	
 	return 0;
 }

@@ -5,11 +5,14 @@
 
 #include "task.h"
 #include "uid.h"
+#include "scheduler.h"
+
 
 struct scheduler
 {
 	p_q_t *pq;
 	int stop;
+	task_t *current_task;
 };
 
 static int MatchUID(const void *uid1, const void *uid2);
@@ -26,6 +29,7 @@ int SCHEDRun(sd_t *sd)
 	
 	while(!IsEmpty && !sd->stop)
 	{
+		sd->stop = 0;
 		task_scheduled = PQPeek(sd->pq);
 		task_scheduled->func(task_scheduled->params);
 		task_scheduled->CleanUp(task_scheduled->cleanup_params);
@@ -60,13 +64,16 @@ void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 int SCHEDIsEmpty(const sd_t *sd)
 {
 	assert(NULL != sd);
-	return PQIsEmpty(sd->pq);
+	
+	return PQIsEmpty(sd->pq) && sd->current_task == NULL ? 1 : 0;
 }
 
 size_t SCHEDSize(const sd_t *sd)
 {
+	size_t sched_size = 0;
 	assert(NULL != sd);
-	return PQSize(sd->pq);
+	sched_size = PQSize(sd->pq);
+	return sd->current_task == NULL ? sched_size : sched_size + 1;
 }
 void SCHEDClear(sd_t *sd)
 {
@@ -81,13 +88,14 @@ sd_t *SCHEDCreate()
 	{
 		return NULL;
 	}
-	new_scheduler->pq = PQCreate(CompareFunc);
+	new_scheduler->pq = PQCreate(compare_task);
 	if(NULL == new_scheduler->pq)
 	{
 		free(new_scheduler);
 		return NULL;
 	}
 	new_scheduler->stop = 0;
+	new_scheduler->current_task = NULL;
 	
 	return new_scheduler;
 }
