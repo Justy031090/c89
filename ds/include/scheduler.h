@@ -5,22 +5,25 @@
 #include "p_q.h"
 
 typedef struct scheduler sd_t;
+typedef time_t (func_t *)(void *params);
 
-sd_t *SDCreate();
+typedef struct scheduler sd_t;
 
-void SDDestroy(sd_t *sd);
+sd_t *SCHEDCreate();
 
-int SDAddTask(sd_t *sd, time_t exe_time, void *func(void *params, sd_t *sd, task_t *task), void *params, void CleanUp()/* func pointer*/);
+void SCHEDDestroy(sd_t *sd);
 
-/*void SDRemoveTask(task_t *task, sd_t *sd);
-*/
-int SDRun(sd_t *sd);
+my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, clean_up_func_t clean_up);
 
-int SDIsEmpty(const sd_t *sd);
+void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd);
 
-size_t SDSize(const sd_t *sd);
+int SCHEDRun(sd_t *sd);
 
-void SDClear(sd_t *sd);
+int SCHEDIsEmpty(const sd_t *sd);
+
+size_t SCHEDSize(const sd_t *sd);
+
+void SCHEDClear(sd_t *sd);
 
 #endif /*__SD_H__*/
 
