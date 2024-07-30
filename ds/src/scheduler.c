@@ -1,47 +1,60 @@
+#include <stddef.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <time.h>
+
+#include "task.h"
+#include "uid.h"
 
 struct scheduler
 {
 	p_q_t *pq;
 	int stop;
-}
+};
 
-static int MatchUID(my_uid_t uid1, my_uid_t uid2);
+static int MatchUID(const void *uid1, const void *uid2);
+static int CompareFunc(const void *task1, const void *task2);
 
-typedef struct scheduler sd_t;
+is_match_t MatchUid = &MatchUID;
+compare_func_t compare_task = &CompareFunc;
+
 
 int SCHEDRun(sd_t *sd)
 {
 	int IsEmpty = PQIsEmpty(sd->pq);
-	void *task_scheduled = NULL;
+	task_t *task_scheduled = NULL;
 	
 	while(!IsEmpty && !sd->stop)
 	{
 		task_scheduled = PQPeek(sd->pq);
-		task_scheduled->func(task_scheduled->params)
-		task_scheduled->clean_up()
+		task_scheduled->func(task_scheduled->params);
+		task_scheduled->CleanUp(task_scheduled->cleanup_params);
+		PQDequeue(sd->pq);
 	}
+	return 1;
 }
 
-my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, clean_up_func_t clean_up)
+my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, cleanup_func_t clean_up, void *cleanup_params)
 {
 	int IsEnqueued = 0;
-	uid_t uid = UIDGenerate();
+	my_uid_t uid = UIDGenerate();
 	task_t *new_task = NULL;
 	assert(NULL != sd);
 	assert(NULL != params);
-	new_task = CreateTask(uid, exe_time, func, params, clean_up);
+	new_task = TaskCreate(exe_time, func, params, clean_up, cleanup_params);
 	if(NULL == new_task)
 	{
 		return bad_uid;
 	}
-	IsEnqueued = PQEnqueue(new_task);
+	new_task->task_id = uid;
+	IsEnqueued = PQEnqueue(new_task, sd->pq);
 	return IsEnqueued ? uid : bad_uid;
 }
 
 void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 {
 	assert(NULL != sd);
-	PQErase(sd->pq, MatchUID, task_id)
+	PQErase(sd->pq, MatchUid, &task_id);
 }
 
 int SCHEDIsEmpty(const sd_t *sd)
@@ -58,17 +71,17 @@ size_t SCHEDSize(const sd_t *sd)
 void SCHEDClear(sd_t *sd)
 {
 	assert(NULL != sd);
-	return PQClear(sd->pq);
+	PQClear(sd->pq);
 }
 
-sd_t *SCHEDCreate(compare_func_t priority_func)
+sd_t *SCHEDCreate()
 {
 	sd_t *new_scheduler = malloc(sizeof(sd_t));
 	if(NULL == new_scheduler)
 	{
 		return NULL;
 	}
-	new_scheduler->pq = PQCreate(priority_func);
+	new_scheduler->pq = PQCreate(CompareFunc);
 	if(NULL == new_scheduler->pq)
 	{
 		free(new_scheduler);
@@ -86,9 +99,18 @@ void SCHEDDestroy(sd_t *sd)
 	free(sd);
 }
 
-static int MatchUID(my_uid_t uid1, my_uid_t uid2)
+static int MatchUID(const void *uid1, const void *uid2)
 {
-	return uid1==uid2;
+	my_uid_t *ud1 = (my_uid_t *)uid1;
+	my_uid_t *ud2 = (my_uid_t *)uid2;
+	
+	return UIDIsEqual(*ud1, *ud2);
+}
+
+static int CompareFunc(const void *task1, const void *task2)
+{
+	 return TaskGetTime((task_t *)task1) > TaskGetTime((task_t *)task2);
+
 }
 
 
