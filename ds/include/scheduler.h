@@ -25,5 +25,7 @@ size_t SCHEDSize(const sd_t *sd);
 
 void SCHEDClear(sd_t *sd);
 
+void SCHEDStop(sd_t *sd);
+
 #endif /*__SD_H__*/
 

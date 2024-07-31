@@ -1,7 +1,9 @@
-#include <stddef.h>
-#include <stdlib.h>
+#include <stddef.h> 
+#include <stdlib.h> /*malloc*/
 #include <assert.h>
-#include <time.h>
+#include <time.h> /*time*/
+#include <unistd.h> /*sleep*/
+
 
 #include "task.h"
 #include "uid.h"
@@ -24,16 +26,29 @@ compare_func_t compare_task = &CompareFunc;
 
 int SCHEDRun(sd_t *sd)
 {
-	int IsEmpty = PQIsEmpty(sd->pq);
+	time_t rescheduler = 0;
 	task_t *task_scheduled = NULL;
 	
-	while(!IsEmpty && !sd->stop)
+	while(!PQIsEmpty(sd->pq) && !sd->stop)
 	{
 		sd->stop = 0;
 		task_scheduled = PQPeek(sd->pq);
-		task_scheduled->func(task_scheduled->params);
-		task_scheduled->CleanUp(task_scheduled->cleanup_params);
+		sd->current_task = task_scheduled;
 		PQDequeue(sd->pq);
+		rescheduler = sd->current_task->func(sd->current_task->params);
+		
+		if(rescheduler)
+		{
+			TaskSetTime(sd->current_task, time(NULL) + rescheduler);
+			PQEnqueue(sd->current_task, sd->pq);
+		}
+		else
+		{
+			SCHEDRemoveTask(sd->current_task->task_id, sd);
+			
+		}
+		
+		sd->current_task = NULL;
 	}
 	return 1;
 }
@@ -64,7 +79,6 @@ void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 int SCHEDIsEmpty(const sd_t *sd)
 {
 	assert(NULL != sd);
-	
 	return PQIsEmpty(sd->pq) && sd->current_task == NULL ? 1 : 0;
 }
 
@@ -105,6 +119,10 @@ void SCHEDDestroy(sd_t *sd)
 	assert(NULL != sd);
 	PQDestroy(sd->pq);
 	free(sd);
+}
+void SCHEDStop(sd_t *sd)
+{
+	sd->stop = 1;
 }
 
 static int MatchUID(const void *uid1, const void *uid2)

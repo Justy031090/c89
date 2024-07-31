@@ -9,13 +9,13 @@
 
 #include "dll.h"
 
-typedef struct dll
+struct dll
 {
 	node_t *head;
 	node_t *tail;
 };
 
-typedef struct node
+struct node
 {
 	void *data;
 	node_t *next;
@@ -197,7 +197,6 @@ dll_iterator_t DLLInsert(dll_iterator_t iter, const void *data, dll_t *dll)
 dll_iterator_t DLLRemove(dll_iterator_t iter, dll_t *dll)
 {
 	dll_iterator_t next = NULL;
-	dll_iterator_t prev = NULL;
 	
 	assert(NULL != iter);
 	assert(NULL != dll);
