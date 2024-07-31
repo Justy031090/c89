@@ -5,7 +5,7 @@
 #include "sl.h"
 #include "dll.h"
 
-int IsMatch(void *val1, void *val2)
+int IsMatch(const void *val1, const void *val2)
 {
 	size_t size = 4;
 	if (0 == memcmp(val1, val2, size))

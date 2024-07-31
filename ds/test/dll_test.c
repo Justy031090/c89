@@ -2,7 +2,7 @@
 #include "dll.h"
 
 
-int Match (void *num1, void *num2)
+int Match (const void *num1, const void *num2)
 {
 	if(num1 && num2)
 		return *(int *)num1 == *(int *)num2 ? 1 : 0 ;
@@ -141,6 +141,8 @@ int main ()
 		printf("TEST FOR MULTI FIND FUNCTION FAILED\n");
 	}
 	
-	DLLDestroy(dll);	
+	DLLDestroy(dll);
+	DLLDestroy(dll2);
+	DLLDestroy(dll3);
 	return 0;
 }

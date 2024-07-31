@@ -64,6 +64,7 @@ int SCHEDRun(sd_t *sd)
 	return 1;
 }
 
+
 my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, cleanup_func_t clean_up, void *cleanup_params)
 {
 	int IsEnqueued = 0;
@@ -91,6 +92,7 @@ void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 		free(sd->current_task);
 		return;
 	}
+
 	PQErase(sd->pq, MatchUid, &task_id);
 }
 
@@ -142,6 +144,7 @@ sd_t *SCHEDCreate()
 void SCHEDDestroy(sd_t *sd)
 {
 	assert(NULL != sd);
+	SCHEDClear(sd);
 	PQDestroy(sd->pq);
 	free(sd);
 }
@@ -152,10 +155,14 @@ void SCHEDStop(sd_t *sd)
 
 static int MatchUID(const void *uid1, const void *uid2)
 {
-	my_uid_t *ud1 = (my_uid_t *)uid1;
+	my_uid_t ud1 = TaskGetUID((task_t *)uid1);
 	my_uid_t *ud2 = (my_uid_t *)uid2;
-	
-	return UIDIsEqual(*ud1, *ud2);
+	int res = UIDIsEqual(ud1, *ud2);
+	if (1 == res)
+	{
+		free((task_t *)uid1);
+	}
+	return res;
 }
 
 static int CompareFunc(const void *task1, const void *task2)

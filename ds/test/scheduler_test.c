@@ -50,6 +50,7 @@ int main()
 	p_t params1;
 	my_uid_t task1_id; 
 	my_uid_t task2_id;
+	my_uid_t task3_id;
 	size_t size = 0;
 	params1.a = 1;
 	params1.sd = new_sd;
@@ -64,6 +65,7 @@ int main()
 	}
 	task1_id = SCHEDAddTask(new_sd, time(NULL)+1, printfunc1, (void *)&params1, CleanUp,(void *)&params1);
 	task2_id = SCHEDAddTask(new_sd, time(NULL)+1, printfunc2, (void *)&params1, CleanUp,(void *)&params1);
+
 	
 	
 	if(0 == SCHEDIsEmpty(new_sd))
@@ -86,10 +88,10 @@ int main()
 	
 	SCHEDRun(new_sd);
 	printf("if printed 14523... then size success & run1 success &stop success\n");
+	
 	task1_id = SCHEDAddTask(new_sd, time(NULL)+1, printfunc1, (void *)&params1, CleanUp,(void *)&params1);
 	SCHEDRemoveTask(task2_id, new_sd);
 
-	SCHEDStop(new_sd);
 	SCHEDRun(new_sd);
 	printf("if printed 456 then size success & run2 success\n");
 	

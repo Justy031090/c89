@@ -159,9 +159,6 @@ size_t DLLSize(const dll_t *dll)
 
 int DLLIsEqual(const dll_iterator_t iter1, const dll_iterator_t iter2)
 {
-	assert(NULL != iter1);
-	assert(NULL != iter2);
-	
 	return iter1==iter2;
 }
 
@@ -221,21 +218,13 @@ dll_iterator_t DLLFind(const dll_iterator_t from, const dll_iterator_t to, is_ma
 	dll_iterator_t runner = from;
 	dll_iterator_t end_node = to;
 	
-	assert(NULL != from);
-	assert(NULL != to);
-	assert(NULL != param);
-	assert(NULL != is_match);
-	
-	while(runner != end_node)
+	while(1 != DLLIsEqual(runner, end_node) && 1 != is_match(runner->data, param))
 	{
-		if(1 == is_match(runner->data, param))
-		{	
-			return runner;
-		}
-		
 		runner = DLLNext(runner);
 	}
-	
+	if(runner != end_node)
+		return runner;
+		
 	return NULL;
 }
 
