@@ -117,8 +117,7 @@ dll_iterator_t DLLPrev(dll_iterator_t iter)
 
 void *DLLGetData(const dll_iterator_t iter)
 {
-	assert(NULL != iter);
-	assert(NULL != iter->data);
+
 	return iter->data;
 }
 

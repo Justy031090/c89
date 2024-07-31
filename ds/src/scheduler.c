@@ -28,28 +28,39 @@ int SCHEDRun(sd_t *sd)
 {
 	time_t rescheduler = 0;
 	task_t *task_scheduled = NULL;
+	sd->stop = 0;
 	
 	while(!PQIsEmpty(sd->pq) && !sd->stop)
 	{
-		sd->stop = 0;
+		
+		
 		task_scheduled = PQPeek(sd->pq);
 		sd->current_task = task_scheduled;
-		PQDequeue(sd->pq);
-		rescheduler = sd->current_task->func(sd->current_task->params);
+
 		
-		if(rescheduler)
+		if(time(NULL) >= TaskGetTime(sd->current_task))
 		{
-			TaskSetTime(sd->current_task, time(NULL) + rescheduler);
-			PQEnqueue(sd->current_task, sd->pq);
+			PQDequeue(sd->pq);
+			rescheduler = sd->current_task->func(sd->current_task->params);
+		
+			if(rescheduler)
+			{
+				TaskSetTime(sd->current_task, time(NULL) + rescheduler);
+				PQEnqueue(sd->current_task, sd->pq);
+			}
+			else
+			{
+				SCHEDRemoveTask(sd->current_task->task_id, sd);
+				
+			}
 		}
 		else
 		{
-			SCHEDRemoveTask(sd->current_task->task_id, sd);
-			
+			sleep(TaskGetTime(sd->current_task) - time(NULL));
 		}
-		
 		sd->current_task = NULL;
 	}
+	
 	return 1;
 }
 
@@ -91,8 +102,15 @@ size_t SCHEDSize(const sd_t *sd)
 }
 void SCHEDClear(sd_t *sd)
 {
+	size_t size = 0;
 	assert(NULL != sd);
-	PQClear(sd->pq);
+
+	size = SCHEDSize(sd);
+	while(size)
+	{
+		free(PQDequeue(sd->pq));
+		--size;
+	}
 }
 
 sd_t *SCHEDCreate()
@@ -135,7 +153,10 @@ static int MatchUID(const void *uid1, const void *uid2)
 
 static int CompareFunc(const void *task1, const void *task2)
 {
-	 return TaskGetTime((task_t *)task1) > TaskGetTime((task_t *)task2);
+	  if (TaskGetTime((task_t *)task1) >= TaskGetTime((task_t *)task2))
+	  	return 1;
+	  	
+	  return -1;
 
 }
 
