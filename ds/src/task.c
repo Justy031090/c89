@@ -43,6 +43,7 @@ time_t TaskRunTask(task_t *task)
 void TaskCleanUp(task_t *task)
 {
 	task->CleanUp(task->cleanup_params);
+	
 }
 
 

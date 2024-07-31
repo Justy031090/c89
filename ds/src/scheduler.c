@@ -83,7 +83,14 @@ my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, clea
 
 void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 {
+
 	assert(NULL != sd);
+	if(sd->current_task && UIDIsEqual(TaskGetUID(sd->current_task), task_id))
+	{
+		TaskCleanUp(sd->current_task);
+		free(sd->current_task);
+		return;
+	}
 	PQErase(sd->pq, MatchUid, &task_id);
 }
 
