@@ -60,7 +60,7 @@ void *PQPeek(const p_q_t *pq)
 void *PQDequeue(p_q_t *pq)
 {
 	assert(NULL != pq);
-	return SLPopBack(pq->list);
+	return SLPopFront(pq->list);
 }
 
 void PQClear(p_q_t *pq)

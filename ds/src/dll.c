@@ -201,11 +201,13 @@ dll_iterator_t DLLRemove(dll_iterator_t iter, dll_t *dll)
 	assert(NULL != iter);
 	assert(NULL != dll);
 	
+	
+	
 	if(NULL == iter->next || NULL == iter->prev)
 	{
 		return dll->tail;
 	}
-	
+	next = iter->next;
 	iter->next->prev = iter->prev;
 	iter->prev->next = iter->next;
 	

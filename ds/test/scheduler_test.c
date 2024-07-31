@@ -84,10 +84,12 @@ int main()
 	
 	printf("BEFORE RUN\n");
 	SCHEDRun(new_sd);
+	printf("INSIDE RUN\n");
 	
 	
 	
 	SCHEDDestroy(new_sd);
+	printf("AFTER RUN\n");
 	return 0;
 }
 

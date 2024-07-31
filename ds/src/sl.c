@@ -113,17 +113,34 @@ void *SLPopBack(sl_t *sl)
 	
 }
 
+typedef struct insert_helper
+{
+	void *data;
+	compare_func_t compare;
+}insert_t;
+static int InsertFunc(const void *data, const void *param)
+{
+	return (0 <= ((insert_t *)param)->compare(data, ((insert_t *)param)->data));
+}
+
 sl_iterator_t SLInsert(const void *data, sl_t *sl)
 {
-	sl_iterator_t iter = SLBegin(sl);
+	dll_iterator_t iter;
+	insert_t insert;
+
 	assert(NULL != data);
 	assert(NULL != sl);
 	
-	while((iter.iter != SLEnd(sl).iter) &&  (0 <= sl->compare_func((void*)data, SLGetData(iter))))
+	insert.data = (void *)data;
+	insert.compare = sl->compare_func;
+	
+	iter = DLLFind(DLLBegin(sl->list), DLLEnd(sl->list), InsertFunc, &insert);
+	if(NULL == iter)
 	{
-		iter = SLNext(iter);
+		iter = DLLEnd(sl->list);
 	}
-	return DLLIterToSlIter(DLLInsert(iter.iter, (void*)data, sl->list), sl);
+	
+	return DLLIterToSlIter(DLLInsert(iter, (void*)data, sl->list), sl);
 }
 sl_iterator_t SLRemove(sl_iterator_t iter, sl_t *sl)
 {
