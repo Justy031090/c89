@@ -6,9 +6,10 @@
 typedef struct fsa fsa_t;
 
 
-size_t FSAMinPoolSize(size_t size_of_block size_t num_of_blocks);
+size_t FSAMinPoolSize(size_t size_of_block, size_t num_of_blocks);
 fsa_t *FSAInit(void *memory_pool, size_t size_of_block, size_t num_of_blocks);
-void *FSAAllocateBlock(fsa_t *fsa); /*O(1)*/
-void FSAFreeBlock(fsa_t *fsa, void *to_free);  /*O(1)*/
-size_t FSACountNumOfFreeBlocks(const fsa_t *fsa); /*O(n)*/
+void *FSAAllocateBlock(fsa_t *fsa);
+void FSAFreeBlock(fsa_t *fsa, void *to_free);
+size_t FSACountNumOfFreeBlocks(const fsa_t *fsa);
+
 #endif
