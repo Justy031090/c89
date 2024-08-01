@@ -4,6 +4,7 @@
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
+#define _DEFAULT_SOURCE
 #include "uid.h"
 
 const my_uid_t bad_uid = {0,0,0,0};

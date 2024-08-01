@@ -4,14 +4,14 @@
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
+#include <stddef.h>/*size_t*/
+
 #include "vsa.h"
 
 struct vsa
 {
 	long mem_count;
 };
-
-
 
 vsa_t *VSAInit(void *memory_pool, size_t mem_size)
 {
@@ -25,9 +25,10 @@ vsa_t *VSAInit(void *memory_pool, size_t mem_size)
 
 void *VSAAllocate(vsa_t *vsa, size_t size_of_block)
 {
-	if((*(long *)vsa->mem_count) < size_of_block)
+	while(vsa->mem_count < size_of_block || vsa->mem_count == 0)
 	{
-		vsa = vsa + vsa->mem_count + 1;
+		vsa = vsa + mem_count +1;
+				
 	}
 }
 

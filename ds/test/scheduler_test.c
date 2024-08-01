@@ -50,7 +50,6 @@ int main()
 	p_t params1;
 	my_uid_t task1_id; 
 	my_uid_t task2_id;
-	my_uid_t task3_id;
 	size_t size = 0;
 	params1.a = 1;
 	params1.sd = new_sd;
@@ -103,7 +102,6 @@ int main()
 	size = SCHEDSize(new_sd);
 	SCHEDClear(new_sd);
 	
-	printf("%d\n\n", size);
 	if (1 == SCHEDIsEmpty(new_sd)&& 3 == size)
 	{
 		printf("Clear success\n");

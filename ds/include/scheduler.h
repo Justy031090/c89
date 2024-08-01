@@ -8,6 +8,7 @@
 typedef struct scheduler sd_t;
 typedef time_t (*func_t)(void *params);
 typedef void (*cleanup_func_t)(void *params);
+typedef void (*action_func_t)(void *params);
 
 sd_t *SCHEDCreate();
 

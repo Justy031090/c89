@@ -108,8 +108,7 @@ void PQErase(p_q_t *pq, is_match_t is_match, void *param)
 	found = SLFindCustom(start, end, is_match, param);
 	if(NULL == found.iter)
 		return;
-		
-	printf("REMOVING\n");
+	
 	SLRemove(found, pq->list);
 }
 

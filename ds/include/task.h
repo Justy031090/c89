@@ -12,7 +12,6 @@
 
 typedef struct task task_t;
 
-
 struct task
 {
 	my_uid_t task_id;
@@ -34,6 +33,10 @@ void TaskSetTime(task_t *task, time_t time);
 time_t TaskRunTask(task_t *task);
 
 void TaskCleanUp(task_t *task);
+
+void TaskDestroy(task_t *task);
+
+int TaskIsBefore(const void *task1, const void *task2);
 
 
 #endif /*__TASK_H__*/

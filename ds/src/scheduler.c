@@ -16,7 +16,7 @@
 #include "uid.h"
 #include "scheduler.h"
 
-
+#define SUCCESS (1)
 struct scheduler
 {
 	p_q_t *pq;
@@ -25,22 +25,21 @@ struct scheduler
 };
 
 static int MatchUID(const void *uid1, const void *uid2);
-static int CompareFunc(const void *task1, const void *task2);
+
 
 is_match_t MatchUid = &MatchUID;
-compare_func_t compare_task = &CompareFunc;
+compare_func_t compare_task = &TaskIsBefore;
 
 
 int SCHEDRun(sd_t *sd)
 {
+	int sleep_flag = 1;
 	time_t rescheduler = 0;
 	task_t *task_scheduled = NULL;
 	sd->stop = 0;
 	
 	while(!PQIsEmpty(sd->pq) && !sd->stop)
 	{
-		
-		
 		task_scheduled = PQPeek(sd->pq);
 		sd->current_task = task_scheduled;
 
@@ -59,16 +58,21 @@ int SCHEDRun(sd_t *sd)
 			{
 				SCHEDRemoveTask(sd->current_task->task_id, sd);
 				
+				
 			}
 		}
 		else
 		{
-			sleep(TaskGetTime(sd->current_task) - time(NULL));
-		}
+			while(0 != sleep_flag)
+			{
+				sleep_flag = sleep(TaskGetTime(sd->current_task) - time(NULL));
+			}		
+		}	
+		
 		sd->current_task = NULL;
 	}
 	
-	return 1;
+	return SUCCESS;
 }
 
 
@@ -142,7 +146,7 @@ sd_t *SCHEDCreate()
 		free(new_scheduler);
 		return NULL;
 	}
-	new_scheduler->stop = 0;
+	new_scheduler->stop = 1;
 	new_scheduler->current_task = NULL;
 	
 	return new_scheduler;
@@ -172,14 +176,7 @@ static int MatchUID(const void *uid1, const void *uid2)
 	return res;
 }
 
-static int CompareFunc(const void *task1, const void *task2)
-{
-	  if (TaskGetTime((task_t *)task1) >= TaskGetTime((task_t *)task2))
-	  	return 1;
-	  	
-	  return -1;
 
-}
 
 
 

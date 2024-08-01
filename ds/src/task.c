@@ -46,4 +46,17 @@ void TaskCleanUp(task_t *task)
 	
 }
 
+void TaskDestroy(task_t *task)
+{
+	TaskCleanUp(task);
+	free(task);
+}
+int TaskIsBefore(const void *task1, const void *task2)
+{
+	  if (TaskGetTime((task_t *)task1) >= TaskGetTime((task_t *)task2))
+	  	return 1;
+	  	
+	  return -1;
+
+}
 
