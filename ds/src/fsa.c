@@ -4,6 +4,9 @@
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
+
+#include "fsa.h"
+
 struct fsa
 {
     size_t next_free; 
