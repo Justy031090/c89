@@ -1,13 +1,13 @@
 /*			.. Fixed-Size Allocator Implementation ..
 (\.../)		.. Authored by Michael Bar 01/08/2024 .. 
-(=';'=) 	.. code reviewd by ..
+(=';'=) 	.. code reviewd by Tamir 04/08/2024..
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
 
 #include "fsa.h"
 
-#define BLOCK_SIZE (8)
+#define BLOCK_SIZE (sizeof(size_t))
 
 struct fsa
 {
@@ -56,7 +56,7 @@ void FSAFreeBlock(fsa_t *fsa, void *to_free)
 	assert(NULL != to_free);
 	free_block = (size_t *)to_free;
 	*free_block = fsa->next_free;
-	fsa->next_free = ((size_t)fsa ^ (size_t)to_free);
+	fsa->next_free = ((size_t)fsa - (size_t)to_free);
 }
 
 fsa_t *FSAInit(void *memory_pool, size_t size_of_block, size_t num_of_blocks)
