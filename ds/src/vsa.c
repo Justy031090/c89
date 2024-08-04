@@ -63,24 +63,20 @@ void *VSAAllocate(vsa_t *vsa, size_t size_of_block)
 	
 	size_of_block = _AlignBlock(size_of_block);
 	
-	while (0 != next_index->mem_count && (runner->mem_count < (long)size_of_block) && runner->mem_count != 0)
+	while (0 != next_index->mem_count && runner->mem_count < (long)size_of_block && runner->mem_count != 0)
 	{
 		if(runner->mem_count < 0)
 		{
 			runner = _JumpNext(runner);
 			next_index = _JumpNext(runner);
+			continue;
 		}
-		else
+
+		if (next_index->mem_count > 0)
 		{
-			if (next_index->mem_count > 0)
-			{
-				runner->mem_count += next_index->mem_count + HEADER_SIZE;
-			}
-			else
-			{
-				runner = _JumpNext(runner);
-				next_index = _JumpNext(runner);
-			}
+			runner->mem_count =_FragmentationFix(runner, next_index);
+			next_index = _JumpNext(runner);
+			continue;
 		}
 	}
 	
@@ -91,9 +87,11 @@ void *VSAAllocate(vsa_t *vsa, size_t size_of_block)
 			temp = runner->mem_count - HEADER_SIZE - size_of_block;
 			((vsa_t *)(((char *)runner) + HEADER_SIZE + size_of_block ))->mem_count = temp;
 		}
+		
 		#ifndef NDBUG
 		runner->magic_num = KEY;
 		#endif
+		
 		runner->mem_count = -size_of_block*(temp > 0) + (-runner->mem_count * (temp <=0));
 		return (void *)(((char *)runner)+ HEADER_SIZE);
 	}
@@ -120,6 +118,7 @@ size_t VSALargestFreeBlock(const vsa_t *vsa)
 		{
 			runner->mem_count = _FragmentationFix(runner, next_index);
 			next_index = _JumpNext(runner);
+			continue;
 		}
 		if(runner->mem_count > largest_block)
 		{
