@@ -1,69 +1,115 @@
-#include <stdio.h> /*printf*/
+#include <stdlib.h> /* malloc / free */
+#include <stdio.h> /* print */
+
 #include "vsa.h"
+
 int main()
 {
-	char mem_block[128];
-	vsa_t *new_vsa = VSAInit((void *) mem_block, 128);
-	void *a = NULL;
-	void *b = NULL;
-	void *c = NULL;
-	void *d = NULL;
-	void *e = NULL;
-	if ((*((size_t *)new_vsa)) = 48)
-	{
-		printf("Init success\n");
-	}
-	else
-	{
-		printf("Init FAIL!!");
-	}
+	size_t size_of_memory = 200;
 	
-	a = VSAAllocate(new_vsa, 7);
-	b = VSAAllocate(new_vsa, 15);
-	c = VSAAllocate(new_vsa, 7);
-	d = VSAAllocate(new_vsa, 17);/*NULL*/
+	vsa_t *vsa = (void *)malloc(size_of_memory);
+	
+	size_t size1, size2, size3, size4;
+	
+	void *res_z;
+	void *res_x;
+	void *res_c;
+	void *res_v;
+	void *res_b;
+	void *res_n;
+	void *res_m;
+	
+	vsa = VSAInit(vsa, size_of_memory);
+	
+	size1 = VSALargestFreeBlock(vsa);
+	
+	res_z = VSAAllocate(vsa, 4);
+	res_v = VSAAllocate(vsa, 12);
+	res_x = VSAAllocate(vsa, 2);
+	
 
-	if (NULL != c && NULL != a && NULL != b)
+	if (NULL != res_z && 168 == size1)
 	{
-		printf("Allocate success\n");
+		printf("Init Success\n");
+		printf("Allocate Success\n");
 	}
 	else
 	{
+		printf("Init FAIL!!\n");
 		printf("Allocate FAIL!!\n");
 	}
 	
-	if (0 == VSALargestFreeBlock(new_vsa))
+	size2 = VSALargestFreeBlock(vsa);
+	
+	if (168 == size1 && 88 == size2)
 	{
-		printf("LargestFreeBlock full success\n");
+		printf("Largest Free Block Success\n");
 	}
 	else
 	{
-		printf("LargestFreeBlock full FAIL!!\n");
+		printf("Largest Free Block FAIL!!\n");
 	}
 	
-	VSAFreeBlock(a);
+	res_c = VSAAllocate(vsa, 4);
 	
-	if (8 == VSALargestFreeBlock(new_vsa))
+	VSAFreeBlock(res_c);
+	
+	size3 = VSALargestFreeBlock(vsa);
+	
+	if (88 == size3)
 	{
-		printf("Free success\n");
-		printf("LargestFreeBlock notfull success\n");
-	}
-	d = VSAAllocate(new_vsa, 7);
-	if (0 == VSALargestFreeBlock(new_vsa))
-	{
-		printf("ReAllocate success\n");
+		printf("Free Block Success\n");
 	}
 	else
 	{
-		printf("ReAllocate FAIL!!\n");
+		printf("Free Block FAIL!!\n");
 	}
-	VSAFreeBlock(a);
-	VSAFreeBlock(a);
-	e = VSAAllocate(new_vsa, 17);
-	if (e != NULL && 0 == VSALargestFreeBlock(new_vsa))
+	
+	res_b = VSAAllocate(vsa, 20);
+	
+	res_n = VSAAllocate(vsa, 50);
+	
+	res_m = VSAAllocate(vsa, 42);
+	
+	size3 = VSALargestFreeBlock(vsa);
+	
+	if(NULL == res_n && size3 == 0)
 	{
-		printf("ReAllocate full  success\n");
+		printf("Allocate overflow success\n");
+		printf("LargestFree full success\n");
 	}
+	else
+	{
+		printf("Allocate overflow FAIL!!\n");
+		printf("LargestFree full FAIL!!\n");
+	}
+	VSAFreeBlock(res_v);
+	VSAFreeBlock(res_x);
+	
+	size4 = VSALargestFreeBlock(vsa);
+	res_v = VSAAllocate(vsa, 12);
+	res_x = VSAAllocate(vsa, 2);
+	
+	VSAFreeBlock(res_v);
+	VSAFreeBlock(res_x);
+	
+	res_n = VSAAllocate(vsa, 38);
+	
+	if (40 == size4 && NULL != res_n)
+	{
+		printf("LargestFree defrag success\n");
+		printf("Allocate defrag success\n");
+	}
+	else
+	{
+		printf("LargestFree defrag FAIL!!\n");
+		printf("Allocate defrag FAIL!!\n");
+	}
+	
+	
+	free(vsa);
+	
 	return 0;
 }
+
 
