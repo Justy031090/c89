@@ -9,7 +9,7 @@
 
 #include "vsa.h"
 #define ALIGNMENT sizeof(size_t)
-#define MIN_BLOCK_SIZE (16)
+#define KEY 123456789
 
 struct vsa
 {
@@ -50,6 +50,8 @@ void VSAFreeBlock(void *to_free)
 	assert(NULL != to_free);
 	
 	free_index = (vsa_t *)((char *)to_free - ALIGNMENT);
+	
+	assert(free_index->magic_num == KEY);
 	free_index->mem_count = _Abs(free_index->mem_count);
 }
 
@@ -85,8 +87,11 @@ void *VSAAllocate(vsa_t *vsa, size_t size_of_block)
 		if (runner->mem_count != (long)size_of_block)
 		{
 			temp = runner->mem_count - ALIGNMENT - size_of_block;
-			((vsa_t *)(((char *)runner) + size_of_block + ALIGNMENT))->mem_count = temp;
+			((vsa_t *)(((char *)runner) + ALIGNMENT + size_of_block ))->mem_count = temp;
 		}
+		#ifndef NDBUG
+		runner->magic_num = KEY;
+		#endif
 		runner->mem_count = -size_of_block;
 		return (void *)(((char *)runner)+ ALIGNMENT);
 	}
