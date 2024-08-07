@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "dll.h"
 
-
 int Match (const void *num1, const void *num2)
 {
 	if(num1 && num2)

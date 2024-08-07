@@ -1,6 +1,6 @@
 /*			.. Variable Memory Allocator Implementation ..
 (\.../)		.. Authored by Michael Bar 02/08/2024 .. 
-(=';'=) 	.. code reviewd by ..
+(=';'=) 	.. code reviewd by Yuval 03/08/2024..
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
@@ -24,6 +24,7 @@ static long _Abs (long x);
 static vsa_t *_JumpNext(vsa_t *index);
 static long _FragmentationFix(vsa_t *runner, vsa_t *next_index);
 static size_t _AlignBlock(size_t size_of_block);
+static int _BlockSizeChecks(vsa_t *runner, vsa_t *next_index);
 
 vsa_t *VSAInit(void *memory_pool, size_t mem_size)
 {
@@ -50,8 +51,8 @@ void VSAFreeBlock(void *to_free)
 	assert(NULL != to_free);
 	
 	free_index = (vsa_t *)((char *)to_free - HEADER_SIZE);
-	
 	assert(free_index->magic_num == KEY);
+	free_index->magic_num = 0;
 	free_index->mem_count = _Abs(free_index->mem_count);
 }
 
@@ -65,19 +66,8 @@ void *VSAAllocate(vsa_t *vsa, size_t size_of_block)
 	
 	while (0 != next_index->mem_count && runner->mem_count < (long)size_of_block && runner->mem_count != 0)
 	{
-		if(runner->mem_count < 0)
-		{
-			runner = _JumpNext(runner);
-			next_index = _JumpNext(runner);
+		if(_BlockSizeChecks(runner, next_index))
 			continue;
-		}
-
-		if (next_index->mem_count > 0)
-		{
-			runner->mem_count =_FragmentationFix(runner, next_index);
-			next_index = _JumpNext(runner);
-			continue;
-		}
 	}
 	
 	if(runner->mem_count >= ((long)size_of_block))
@@ -107,19 +97,9 @@ size_t VSALargestFreeBlock(const vsa_t *vsa)
 	
 	while(0 != runner->mem_count)
 	{
-		if(runner->mem_count < 0)
-		{
-			runner = _JumpNext(runner);
-			next_index = _JumpNext(runner);
+		if(_BlockSizeChecks(runner, next_index))
 			continue;
-		}
 		
-		if(next_index->mem_count > 0)
-		{
-			runner->mem_count = _FragmentationFix(runner, next_index);
-			next_index = _JumpNext(runner);
-			continue;
-		}
 		if(runner->mem_count > largest_block)
 		{
 			largest_block = runner->mem_count;
@@ -129,6 +109,24 @@ size_t VSALargestFreeBlock(const vsa_t *vsa)
 	}
 	
 	return largest_block;
+}
+
+static int _BlockSizeChecks(vsa_t *runner, vsa_t *next_index)
+{
+	if(runner->mem_count < 0)
+	{
+		runner = _JumpNext(runner);
+		next_index = _JumpNext(runner);
+		return 1;
+	}
+
+	if (next_index->mem_count > 0)
+	{
+		runner->mem_count =_FragmentationFix(runner, next_index);
+		next_index = _JumpNext(runner);
+		return 1;
+	}
+	return 0;
 }
 
 static long _Abs (long x)

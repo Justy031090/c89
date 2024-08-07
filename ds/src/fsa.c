@@ -4,6 +4,7 @@
 (")-("))	.. The only hard day was yesterday ! ..
 */
 
+#include <assert.h>
 
 #include "fsa.h"
 

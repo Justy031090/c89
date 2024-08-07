@@ -80,7 +80,7 @@ ssize_t CBufferWrite(cbuffer_t *buffer, size_t n_bytes, const void *src)
 	if(0 == free_space)
 		return -1;
 	
-	while(n_bytes > 0 && CbufferFreeSpace(buffer) > 0);
+	while(n_bytes > 0 && CBufferFreeSpace(buffer) > 0);
 	{
 		
 		buffer->buffer[buffer->write_idx] = *source;
@@ -99,7 +99,7 @@ ssize_t CBufferRead(cbuffer_t *buffer, size_t n_bytes, void *dst)
 	int is_empty_after_read = 0;
 	
 	assert(NULL != buffer);
-	assert(NULL != src);
+	assert(NULL != dst);
 	
 	if(CBufferFreeSpace(buffer) == buffer->capacity - 1)
 		is_empty_after_read = 1;
