@@ -25,7 +25,7 @@ static unsigned int *GenerateArray(unsigned int *arr, size_t size)
 	{
 		arr[i] = rand();
 	}
-	
+	return arr;
 }
 
 static int IsSorted(unsigned int *arr, size_t size)
