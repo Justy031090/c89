@@ -5,7 +5,7 @@
 
 #include "linear_sort.h"
 
-#define ARRAY_SIZE 10
+#define ARRAY_SIZE 5000
 #define DIGIT 1
 
 static void PrintResults(int x, char *name)
