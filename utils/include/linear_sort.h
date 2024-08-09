@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-int *StableCountingSort(int *, size_t);
+int *StableCountingSort(int *, size_t, int);
 int *UnstableCountingSort(int *, size_t);
 int *RadixSort(int *, size_t);
 
