@@ -1,5 +1,7 @@
-#include <stddef.h>
-#include <stdlib.h>
+#include <stddef.h> /*size_t*/
+#include <stdlib.h> /*malloc*/
+#include <assert.h>
+
 #include "linear_sort.h"
 
 #define BASE 10
@@ -8,9 +10,14 @@ static int _Max(int *arr, size_t size);
 
 int *UnstableCountingSort(int *numbers, size_t array_size)
 {
-	int max = _Max(numbers, array_size);
+	int max = 0;
 	int *count = (int *)calloc(max+1, sizeof(int));
 	size_t i = 0, j = 0;
+
+	assert(numbers);
+
+	max = _Max(numbers, array_size);
+
 	if(NULL == count)
 	{
 		return NULL;
@@ -40,6 +47,8 @@ int *StableCountingSort(int *numbers, size_t array_size, int digit)
     int count[BASE] = {0};
 	size_t i;
 	int *output = calloc(array_size, sizeof(int));
+
+	aseert(numbers != NULL);
 	
 	if(NULL == output)
 	{
@@ -75,9 +84,10 @@ int *StableCountingSort(int *numbers, size_t array_size, int digit)
 
 int *RadixSort(int *numbers, size_t array_size)
 {
-	int max = _Max(numbers, array_size);
+	int max = 0;
 	int digit = 1;
-
+	assert(numbers);
+	max = _Max(numbers, array_size);
     for (; max / digit > 0; digit *= BASE)
 	{
         StableCountingSort(numbers, array_size, digit);
