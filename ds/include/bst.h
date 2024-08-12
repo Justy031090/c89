@@ -1,3 +1,7 @@
+#ifndef __BST_H__
+#define __BST_H___
+
+
 #include <stddef.h>
 
 typedef struct node* bst_iter_t;
@@ -42,7 +46,7 @@ void *BSTGetData(bst_iter_t iter);
 
 bst_iter_t BSTNext(bst_iter_t iter);
 
-bst_iter_t BSPrev(bst_iter_t iter);
+bst_iter_t BSTPrev(bst_iter_t iter);
 
 bst_iter_t BSTBegin(const bst_t *bst);
 
@@ -50,3 +54,4 @@ bst_iter_t BSTEnd(const bst_t *bst); /*O(log(n))*/
 
 int BSTIsEqual(bst_iter_t iter1, bst_iter_t iter2);
 
+#endif

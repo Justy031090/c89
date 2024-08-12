@@ -1,71 +1,305 @@
-#include <stddef.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
 #include "bst.h"
 
-#define EQUAL (3)
-#define SMALLER (2)
+#define EQUAL (0)
+#define SMALLER (-1)
 #define BIGGER (1)
 
-int Compare(const void* data, const void* param)
-{
-    if(*(int *)data > *(int *)param)
-        return SMALLER;
-    if(*(int *)data < *(int *)param)
-        return BIGGER;
-    if(*(int *)data == *(int *)param)
-        return EQUAL;
+int CompareInts(const void *a, const void *b) {
+    return (*(int *)a < *(int *)b) ? SMALLER : (*(int *)a > *(int *)b) ? BIGGER : EQUAL;
 }
 
-void test_BSTCreate(compare_func_t cmp_func)
-{
-    bst_t *new = BSTCreate(cmp_func);
-    if (NULL != new)
-        printf("BST Created Succesfully !\n");
-    else
-        printf("Failed to Create BST !\n");
+int PrintInt(void *data, void *param) {
+    (void)param;
+    printf("%d ", *(int *)data);
+    return 1;
+}
+
+void PrintBST(bst_t *bst) {
+    bst_iter_t begin = BSTBegin(bst);
+    bst_iter_t end = BSTEnd(bst);
+    int count = 0;
+
+    printf("BST elements (in order): ");
+    count = BSTForEach(begin, end, PrintInt, NULL);
+    printf("\nTotal nodes: %d\n", count);
+}
+
+void TestBSTCreate() {
+    bst_t *bst = BSTCreate(CompareInts);
+    if (bst == NULL) {
+        printf("TestBSTCreate failed.\n");
+        return;
+    }
+
+    if (BSTIsEmpty(bst) == 1) {
+        printf("TestBSTCreate passed.\n");
+    } else {
+        printf("TestBSTCreate failed.\n");
+    }
+
+    BSTDestroy(bst);
+}
+
+void TestBSTInsertAndFind() {
+    bst_t *bst = BSTCreate(CompareInts);
+    bst_iter_t node = NULL;
+    bst_iter_t found = NULL;
+    size_t i = 0, passed = 1;
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
     
-    free(new);
+    if (bst == NULL) {
+        printf("TestBSTInsertAndFind failed.\n");
+        return;
+    }
+
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        node = Insert(bst, &values[i]);
+        if (node == NULL) {
+            printf("TestBSTInsertAndFind failed.\n");
+            BSTDestroy(bst);
+            return;
+        }
+    }
+
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        found = BSTFind(bst, &values[i]);
+        if (found == NULL || *(int *)BSTGetData(found) != values[i]) {
+            passed = 0;
+            break;
+        }
+    }
+
+    if (passed) {
+        printf("TestBSTInsertAndFind passed.\n");
+    } else {
+        printf("TestBSTInsertAndFind failed.\n");
+    }
+
+    BSTDestroy(bst);
 }
 
-void test_BSTDestroy(compare_func_t cmp_func)
-{
-    bst_t *new_bst = BSTCreate(cmp_func);
-    BSTDestroy(new_bst);
+void TestBSTIsEmptyAndSize() {
+    bst_t *bst = BSTCreate(CompareInts);
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    size_t i = 0;
+    
+    if (bst == NULL) {
+        printf("TestBSTIsEmptyAndSize failed.\n");
+        return;
+    }
+
+    if (BSTIsEmpty(bst) == 1) {
+        for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+            Insert(bst, &values[i]);
+        }
+
+        if (BSTIsEmpty(bst) == 0 && BSTSize(bst) == sizeof(values) / sizeof(values[0])) {
+            printf("TestBSTIsEmptyAndSize passed.\n");
+        } else {
+            printf("TestBSTIsEmptyAndSize failed.\n");
+        }
+    } else {
+        printf("TestBSTIsEmptyAndSize failed.\n");
+    }
+
+    BSTDestroy(bst);
 }
 
-/*
-bst_iter_t Insert(bst_t *bst, const void *data);
+void TestBSTRemove() {
+    bst_t *bst = BSTCreate(CompareInts);
+    bst_iter_t to_remove = NULL;
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    size_t i = 0;
+    
+    if (bst == NULL) {
+        printf("TestBSTRemove failed.\n");
+        return;
+    }
 
-bst_iter_t BSTRemove(bst_iter_t iter);
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        Insert(bst, &values[i]);
+    }
 
-bst_iter_t BSTFind(const bst_t *bst, const void *data);
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        to_remove = BSTFind(bst, &values[i]);
+        if (to_remove == NULL) {
+            printf("TestBSTRemove failed.\n");
+            BSTDestroy(bst);
+            return;
+        }
+        BSTRemove(to_remove);
+    }
 
-size_t BSTSize(const bst_t *bst);
+    if (BSTIsEmpty(bst) && BSTSize(bst) == 0) {
+        printf("TestBSTRemove passed.\n");
+    } else {
+        printf("TestBSTRemove failed.\n");
+    }
 
-int BSTIsEmpty(const bst_t *bst);
+    BSTDestroy(bst);
+}
 
-int BSTForEach(bst_iter_t from, bst_iter_t to, action_func_t action_func, const void *param);
+void TestBSTForEach() {
+    bst_t *bst = BSTCreate(CompareInts);
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    int count = 0;
+    size_t i = 0;
+    bst_iter_t begin = BSTBegin(bst);
+    bst_iter_t end = BSTEnd(bst);
+    
+    if (bst == NULL) {
+        printf("TestBSTForEach failed: BST creation failed.\n");
+        return;
+    }
 
-void *BSTGetData(bst_iter_t iter);
+    for (i = 0; i < 5; ++i) {
+        Insert(bst, &values[i]);
+    }
 
-bst_iter_t BSTNext(bst_iter_t iter);
+    count = BSTForEach(begin, end, PrintInt, NULL);
+    printf("\nTotal nodes: %d\n", count);
 
-bst_iter_t BSPrev(bst_iter_t iter);
+    if (count == sizeof(values) / sizeof(values[0])) {
+        printf("TestBSTForEach passed.\n");
+    } else {
+        printf("TestBSTForEach failed.\n");
+    }
 
-bst_iter_t BSTBegin(const bst_t *bst);
+    BSTDestroy(bst);
+}
 
-bst_iter_t BSTEnd(const bst_t *bst);
+void TestBSTNext() {
+    bst_t *bst = BSTCreate(CompareInts);
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    bst_iter_t iter = NULL;
+    bst_iter_t next = NULL;
+    size_t i = 0;
 
-int BSTIsEqual(bst_iter_t iter1, bst_iter_t iter2);
+    if (bst == NULL) {
+        printf("TestBSTNext failed: BST creation failed.\n");
+        return;
+    }
 
-*/
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        Insert(bst, &values[i]);
+        
+    }
+    
+    iter = BSTFind(bst, &values[0]);
+    next = BSTNext(iter);
 
 
+    if (next) {
+        printf("Next node data: %d\n", *(int *)BSTGetData(next));
+    } else {
+        printf("Next node is NULL\n");
+    }
+
+    if (next && *(int *)BSTGetData(next) == 4) {
+        printf("TestBSTNext passed.\n");
+    } else {
+        printf("TestBSTNext failed.\n");
+    }
+
+    
+    iter = BSTFind(bst, &values[3]);
+
+    if (BSTNext(iter) == NULL) {
+        printf("TestBSTNext passed for node with no successor.\n");
+    } else {
+        printf("TestBSTNext failed for node with no successor.\n");
+    }
+    
+
+    BSTDestroy(bst);
+}
+
+void TestBSTPrev() {
+    bst_t *bst = BSTCreate(CompareInts);
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    bst_iter_t iter = NULL;
+    bst_iter_t prev = NULL;
+    size_t i = 0;
+
+    if (bst == NULL) {
+        printf("TestBSTPrev failed: BST creation failed.\n");
+        return;
+    }
+
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        Insert(bst, &values[i]);
+    }
+    PrintBST(bst);
+    iter = BSTFind(bst, &values[4]);
+    prev = BSTPrev(iter);
+    if (prev && *(int *)BSTGetData(prev) == 5) {
+        printf("TestBSTPrev passed.\n");
+    } else {
+        printf("TestBSTPrev failed.\n");
+    }
 
 
+    iter = BSTFind(bst, &values[6]);
+    prev = BSTPrev(iter);
+    if (prev == NULL) {
+        printf("TestBSTPrev passed for node with no predecessor.\n");
+    } else {
+        printf("TestBSTPrev failed for node with no predecessor.\n");
+    }
 
-int main(void)
-{
-    test_BSTCreate(Compare);   
+    BSTDestroy(bst);
+}
+
+void TestBSTIsEqual() {
+    bst_t *bst = BSTCreate(CompareInts);
+    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    bst_iter_t iter1 = NULL;
+    bst_iter_t iter2 = NULL;
+    size_t i = 0;
+
+    if (bst == NULL) {
+        printf("TestBSTIsEqual failed: BST creation failed.\n");
+        return;
+    }
+
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        Insert(bst, &values[i]);
+    }
+
+    iter1 = BSTFind(bst, &values[0]);
+    iter2 = BSTFind(bst, &values[0]);
+
+    if (BSTIsEqual(iter1, iter2)) {
+        printf("TestBSTIsEqual passed.\n");
+    } else {
+        printf("TestBSTIsEqual failed.\n");
+    }
+
+    iter2 = BSTFind(bst, &values[1]);
+    if (!BSTIsEqual(iter1, iter2)) {
+        printf("TestBSTIsEqual (different nodes) passed.\n");
+    } else {
+        printf("TestBSTIsEqual (different nodes) failed.\n");
+    }
+
+    BSTDestroy(bst);
+}
+
+
+int main() {
+    TestBSTCreate();
+    TestBSTInsertAndFind();
+    TestBSTIsEmptyAndSize();
+    TestBSTRemove();
+    TestBSTIsEqual();
+    TestBSTNext();
+    TestBSTPrev();
+
+    TestBSTForEach();
+
+    printf("All tests completed.\n");
     return 0;
 }

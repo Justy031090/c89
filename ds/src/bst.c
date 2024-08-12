@@ -1,19 +1,23 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <assert.h>
+
 #include "bst.h"
 
-#define EQUAL (3)
-#define SMALLER (2)
+#define EQUAL (0)
+#define SMALLER (-1)
 #define BIGGER (1)
-
+#define STACK_SIZE (200)
 struct bst
 {
     node_t root_dummy;
     compare_func_t cmp_func;
 };
 
-static void AddChildrenCount(bst_iter_t iter);
-static void RemoveChildrenCount(bst_iter_t iter);
+static bst_iter_t FindMin(bst_iter_t iter);
+static bst_iter_t FindMax(bst_iter_t iter);
+static void Free(bst_iter_t iter);
+static size_t CountNodes(bst_iter_t iter);
 
 bst_t *BSTCreate(compare_func_t cmp_func)
 {
@@ -21,11 +25,10 @@ bst_t *BSTCreate(compare_func_t cmp_func)
     if(NULL == new_bst)
         return NULL;
 
-    new_bst->root_dummy.data = 0;
+    new_bst->root_dummy.data = NULL;
     new_bst->root_dummy.parent = NULL;
     new_bst->root_dummy.child_node[LEFT] = NULL;
     new_bst->root_dummy.child_node[RIGHT] = NULL;
-    new_bst->root_dummy.child_node[NUM_OF_CHILD] = NULL;
     new_bst->cmp_func = cmp_func;
 
     return new_bst;
@@ -33,71 +36,104 @@ bst_t *BSTCreate(compare_func_t cmp_func)
 
 void BSTDestroy(bst_t *bst)
 {
-    bst_iter_t first_node = NULL;
-    size_t *children = (size_t *)bst->root_dummy.child_node[NUM_OF_CHILD]->data;
-    while(children)
-    {
-        first_node = bst->root_dummy.child_node[LEFT];
-        BSTRemove(first_node);
-        --children;
-    }
+    assert(NULL!=bst);
+    Free(bst->root_dummy.child_node[LEFT]);
     free(bst);
 }
 
 bst_iter_t Insert(bst_t *bst, const void *data)
 {
     bst_iter_t to_insert = malloc(sizeof(node_t));
-    bst_iter_t first_node = bst->root_dummy.child_node[LEFT];
-    int is_position = 0;
+    bst_iter_t current = NULL;
+    bst_iter_t parrent = NULL;
     int temp = 0;
 
-    if(NULL == to_insert)
+    if(NULL == to_insert || NULL == bst || NULL == data)
         return NULL;
 
     to_insert->data = (void *)data;
     to_insert->child_node[LEFT] = NULL;
     to_insert->child_node[RIGHT] = NULL;
+    to_insert->parent = NULL;
 
-    while(!is_position)
+    if(bst->root_dummy.child_node[LEFT] == NULL)
     {
-        temp = bst->cmp_func(first_node->data, data);
-        if(temp == EQUAL)
-            return NULL;
-
-        else if(temp == SMALLER)
-        {
-            first_node = first_node->child_node[LEFT];
-            continue;
-        }
-        else if(temp == BIGGER)
-        {
-            first_node->parent->child_node[LEFT] = to_insert;
-            to_insert->child_node[LEFT] = first_node;
-            AddChildrenCount(to_insert);
-            is_position = 1;
-        }
+        bst->root_dummy.child_node[LEFT] = to_insert;
+        to_insert->parent = &bst->root_dummy;
+        return to_insert;
     }
 
-return to_insert;
-}
-
-bst_iter_t BSTRemove(bst_iter_t iter)
-{
-    bst_iter_t childR = iter->child_node[RIGHT];
-    bst_iter_t childL = iter->child_node[LEFT];
-    bst_iter_t next = BSTNext(iter);
-    if(iter->parent->data > iter->data)
+    current = bst->root_dummy.child_node[LEFT];
+    while (NULL != current)
     {
-        iter->child_node[LEFT] = childR;
-        childR->child_node[LEFT] = childL;
-        iter->parent->child_node[LEFT] = childR;
+        parrent = current;
+        temp = bst->cmp_func(current->data, data);
+
+        if(temp == EQUAL)
+        {
+            free(to_insert);
+            return NULL;
+        }
+        current = (temp == SMALLER) ? current->child_node[LEFT] : current->child_node[RIGHT];
+
+    }
+    
+    temp = bst->cmp_func(parrent->data, data);
+    if(temp == SMALLER)
+    {
+        parrent->child_node[LEFT] = to_insert;
     }
     else
     {
-        iter->parent->child_node[RIGHT] = childL;
-        childL->child_node[RIGHT] = childR;
+        parrent->child_node[RIGHT] = to_insert;
     }
-    RemoveChildrenCount(iter);
+
+    to_insert->parent = parrent;
+    return to_insert;
+}
+
+bst_iter_t BSTRemove(bst_iter_t iter) {
+    bst_iter_t next = NULL;
+    bst_iter_t successor = NULL;
+    
+    if (NULL != iter->child_node[LEFT] && NULL != iter->child_node[RIGHT]) {
+        successor = FindMin(iter->child_node[RIGHT]);
+        iter->data = successor->data;
+        return BSTRemove(successor);
+    }
+
+    if (NULL != iter->child_node[LEFT]) 
+    {
+        next = iter->child_node[LEFT];
+    } 
+    else 
+    {
+        next = iter->child_node[RIGHT];
+    }
+
+    if (NULL != iter->parent) 
+    {
+        if (iter == iter->parent->child_node[LEFT]) 
+        {
+            iter->parent->child_node[LEFT] = next;
+        } 
+        else 
+        {
+            iter->parent->child_node[RIGHT] = next;
+        }
+        if (NULL != next) 
+        {
+            next->parent = iter->parent;
+        }
+    } 
+    else 
+    {
+        if (NULL != next) 
+        {
+            next->parent = NULL;
+        }
+    }
+
     free(iter);
     return next;
 }
@@ -105,64 +141,83 @@ bst_iter_t BSTRemove(bst_iter_t iter)
 bst_iter_t BSTFind(const bst_t *bst, const void *data)
 {
     bst_iter_t node = bst->root_dummy.child_node[LEFT];
-    do
+    int temp = 0;
+    while(NULL != node)
     {
-        if(bst->cmp_func(node->data, data) == EQUAL)
+        temp = bst->cmp_func(node->data, data);
+        if(temp == EQUAL)
+        {
             return node;
-        if(bst->cmp_func(node->data, data) < BIGGER)
-        {
-            node = node->child_node[RIGHT];
-            continue;
         }
-        if(bst->cmp_func(node->data, data) > SMALLER)
-        {
-            node = node->child_node[LEFT];
-            continue;
-        }
-    } while(node->child_node[LEFT] == NULL || node->child_node[RIGHT] == NULL);
-
-    return node;
-}
-
-size_t BSTSize(const bst_t *bst)
-{
-    return (size_t)bst->root_dummy.child_node[NUM_OF_CHILD]->data;
+        node = temp == SMALLER ? node->child_node[LEFT] : node->child_node[RIGHT];
+    }
+    return NULL;
 }
 
 int BSTIsEmpty(const bst_t *bst)
 {
-    return BSTBegin(bst) == BSTEnd(bst);
+    assert(bst != NULL);
+    return bst->root_dummy.child_node[LEFT] == NULL;
 }
 
 void *BSTGetData(bst_iter_t iter)
 {
-    return iter->data;
+    return iter ? iter->data : NULL;
 }
 
 bst_iter_t BSTNext(bst_iter_t iter)
 {
-    return iter->child_node[LEFT];
+    bst_iter_t parent = NULL;
+
+    assert(NULL != iter);
+    
+    parent = iter->parent;
+
+    if(NULL != iter->child_node[RIGHT])
+    {
+        return FindMin(iter->child_node[RIGHT]);
+    }
+
+    while(iter->parent->data != NULL && iter == parent->child_node[RIGHT])
+    {
+        iter = iter->parent;
+    }
+    if(NULL != iter->parent->data && 0 == BSTIsEqual(iter, iter->parent->child_node[RIGHT]))
+        return iter->parent;
+    else 
+        return NULL;
 }
 
-bst_iter_t BSPrev(bst_iter_t iter)
+bst_iter_t BSTPrev(bst_iter_t iter)
 {
+    bst_iter_t parent = NULL;
+    
+    assert(NULL != iter);
+
+    if(NULL == iter->parent) return NULL;
+
+    if(NULL != iter->child_node[LEFT])
+    {
+        return iter->child_node[LEFT];
+    }
+    while(NULL != iter->parent && iter == iter->parent->child_node[LEFT])
+    {
+        iter = iter->parent;
+    }
     return iter->parent;
 }
 
 bst_iter_t BSTBegin(const bst_t *bst)
 {
-    bst_iter_t childL = bst->root_dummy.child_node[LEFT]->child_node[LEFT];
-    
-    while(childL->child_node[LEFT] != NULL)
-    {
-        childL = childL->child_node[LEFT];
-    }
-    return childL;
+    bst_iter_t childL = NULL;
+    assert(NULL != bst);
+    childL = bst->root_dummy.child_node[LEFT];
+    return FindMin(childL);
 }
 
 bst_iter_t BSTEnd(const bst_t *bst)
 {
-    return bst->root_dummy.child_node[LEFT];
+    return (bst_iter_t)&bst->root_dummy;
 }
 
 int BSTIsEqual(bst_iter_t iter1, bst_iter_t iter2)
@@ -170,42 +225,94 @@ int BSTIsEqual(bst_iter_t iter1, bst_iter_t iter2)
     return iter1 == iter2;
 }
 
-
 int BSTForEach(bst_iter_t from, bst_iter_t to, action_func_t action_func, const void *param)
 {
-    bst_iter_t runner = from;
+    
     int counter = 0;
-    while(runner != to)
+    bst_iter_t runner = from;
+    
+    assert(NULL != from && NULL != to);
+
+    while(runner != to && NULL != runner)
     {
-        if(1==action_func(runner->data, (void *)param))
-            ++counter;
-
-        if(runner->child_node[LEFT]->data < to->data || runner->child_node[RIGHT]->data > to->data)
+        if (0 == action_func(runner->data, (void *)param))
         {
-            runner = runner->parent;
-            continue;
+            ++counter;
         }
+        runner = BSTNext(runner);
     }
-
     return counter;
 }
 
-
-
-static void AddChildrenCount(bst_iter_t iter)
-{
-    while(iter->parent != NULL)
-    {
-        (*(size_t*)iter->child_node[NUM_OF_CHILD]->data)++;
-        iter = iter->parent;
-    }
-}
-static void RemoveChildrenCount(bst_iter_t iter)
-{
-    while(iter->parent != NULL)
-    {
-        (*(size_t*)iter->child_node[NUM_OF_CHILD]->data)--;
-        iter = iter->parent;
-    }
+size_t BSTSize(const bst_t *bst)
+{   
+    assert(bst);
+    return CountNodes(bst->root_dummy.child_node[LEFT]);
+    
 }
 
+static bst_iter_t FindMin(bst_iter_t iter)
+{
+    if(iter == NULL) return NULL;
+    while(iter->child_node[LEFT]!= NULL)
+    {
+        iter = iter->child_node[LEFT];
+    }
+    return iter;
+}
+
+static bst_iter_t FindMax(bst_iter_t iter)
+{
+    if(iter == NULL) return NULL;
+    while(iter->child_node[RIGHT]!= NULL)
+    {
+        iter = iter->child_node[RIGHT];
+    }
+    return iter;
+}
+
+static void Free(bst_iter_t iter)
+{
+    bst_iter_t current = iter;
+    bst_iter_t stack[STACK_SIZE];
+    bst_iter_t childR = NULL;
+    size_t stack_size = 0;
+    if(iter == NULL) return;
+    while(NULL != current || stack_size > 0)
+    {
+            while(NULL != current)
+            {
+                stack[stack_size++] = current;
+                current = current->child_node[LEFT];
+            }
+
+            current = stack[--stack_size];
+            childR = current->child_node[RIGHT];
+            free(current);
+            current = childR;
+
+    }
+}
+
+static size_t CountNodes(bst_iter_t iter) 
+{
+    size_t count = 0;
+    bst_iter_t current = iter;
+    bst_iter_t stack[STACK_SIZE];
+    size_t stack_size = 0;
+
+    while (current != NULL || stack_size > 0) 
+    {
+        while (current != NULL) 
+        {
+            stack[stack_size++] = current;
+            current = current->child_node[LEFT];
+        }
+
+        current = stack[--stack_size];
+        ++count;
+        current = current->child_node[RIGHT];
+    }
+
+    return count;
+}
