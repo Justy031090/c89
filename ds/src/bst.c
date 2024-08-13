@@ -1,3 +1,10 @@
+/*			.. BST Iterative Implementation ..
+(\.../)		.. Authored by Michael Bar 12/08/2024 .. 
+(=';'=) 	.. code reviewd by Yonatan I. 13/08/2024..
+(")-("))	.. The only hard day was yesterday ! ..
+*/
+
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -170,19 +177,17 @@ bst_iter_t BSTNext(bst_iter_t iter)
     bst_iter_t parent = NULL;
 
     assert(NULL != iter);
-    
-    parent = iter->parent;
 
     if(NULL != iter->child_node[RIGHT])
     {
         return FindMin(iter->child_node[RIGHT]);
     }
 
-    while(iter->parent->data != NULL && iter == parent->child_node[RIGHT])
+    while(iter->parent != NULL && iter == parent->child_node[RIGHT])
     {
         iter = iter->parent;
     }
-    if(NULL != iter->parent->data && 0 == BSTIsEqual(iter, iter->parent->child_node[RIGHT]))
+    if(NULL != iter->parent && 0 == BSTIsEqual(iter, iter->parent->child_node[LEFT]))
         return iter->parent;
     else 
         return NULL;
@@ -198,7 +203,7 @@ bst_iter_t BSTPrev(bst_iter_t iter)
 
     if(NULL != iter->child_node[LEFT])
     {
-        return iter->child_node[LEFT];
+        return FindMax(iter->child_node[LEFT]);
     }
     while(NULL != iter->parent && iter == iter->parent->child_node[LEFT])
     {
@@ -229,9 +234,12 @@ int BSTForEach(bst_iter_t from, bst_iter_t to, action_func_t action_func, const 
 {
     
     int counter = 0;
-    bst_iter_t runner = from;
+    bst_iter_t runner = NULL;
     
-    assert(NULL != from && NULL != to);
+    assert(NULL != from);
+    assert(NULL != to);
+
+    runner = from;
 
     while(runner != to && NULL != runner)
     {
