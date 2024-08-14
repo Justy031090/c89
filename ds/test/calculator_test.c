@@ -2,25 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <calculator.h>
+
 int main()
 {
-    char str[50] = "*2.1\0";
-    double doubles[50] = {0};
-    char operators[50];
-    char *ptr = str;
+    double result = 0;
+    char expression[3] = "2+2";
+    Calculator(expression, &result);
 
-    int i = 0;
-    
-    while(strlen(ptr))
-    {
-        doubles[i] = strtod(ptr, &ptr);
-        operators[i] = ptr[0];
-        ++ptr;
-        printf("%lf\n", doubles[i]);
-        printf("%s\n", ptr);
-        printf("%c\n", operators[i]);
-
-    }
+    printf("%f", result); /*6*/
     
 
     return 0;
