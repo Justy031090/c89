@@ -7,6 +7,7 @@
 #include <stddef.h> /*size_t*/
 #include <stdlib.h> /*malloc*/
 #include <assert.h> /*assert*/
+#include <string.h> /*memcpy*/
 #include "stack.h"
 
 
@@ -32,6 +33,7 @@ stack_t *StackCreate(size_t capacity, size_t size_of_element)
 	stack->peek = (char *)malloc(size_of_element * capacity);
 	if(NULL == stack->peek)
 	{
+		free(stack);
 		return NULL;
 	}
 	
@@ -45,11 +47,15 @@ stack_t *StackCreate(size_t capacity, size_t size_of_element)
 void StackDestroy(stack_t *stack)
 {
 	assert(NULL !=stack);
-	if(0 != stack->size)
+	if(stack->size)
 	{
 		free(stack->peek - ((stack->size-1) * stack->size_of_element));
 	} 
-	free(stack->peek);
+	else
+	{
+		free(stack->peek);
+	}
+	
 	free(stack);
 	stack = NULL;
 }
@@ -63,13 +69,13 @@ size_t StackSize(const stack_t *stack)
 void *StackPeek(const stack_t *stack)	
 {
 	assert(NULL !=stack);
-	return stack->peek;
+	return (void *)(stack->peek + (stack->size -1)* stack->size_of_element);
 }
 
 int StackIsEmpty(const stack_t *stack)
 {
 	assert(NULL !=stack);
-	return 0 == stack->size ? 1:0;
+	return stack->size == 0;
 }
 
 size_t StackCapacity(const stack_t *stack)
@@ -80,40 +86,18 @@ size_t StackCapacity(const stack_t *stack)
 
 void StackPush(const void *val, stack_t *stack)
 {
-	size_t i = 0;
-	char *add_val = (char *)val;
-	char *peekc = stack->peek;
-	assert(NULL !=stack);
-	
-	if(stack->size >= stack->capacity)
-	{
-		return ;
-	}
-	if( 0 != stack->size )
-	{
-		stack->peek = stack->peek + stack->size_of_element;
-	}
-	
-	while(i<stack->size_of_element)
-	{
-		peekc[i] = add_val[i];
-		++i;
-	}
-	stack->size = stack->size + 1;
+    assert(NULL != stack && val != NULL);
+    if (stack->size >= stack->capacity)
+    {
+        return;
+    }
+    
+    memcpy(stack->peek + stack->size * stack->size_of_element, val, stack->size_of_element);
+    stack->size++;
 }
 void StackPop(stack_t *stack)
 {
-	if(0 == stack->size)
-	{
-		return;
-	}
-	if(1 == stack->size)
-	{
-		stack->size = 0;
-		return;
-	}
-	stack->peek = stack->peek - stack->size_of_element;
-	stack->size = stack->size - 1;
+	stack->size--;
 }
 
 
