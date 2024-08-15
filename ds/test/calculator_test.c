@@ -7,10 +7,11 @@
 int main()
 {
     double result = 0;
-    char expression[3] = "2+2";
-    Calculator(expression, &result);
+    status_t res = 0;
+    char expression[8] = "5+1+2+4\0";
+    res = Calculator(expression, &result);
 
-    printf("%f", result); /*6*/
+    printf("%f,    %d\n", result, res); /*12*/
     
 
     return 0;

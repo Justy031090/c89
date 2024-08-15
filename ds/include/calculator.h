@@ -13,4 +13,4 @@ typedef enum status
 
 status_t Calculator (char* math_exp, double *result);
 
-#endif /*CALC*/
+#endif /*__CALC_H__*/
