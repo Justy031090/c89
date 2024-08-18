@@ -277,6 +277,8 @@ status_t Calculator (char* math_exp, double *result)
 
     *result = *(double *)StackPeek(num_stack);
 
+    StackDestroy(op_stack);
+    StackDestroy(num_stack);
 
     return exit_status;
 }
