@@ -1,6 +1,10 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "../ds/include/stack.h"
+#include "../ds/include/sll.h"
 
 int Fibonacci(int el_index)
 {
@@ -10,47 +14,26 @@ int Fibonacci(int el_index)
     return Fibonacci(el_index -1) + Fibonacci (el_index - 2);
 }
 
-
-
-
-node_t *FlipList(node_t *node)
+typedef struct node
 {
-	node_t *runner = NULL;
-    if (node == NULL) return NULL;
-	if (node-> next = NULL) return node;
+	void *data;
+	node_t *next;
+} node_t;
 
-    runner = FlipList(node->next);
-    runner->next = node;
-    node->next = NULL;
-    return node;
+
+
+node_t *FlipList(node_t *first)
+{
+	node_t *runner;	
+    if (first == NULL) return NULL;
+	if (first->next == NULL) return first;
+
+    runner = FlipList(first->next);
+    runner->next = first;
+    first->next->next = NULL;
+    return runner;
 	
 }
-
-
-stack_t *SortStack(stack_t *stack)
-{
-	int tmp = 0, top = 0;
-    if (StackIsEmpty(stack))
-		return;
-
-    tmp = StackPeek(stack);
-    StackPop(stack);
-
-    SortStack(stack);
-
-    if (StackIsEmpty(stack) || StackPeek(stack) <= tmp) {
-        StackPush(stack, tmp);
-    } else {
-        top = StackPeek(stack);
-        StackPop(stack);
-        SortStack(stack);
-        StackPush(stack, top);
-        StackPush(stack, tmp);
-	}
-}
-
-
-
 
  size_t StrLen(const char *str)
 {
@@ -104,11 +87,68 @@ char *StrStr(const char *haystack, const char *needle)
         return(StrStr(haystack+1, needle));
 }
 
+int StackOverFlow(int num)
+{
+	printf("%d\n", num);
+	return StackOverFlow(num+1);
+}
+int StackOverFlowIter(int num)
+{
+	printf("%d\n", num);
+	return num;
+}
 
+void printNodes(node_t *node)
+{
+	while(node->next != NULL)
+	{
+		printf("List Flip %p\n", node);
+		node = node->next;
+	}
+}
+
+stack_t *SortStack(stack_t *stack)
+{
+	int tmp = 0, top = 0;
+    if (StackIsEmpty(stack))
+		return;
+
+    tmp = *(int *)StackPeek(stack);
+    StackPop(stack);
+
+    SortStack(stack);
+
+    if (StackIsEmpty(stack) || *(int *)StackPeek(stack) <= tmp) {
+        StackPush(&tmp, stack);
+    } else {
+        top = *(int *)StackPeek(stack);
+		StackPop(stack);
+		SortStack(stack);
+		StackPush(&top, stack);
+
+	}
+}
 int main()
 {
 	char dest[15];
 	char dest_for_cat[20] = "My Name Is Michael ";
+	int data = 5;
+	int i = 0;
+	stack_t *stack = StackCreate(10, sizeof(int));
+	sll_t *sll = SLLCreate();
+	sll_iterator_t nd1;
+	sll_iterator_t nd2;
+	sll_iterator_t nd3;
+	sll_iterator_t nd4;
+	sll_iterator_t nd5;
+	nd1 = SLLBegin(sll);
+	nd2 = SLLInsert(SLLEnd(sll), &data,sll);
+	nd3 = SLLInsert(SLLEnd(sll), &data,sll);
+	nd4 = SLLInsert(SLLEnd(sll), &data,sll);
+	nd5 = SLLInsert(SLLEnd(sll), &data,sll);
+	int arr[10] = {12,1,30,-6,10,-20, 50, 0, 90, 4};
+	int arr2[10] ={-20, -6, 0, 1, 4, 10, 12, 30, 50, 90};
+
 	printf("Fibonnaci %d\n", Fibonacci(5));
 	printf("StrLen %lu\n", StrLen("Hello"));
 	printf("StrCmp False %d\n", StrCmp("Hello", "Jello "));
@@ -118,5 +158,35 @@ int main()
 	printf("StrStr Recursive %s\n", StrStr("ChupChupaChKabra", "Chupa"));
 	printf("strstr from String %s\n", strstr("ChupChupaChKabra", "Chupa"));
 
+	printNodes(nd1);
+	FlipList(SLLBegin(sll));
+	printf("\n\n\n\n");
+	printNodes(SLLEnd(sll));
+	
+	
+
+	while(i<10)
+	{
+		StackPush(&arr[i], stack);
+		++i;
+	}
+
+	SortStack(stack);
+
+	for (i = 9; i != 0; i--)
+	{
+		printf("From Sorted Array %d    From Stack %d\n", arr2[i], *(int *)StackPeek(stack));
+		if(arr2[i] != *(int *)(StackPeek(stack)))
+		{
+			
+		}
+		StackPop(stack);
+	}
+	
+
+
+	
+
+	
 	return 0;
 }
