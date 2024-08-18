@@ -1,7 +1,7 @@
 /**************************************************************|	
 |		    .. FSM Calculator Implementation ..        ********|
 |  (\.../)	.. Authored by Michael Bar 15/08/2024 ..   ********|
-|  (=';'=) 	.. code reviewd by TBD..                   ********|
+|  (=';'=) 	.. code reviewd by Kfir ..                 ********|
 |  (")-("))	.. The only hard day was yesterday ! ..    ********|
 ***************************************************************/
 
@@ -117,14 +117,11 @@ static status_t OperatorHandler(char *expression,stack_t *num_stack,stack_t *op_
 
     while(!StackIsEmpty(op_stack) && (Presedence(*(char *)StackPeek(op_stack)) >= Presedence(operator)))
     {
-        if(StackIsEmpty(num_stack)) 
+        if(StackSize(num_stack) < 1) 
             return INVALID_INPUT;
         
         num2 = *(double *)StackPeek(num_stack);
         StackPop(num_stack);
-
-        if(StackIsEmpty(num_stack)) 
-            return INVALID_INPUT;
             
         num1 = *(double *)StackPeek(num_stack);
         StackPop(num_stack);
@@ -248,6 +245,10 @@ static double Multiply(double num1, double num2)
 }
 static double Power(double num1, double num2)
 {
+    if(num1 == 0 || (num1 <0 && num2 <1 ))
+    {
+        return __DBL_MAX__;
+    }
     return pow(num1, num2);
 }
 static double Invalid(double num1, double num2)
