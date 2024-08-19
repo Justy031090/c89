@@ -115,7 +115,7 @@ sll_iterator_t SLLInsert(sll_iterator_t iter, const void *data, sll_t *sll)
 	
 	assert(NULL != data);
 	assert(NULL != sll);
-	assert(NULL != iter);
+
 	
 	if(NULL == new_node)
 	{

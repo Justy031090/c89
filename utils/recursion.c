@@ -107,27 +107,36 @@ void printNodes(node_t *node)
 	}
 }
 
-stack_t *SortStack(stack_t *stack)
+void Insert(stack_t *stack, void *element)
 {
-	int tmp = 0, top = 0;
-    if (StackIsEmpty(stack))
+	int tmp = 0;
+	if (StackIsEmpty(stack) || *(int *)StackPeek(stack) <= element) 
+	{
+        StackPush(&element, stack);
 		return;
+	}
 
-    tmp = *(int *)StackPeek(stack);
+	tmp = *(int *)StackPeek(stack);
     StackPop(stack);
 
-    SortStack(stack);
+	Insert(stack, tmp);
 
-    if (StackIsEmpty(stack) || *(int *)StackPeek(stack) <= tmp) {
-        StackPush(&tmp, stack);
-    } else {
-        top = *(int *)StackPeek(stack);
+	StackPush(&tmp, stack);
+}
+
+stack_t *SortStack(stack_t *stack)
+{
+	int tmp = 0;
+	if(!StackIsEmpty)
+	{
+		tmp = *(int *)StackPeek(stack);
 		StackPop(stack);
 		SortStack(stack);
-		StackPush(&top, stack);
-
+		Insert(&tmp, stack);
 	}
 }
+
+
 int main()
 {
 	char dest[15];
