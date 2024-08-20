@@ -229,49 +229,42 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
     avl_node_t *temp = NULL;
     int compare;
 
-    if(NULL == node)
-        return node;
-    
-    compare = compare_func((void *)data, node->data);
-    
-    if(compare < 0)
-        node->children[LEFT] =  Remove(node->children[LEFT], data, compare_func);
-    if(compare > 0)
-        node->children[RIGHT] = Remove(node->children[RIGHT], data, compare_func);
-
-    
-    else 
-    {
-        if(node->children[LEFT] == NULL || node->children[RIGHT]==NULL)
-        {
-            temp = node->children[LEFT] ? node->children[LEFT] : node->children[RIGHT];
-
-            if(temp == NULL)
-            {            
-                temp = node;
-                node = NULL;
-            }
-            else
-            {
-                node->data = temp->data;
-            }
-            free(temp);
-        }
-        else
-        {
-            temp = GetMin(node->children[RIGHT]);
-            node->data = temp->data;
-            node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
-        }
+    if (node == NULL) {
+        return NULL;
     }
 
-    if(NULL == node)
-        return node;
+    compare = compare_func(data, node->data);
+
+    if (compare < 0) {
+        node->children[LEFT] = Remove(node->children[LEFT], data, compare_func);
+    } else if (compare > 0) {
+        node->children[RIGHT] = Remove(node->children[RIGHT], data, compare_func);
+    } else {
+        if (node->children[LEFT] == NULL && node->children[RIGHT] == NULL) 
+        {
+            free(node);
+            return NULL;
+        } 
+        else if (node->children[LEFT] == NULL) 
+        {
+            temp = node->children[RIGHT];
+            free(node);
+            return temp;
+        }
+         else if (node->children[RIGHT] == NULL) 
+        {
+            temp = node->children[LEFT];
+            free(node);
+            return temp;
+        }
+
+        temp = GetMin(node->children[RIGHT]);
+        node->data = temp->data;
+        node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
+    }
 
     UpdateHeight(node);
-            
     return Balance(node, (void *)data, compare_func);
-
 }
 
 static int ForEach (avl_node_t *node, action_func_t action_func, void *param)

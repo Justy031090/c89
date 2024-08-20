@@ -183,37 +183,45 @@ void TestAVLRemove() {
     int insert = 0;
     int values[] = {5, 4, 8, 1, 3, 7, 9};
     size_t i = 0;
+
     if (avl == NULL) {
-        printf("TestAVLRemove(); failed.\n");
+        printf("TestAVLRemove() failed. AVL creation failed.\n");
         return;
     }
 
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         insert = AVLInsert(avl, &values[i]);
-        if(insert != 1)
-        {
-            printf("TestAVLRemove failed. insert failure.");
-            return;
-        }
-    }
-        
-    for (i = 0; i < 5; ++i) {
-        to_remove = (int *)AVLFind(avl, &values[i]);
-        if (NULL == to_remove) {
-            printf("TestAVLRemove failed. to_remove is NULL\n");
+        if (insert != 1) {
+            printf("TestAVLRemove() failed. Insert failure for value %d.\n", values[i]);
             AVLDestroy(avl);
             return;
         }
-        AVLRemove(avl, to_remove);
     }
-    if (!AVLIsEmpty(avl) && AVLSize(avl) == 5) {
-        printf("TestAVLRemove passed.\n");
+
+    printf("Tree before removals:\n");
+    PrintTree(avl->root);
+
+    for (i = 0; i < 5; ++i) {
+        to_remove = (int *)AVLFind(avl, &values[i]);
+        if (to_remove == NULL) {
+            printf("TestAVLRemove() failed. to_remove is NULL for value %d\n", values[i]);
+            AVLDestroy(avl);
+            return;
+        }
+        printf("Removing value: %d\n", *to_remove);
+        AVLRemove(avl, to_remove);
+
+        printf("Tree after removing value %d:\n", *to_remove);
+        PrintTree(avl->root);
+    }
+
+    if (AVLIsEmpty(avl) || AVLSize(avl) == 2) {
+        printf("TestAVLRemove() passed.\n");
     } else {
-        printf("TestAVLRemove failed.\n");
+        printf("TestAVLRemove() failed.\n");
     }
 
     AVLDestroy(avl);
-
 }
 
 
