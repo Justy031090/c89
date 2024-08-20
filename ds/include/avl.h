@@ -4,8 +4,9 @@
 #include "dll.h"
 
 typedef struct avl avl_t;
+typedef struct node avl_node_t;
 
-typedef int (*compare_func_t)(void *data, void *param);
+typedef int (*compare_func_t)(const void *data, const void *param);
 typedef int (*action_func_t)(void *data, void *param);
 
 /*O(1)*/ 
