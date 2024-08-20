@@ -8,6 +8,7 @@ typedef struct node avl_node_t;
 
 typedef int (*compare_func_t)(const void *data, const void *param);
 typedef int (*action_func_t)(void *data, void *param);
+typedef int(*avl_is_match_t)(void *data, void *param);
 
 /*O(1)*/ 
 avl_t *AVLCreate(compare_func_t );
@@ -37,9 +38,9 @@ int AVLForEach(avl_t *avl, action_func_t action_func, void *param);
 size_t AVLHeight(const avl_t *avl);
 
 /*O(n)*/
-int AVLMultiFind(const avl_t *avl, void * param, int (*Is_Match)(void *data, void *param), dll_t *list);
+int AVLMultiFind(const avl_t *avl, void * param, avl_is_match_t IsMatch, dll_t *list);
 
 /*O(n)*/
-int MultiRemove(avl_t *avl, void *param, int (*Is_Match)(void *data, void *param), dll_t *list);
+int MultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list);
 
 #endif /*AVL_H*/

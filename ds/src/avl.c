@@ -20,12 +20,12 @@ struct node
     avl_node_t *children[NUMBER_OF_CHILD];
 };
 
-
 struct avl
 {
     avl_node_t *root;
     compare_func_t cmp_func;
 };
+
 
 static avl_node_t *CreateNode(void *data);
 static void FreeTree(avl_node_t *node);
@@ -40,6 +40,9 @@ static size_t Height(avl_node_t *node);
 static int GetBalance(avl_node_t *node);
 static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func);
 static int UpdateHeight(avl_node_t *node);
+static avl_node_t *GetMin(avl_node_t *node);
+static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list);
+
 
 
 
@@ -99,14 +102,13 @@ int AVLInsert(avl_t *avl, const void *data) /*Duplicate will be undefined*/
     return avl->root ? 1 : 0 ;
 } 
 
-int AVLMultiFind(const avl_t *avl, void * param, int (*Is_Match)(void *data, void *param), dll_t *list)
+int AVLMultiFind(const avl_t *avl, void *param, avl_is_match_t IsMatch , dll_t *list)
 {
-    /*use find with IsMatch function on all the tree*/
-    /*if IsMatch then Push to the list->next(there's a dummy)*/
-    /*move to the next node*/
+    return MultiFind(avl->root, param, IsMatch, list);
 }
 
-int MultiRemove(avl_t *avl, void *param, int (*Is_Match)(void *data, void *param), dll_t *list);
+int MultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list);
+
 
 
 
@@ -128,8 +130,8 @@ static int UpdateHeight(avl_node_t *node)
 {
     size_t left_height = Height(node->children[LEFT]);
     size_t right_height = Height(node->children[RIGHT]);
-    node->height = 1 + (left_height > right_height ? left_height : right_height);
-    return 1;
+    return node->height = 1 + (left_height > right_height ? left_height : right_height);
+
 }
 
 static avl_node_t *CreateNode(void *data)
@@ -227,7 +229,7 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
     int compare;
 
     if(NULL == node)
-        return NULL;
+        return node;
     
     compare = compare_func((void *)data, node->data);
     
@@ -235,59 +237,47 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
         node->children[LEFT] =  Remove(node->children[LEFT], data, compare_func);
     if(compare > 0)
         node->children[RIGHT] = Remove(node->children[RIGHT], data, compare_func);
+
+    
     else 
     {
-        if(node->children[LEFT] == NULL || node->children[RIGHT] == NULL)
-        {
-            temp = node->children[LEFT] ? node->children[LEFT] : node->children[RIGHT];
-            if(NULL == temp)
-            {
-                temp = node;
-                node = NULL;
-            } 
-            else
-            {
-                *node = *temp;
-                free(temp);
-            }
-        }
-        else
+        if(node->children[LEFT] == NULL)
         {
             temp = node->children[RIGHT];
-            while(temp->children[LEFT] != NULL)
-            {
-                temp = temp->children[LEFT];
-            }
-            node->data = temp->data;
-            node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
+            free(node);
+            return temp;   
         }
+        else if(node->children[RIGHT] == NULL)
+        {
+            temp = node->children[LEFT];
+            free(node);
+            return temp;
+        }
+
+        temp = GetMin(node->children[RIGHT]);
+        node->data = temp->data;
+        node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
     }
 
     if(NULL == node)
         return NULL;
 
     UpdateHeight(node);
+            
     return Balance(node, (void *)data, compare_func);
 
 }
 
 static int ForEach (avl_node_t *node, action_func_t action_func, void *param)
 {
-    int result = 0;
+    avl_node_t *left = NULL;
+    avl_node_t *right = NULL;
     if(NULL == node) 
         return 0;
     
-    result = ForEach(node->children[LEFT], action_func, param);
-
-    if(result > 0)
-        return result;
-
-    result = action_func(node->data, param);
-
-    if(result > 0)
-        return result;
-
-    return ForEach(node->children[RIGHT], action_func, param);
+    left = node->children[LEFT];
+    right = node->children[RIGHT];
+    return action_func(node->data, param) + ForEach(left, action_func, param) + ForEach(right, action_func, param);
 }
 
 static size_t Size(avl_node_t *node)
@@ -321,4 +311,43 @@ static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_
         }
             
     return node;
+}
+
+static avl_node_t *GetMin(avl_node_t *node)
+{
+    while(node->children[LEFT] != NULL)
+    {
+        node = node->children[LEFT];
+    }
+    return node;
+}
+
+static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list)
+{
+    int val1=0, val2=0, add=0;
+    if(NULL == node)
+        return 0;
+
+    if(1 == IsMatch(node->data, param))
+    {
+        if(NULL == DLLInsert(DLLBegin(list), node->data, list))
+        {
+            DLLDestroy(list);
+            return -1;
+        }
+        add = 1;
+    }
+
+    val1 = MultiFind(node->children[LEFT], param, IsMatch, list);
+    {
+        if (-1 == val1)
+            return -1;
+    }
+    val2 = MultiFind(node->children[RIGHT], param, IsMatch, list);
+    {
+        if (-1 == val1)
+            return -1;
+    }
+
+    return (val1+val2+add);
 }
