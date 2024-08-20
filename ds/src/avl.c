@@ -99,7 +99,12 @@ int AVLInsert(avl_t *avl, const void *data) /*Duplicate will be undefined*/
     return avl->root ? 1 : 0 ;
 } 
 
-int AVLMultiFind(const avl_t *avl, void * param, int (*Is_Match)(void *data, void *param), dll_t *list);
+int AVLMultiFind(const avl_t *avl, void * param, int (*Is_Match)(void *data, void *param), dll_t *list)
+{
+    /*use find with IsMatch function on all the tree*/
+    /*if IsMatch then Push to the list->next(there's a dummy)*/
+    /*move to the next node*/
+}
 
 int MultiRemove(avl_t *avl, void *param, int (*Is_Match)(void *data, void *param), dll_t *list);
 
@@ -111,7 +116,7 @@ int MultiRemove(avl_t *avl, void *param, int (*Is_Match)(void *data, void *param
 
 static size_t Height(avl_node_t *node)
 {
-    return node ? node->height : 0;
+    return node != NULL ? node->height : 0;
 }
 
 static int GetBalance(avl_node_t *node)
@@ -123,7 +128,8 @@ static int UpdateHeight(avl_node_t *node)
 {
     size_t left_height = Height(node->children[LEFT]);
     size_t right_height = Height(node->children[RIGHT]);
-    return node->height = 1 + (left_height > right_height ? left_height : right_height);
+    node->height = 1 + (left_height > right_height ? left_height : right_height);
+    return 1;
 }
 
 static avl_node_t *CreateNode(void *data)
@@ -166,12 +172,12 @@ static avl_node_t *RotateLeft(avl_node_t *node)
     UpdateHeight(left);
     
 
-    return right;
+    return left;
 }
 
 static avl_node_t *Insert(avl_node_t *node, void *data, compare_func_t compare_func)
 {
-    int compare = -9;
+    int compare = 0;
     if(NULL == node)
         return CreateNode(data);
     
@@ -218,7 +224,8 @@ static void *Find(avl_node_t *node, const void *data, compare_func_t compare_fun
 static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t compare_func)
 {
     avl_node_t *temp = NULL;
-    int compare = -9;
+    int compare;
+
     if(NULL == node)
         return NULL;
     
@@ -230,30 +237,37 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
         node->children[RIGHT] = Remove(node->children[RIGHT], data, compare_func);
     else 
     {
-        if(NULL == node->children[LEFT])
+        if(node->children[LEFT] == NULL || node->children[RIGHT] == NULL)
+        {
+            temp = node->children[LEFT] ? node->children[LEFT] : node->children[RIGHT];
+            if(NULL == temp)
+            {
+                temp = node;
+                node = NULL;
+            } 
+            else
+            {
+                *node = *temp;
+                free(temp);
+            }
+        }
+        else
         {
             temp = node->children[RIGHT];
-            free(node);
-            return temp;
+            while(temp->children[LEFT] != NULL)
+            {
+                temp = temp->children[LEFT];
+            }
+            node->data = temp->data;
+            node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
         }
-
-        else if (NULL == node->children[RIGHT])
-        {
-            temp = node->children[LEFT];
-            free(node);
-            return temp;
-        }
-
-        temp = node->children[RIGHT];
-        while(temp->children[LEFT])
-        {
-            temp = temp->children[LEFT];
-        }  
-        node->data = temp->data;
-        node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
     }
-        UpdateHeight(node);
-        return Balance(node, (void *)data, compare_func);
+
+    if(NULL == node)
+        return NULL;
+
+    UpdateHeight(node);
+    return Balance(node, (void *)data, compare_func);
 
 }
 
@@ -263,16 +277,17 @@ static int ForEach (avl_node_t *node, action_func_t action_func, void *param)
     if(NULL == node) 
         return 0;
     
-    result = 1 + ForEach(node->children[LEFT], action_func, param);
-    if(result > 1)
+    result = ForEach(node->children[LEFT], action_func, param);
+
+    if(result > 0)
         return result;
 
     result = action_func(node->data, param);
 
-    if(result > 1)
+    if(result > 0)
         return result;
-        
-    return 1 + ForEach(node->children[RIGHT], action_func, param);
+
+    return ForEach(node->children[RIGHT], action_func, param);
 }
 
 static size_t Size(avl_node_t *node)
@@ -289,19 +304,21 @@ static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_
 
         if(balance > 1 && compare_func(data, node->children[LEFT]->data) < 0)
             return RotateRight(node);
-        if(balance < -1 && compare_func(data, node->children[RIGHT]->data) > 0)
-            return RotateLeft(node);
 
         if(balance > 1 && compare_func(data, node->children[LEFT]->data) > 0)
         {
             node->children[LEFT] = RotateLeft(node->children[LEFT]);
-            return RotateLeft(node);
+            return RotateRight(node);
         }
+
+        if(balance < -1 && compare_func(data, node->children[RIGHT]->data) > 0)
+            return RotateLeft(node);
+
         if(balance < -1 && compare_func(data, node->children[RIGHT]->data) < 0)
         {
             node->children[RIGHT] = RotateRight(node->children[RIGHT]);
             return RotateLeft(node);
         }
-
+            
     return node;
 }

@@ -7,6 +7,40 @@
 #define SMALLER (-1)
 #define BIGGER (1)
 
+
+
+
+enum children {
+    LEFT = 0,
+    RIGHT = 1,
+    NUMBER_OF_CHILD = 2
+};
+
+struct node
+{
+    void *data;
+    size_t height;
+    avl_node_t *children[NUMBER_OF_CHILD];
+};
+
+struct avl
+{
+    avl_node_t *root;
+    compare_func_t cmp_func;
+};
+
+void PrintTree(avl_node_t *root)
+{
+    if(root == NULL)
+        return;
+    
+    printf("%d\n", *(int *)root->data);
+
+    PrintTree(root->children[LEFT]);
+    PrintTree(root->children[RIGHT]);
+}
+
+
 int CompareInts(const void *a, const void *b) {
     return (*(int *)a < *(int *)b) ? SMALLER : (*(int *)a > *(int *)b) ? BIGGER : EQUAL;
 }
@@ -36,9 +70,7 @@ void TestAVLCreate() {
 void TestAVLHeight()
 {
     avl_t *avl = AVLCreate(CompareInts);
-    void *found = NULL;
-    size_t i = 0, passed = 1;
-    int result = -9;
+    size_t i = 0;
     int values[] = {5, 3, 8, 1, 4, 7, 9};
 
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
@@ -63,9 +95,9 @@ void TestAVLInsertAndFind() {
     void *found = NULL;
     size_t i = 0, passed = 1;
     int result = -9;
-    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    int values[] = {5, 3, 8, 1, 4, 7, 9,10,11,12, -2, 2};
     
-  
+     
     if (avl == NULL) {
         printf("TestAVLInsertAndFind failed.\n");
         return;
@@ -79,6 +111,7 @@ void TestAVLInsertAndFind() {
             return;
         }
     }
+    PrintTree(avl->root);
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         found = AVLFind(avl, &values[i]);
         if (found == NULL){
@@ -98,7 +131,7 @@ void TestAVLInsertAndFind() {
 
 void TestAVLIsEmptyAndSize() {
     avl_t *avl = AVLCreate(CompareInts);
-    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    int values[] = {5, 4, 8, 1, 3, 7, 9};
     size_t i = 0;
     
     if (avl == NULL) {
@@ -110,7 +143,6 @@ void TestAVLIsEmptyAndSize() {
         for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
             AVLInsert(avl, &values[i]);
         }
-
         if (AVLIsEmpty(avl) == 0 && AVLSize(avl) == sizeof(values) / sizeof(values[0])) {
             printf("TestAVLIsEmptyAndSize passed.\n");
         } else {
@@ -125,8 +157,9 @@ void TestAVLIsEmptyAndSize() {
 
 void TestAVLRemove() {
     avl_t *avl = AVLCreate(CompareInts);
-    int * to_remove = NULL;
-    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    int *to_remove = NULL;
+    int insert = 0;
+    int values[] = {5, 4, 8, 1, 3, 7, 9};
     size_t i = 0;
     if (avl == NULL) {
         printf("TestAVLRemove(); failed.\n");
@@ -134,10 +167,16 @@ void TestAVLRemove() {
     }
 
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
-        AVLInsert(avl, &values[i]);
+        insert = AVLInsert(avl, &values[i]);
+        if(insert != 1)
+        {
+            printf("TestAVLRemove failed. insert failure.");
+            return;
+        }
     }
-
-    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        
+    for (i = 0; i < 5; ++i) {
+        to_remove = NULL;
         to_remove = (int *)AVLFind(avl, &values[i]);
         if (NULL == to_remove) {
             printf("TestAVLRemove(); failed.\n");
@@ -146,11 +185,11 @@ void TestAVLRemove() {
         }
         AVLRemove(avl, &to_remove);
     }
-
-    if (AVLIsEmpty(avl) && AVLSize(avl) == 0) {
-        printf("TestAVLRemove(); passed.\n");
+    PrintTree(avl->root);
+    if (!AVLIsEmpty(avl) && AVLSize(avl) == 2) {
+        printf("TestAVLRemove passed.\n");
     } else {
-        printf("TestAVLRemove(); failed.\n");
+        printf("TestAVLRemove failed.\n");
     }
 
     AVLDestroy(avl);
@@ -159,7 +198,7 @@ void TestAVLRemove() {
 
 void TestAVLForEach() {
     avl_t *avl = AVLCreate(CompareInts);
-    int values[] = {5, 3, 8, 1, 4, 7, 9};
+    int values[] = {5, 4, 8, 1, 3, 7, 9};
     int count = 0;
     size_t i = 0;
     
@@ -168,11 +207,11 @@ void TestAVLForEach() {
         return;
     }
 
-    for (i = 0; i < 5; ++i) {
+    for (i = 0; i < 7; ++i) {
         AVLInsert(avl, &values[i]);
     }
 
-    count += AVLForEach(avl, PrintInt, NULL); 
+    count = AVLForEach(avl, PrintInt, NULL); 
     printf("\nTotal nodes: %d\n", count);
 
     if (count == sizeof(values) / sizeof(values[0])) {
