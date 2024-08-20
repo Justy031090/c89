@@ -39,7 +39,6 @@ void PrintTree(avl_node_t *root)
     PrintTree(root->children[RIGHT]);
 }
 
-
 int CompareInts(const void *a, const void *b) {
     return (*(int *)a < *(int *)b) ? SMALLER : (*(int *)a > *(int *)b) ? BIGGER : EQUAL;
 }
@@ -169,7 +168,6 @@ void TestAVLForEach() {
     }
     count = AVLForEach(avl, PrintInt, NULL); 
     printf("\nTotal nodes: %d\n", count);
-        PrintTree(avl->root);
     if (count == sizeof(values) / sizeof(values[0])) {
         printf("TestAVLForEach passed.\n");
     } else {
@@ -200,17 +198,15 @@ void TestAVLRemove() {
     }
         
     for (i = 0; i < 5; ++i) {
-        to_remove = NULL;
         to_remove = (int *)AVLFind(avl, &values[i]);
         if (NULL == to_remove) {
-            printf("TestAVLRemove Failed; failed.\n");
+            printf("TestAVLRemove failed. to_remove is NULL\n");
             AVLDestroy(avl);
             return;
         }
-        AVLRemove(avl, &to_remove);
+        AVLRemove(avl, to_remove);
     }
-
-    if (!AVLIsEmpty(avl) && AVLSize(avl) == 2) {
+    if (!AVLIsEmpty(avl) && AVLSize(avl) == 5) {
         printf("TestAVLRemove passed.\n");
     } else {
         printf("TestAVLRemove failed.\n");

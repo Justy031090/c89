@@ -130,7 +130,8 @@ static int UpdateHeight(avl_node_t *node)
 {
     size_t left_height = Height(node->children[LEFT]);
     size_t right_height = Height(node->children[RIGHT]);
-    return node->height = 1 + (left_height > right_height ? left_height : right_height);
+    node->height = 1 + (left_height > right_height ? left_height : right_height);
+    return 1;
 
 }
 
@@ -241,26 +242,31 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
     
     else 
     {
-        if(node->children[LEFT] == NULL)
+        if(node->children[LEFT] == NULL || node->children[RIGHT]==NULL)
         {
-            temp = node->children[RIGHT];
-            free(node);
-            return temp;   
-        }
-        else if(node->children[RIGHT] == NULL)
-        {
-            temp = node->children[LEFT];
-            free(node);
-            return temp;
-        }
+            temp = node->children[LEFT] ? node->children[LEFT] : node->children[RIGHT];
 
-        temp = GetMin(node->children[RIGHT]);
-        node->data = temp->data;
-        node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
+            if(temp == NULL)
+            {            
+                temp = node;
+                node = NULL;
+            }
+            else
+            {
+                node->data = temp->data;
+            }
+            free(temp);
+        }
+        else
+        {
+            temp = GetMin(node->children[RIGHT]);
+            node->data = temp->data;
+            node->children[RIGHT] = Remove(node->children[RIGHT], temp->data, compare_func);
+        }
     }
 
     if(NULL == node)
-        return NULL;
+        return node;
 
     UpdateHeight(node);
             
@@ -291,7 +297,7 @@ static size_t Size(avl_node_t *node)
 static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func)
 {
         int balance = GetBalance(node);
-
+    
         if(balance > 1 && compare_func(data, node->children[LEFT]->data) < 0)
             return RotateRight(node);
 
