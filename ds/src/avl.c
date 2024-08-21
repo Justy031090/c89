@@ -367,12 +367,9 @@ static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_
 
 static int MultiRemove(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list, compare_func_t compare_func, dll_iterator_t iter)
 {
-    if(DLLNext(iter) == NULL)
+    if(DLLEnd(list) == iter)
         return 0;
     
-    if(DLLGetData(iter) == node->data)
-        Remove(node, node->data, compare_func);
-
-    MultiRemove(node->children[LEFT], node->children[LEFT]->data, IsMatch, list, compare_func, DLLNext(iter));
-    MultiRemove(node->children[RIGHT], node->children[RIGHT]->data, IsMatch, list, compare_func, DLLNext(iter));
+    Remove(node, DLLGetData(iter),compare_func);
+    return MultiRemove(node, DLLGetData(iter), IsMatch, list, compare_func, DLLNext(iter));
 }
