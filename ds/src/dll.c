@@ -237,7 +237,6 @@ size_t DLLForEach(const dll_iterator_t from, const dll_iterator_t to, action_t a
 	
 	assert(NULL != from);
 	assert(NULL != to);
-	assert(NULL != param);
 	assert(NULL != action_func);
 	
 	while(runner != end_node)
