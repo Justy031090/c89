@@ -267,7 +267,6 @@ void TestAVLFindAll()
         }
     }
     AVLMultiFind(avl,&param, IsMatch, dll);
-    DLLForEach(DLLBegin(dll), DLLEnd(dll), PrintDLL, NULL);
     if(DLLSize(dll) != 4)
     {
         printf("TestAVLFindAll failed. Did not get all the expected values on dll.\n");
@@ -303,6 +302,82 @@ void TestAVLFindAll()
     DLLDestroy(dll);
 }
 
+
+
+void TestAVLRemoveAll()
+{
+    avl_t *avl = AVLCreate(CompareInts);
+    dll_t *dll = DLLCreate();
+    int insert = 0;
+    int *value = NULL;
+    int param = 7;
+    int values[] = {-4, 5, 4, 8, 1, 3, -1, 7, 9};
+    size_t i = 0;
+    dll_iterator_t iter = NULL;
+
+    if (avl == NULL) {
+        printf("TestAVLRemoveAll failed. AVL creation failed.\n");
+        return;
+    }
+    if(dll == NULL){
+        printf("TestAVLRemoveAll failed. DLL creation failed.\n");
+        return;
+    }
+
+    for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+        insert = AVLInsert(avl, &values[i]);
+        if (insert != 1) {
+            printf("TestAVLRemoveAll failed. Insert failure for value %d.\n", values[i]);
+            AVLDestroy(avl);
+            return;
+        }
+    }
+    PrintTree(avl->root);
+    DLLForEach(DLLBegin(dll), DLLEnd(dll), PrintDLL, NULL);
+    
+    AVLMultiRemove(avl,&param, IsMatch, dll);
+    PrintTree(avl->root);
+    
+    DLLForEach(DLLBegin(dll), DLLEnd(dll), PrintDLL, NULL);
+    if(DLLSize(dll) != 4)
+    {
+        printf("TestAVLRemoveAll failed. Did not get all the expected values on dll.\n");
+    }
+    iter = DLLFind(DLLBegin(dll), DLLEnd(dll), IsMatchDll, &values[1]);
+    param = *(int *)DLLGetData(iter);
+    value = AVLFind(avl, &values[1]);
+    if(param != values[1] && value != NULL)
+    {
+        printf("Failed to find expected value.\n");
+    }
+    iter = DLLFind(DLLBegin(dll), DLLEnd(dll), IsMatchDll, &values[2]);
+    param = *(int *)DLLGetData(iter);
+    value = AVLFind(avl, &values[2]);
+    if(param != values[2] && value != NULL )
+    {
+        printf("Failed to find expected value.\n");
+    }
+    iter = DLLFind(DLLBegin(dll), DLLEnd(dll), IsMatchDll, &values[4]);
+        param = *(int *)DLLGetData(iter);
+        value = AVLFind(avl, &values[4]);
+    if(param != values[4] && value != NULL)
+    {
+        printf("Failed to find expected value.\n");
+    }
+    iter = DLLFind(DLLBegin(dll), DLLEnd(dll), IsMatchDll, &values[5]);
+        param = *(int *)DLLGetData(iter);
+        value = AVLFind(avl, &values[5]);
+    if(param != values[5] && value != NULL)
+    {
+        printf("Failed to find expected value.\n");
+    }
+
+    printf("TestAVLRemoveAll passed.\n");
+
+    AVLDestroy(avl);
+    DLLDestroy(dll);
+}
+
 int main() {
     /*
     TestAVLCreate();
@@ -310,9 +385,11 @@ int main() {
     TestAVLIsEmptyAndSize();
     TestAVLHeight();
     TestAVLForEach();
+    TestAVLFindAll();
     TestAVLRemove();
     */
-    TestAVLFindAll();
+
+   TestAVLRemoveAll();
     
     printf("All tests completed.\n");
     return 0;

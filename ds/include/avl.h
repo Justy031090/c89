@@ -41,6 +41,6 @@ size_t AVLHeight(const avl_t *avl);
 int AVLMultiFind(const avl_t *avl, void * param, avl_is_match_t IsMatch, dll_t *list);
 
 /*O(n)*/
-int MultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list);
+int AVLMultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list);
 
 #endif /*AVL_H*/

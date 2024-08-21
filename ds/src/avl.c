@@ -27,21 +27,27 @@ struct avl
 };
 
 
+/* Helpers */
+
+static avl_node_t *GetMin(avl_node_t *node);
+static size_t Height(avl_node_t *node);
+static int UpdateHeight(avl_node_t *node);
+static int GetBalance(avl_node_t *node);
 static avl_node_t *CreateNode(void *data);
-static void FreeTree(avl_node_t *node);
 static avl_node_t *RotateRight(avl_node_t *node);
 static avl_node_t *RotateLeft(avl_node_t *node);
+static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func);
+
+
+/* Wrappers */
+static void FreeTree(avl_node_t *node);
 static avl_node_t *Insert(avl_node_t *node, void *data, compare_func_t compare_func);
 static void *Find(avl_node_t *node, const void *data, compare_func_t compare_func);
 static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t compare_func);
 static int ForEach(avl_node_t *node, action_func_t action_func, void *param);
 static size_t Size(avl_node_t *node);
-static size_t Height(avl_node_t *node);
-static int GetBalance(avl_node_t *node);
-static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func);
-static int UpdateHeight(avl_node_t *node);
-static avl_node_t *GetMin(avl_node_t *node);
 static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list);
+static int MultiRemove(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list, compare_func_t compare_func, dll_iterator_t iter);
 
 
 
@@ -107,14 +113,22 @@ int AVLMultiFind(const avl_t *avl, void *param, avl_is_match_t IsMatch , dll_t *
     return MultiFind(avl->root, param, IsMatch, list);
 }
 
-int MultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list);
+int AVLMultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list)
+{
+
+    if(1 == DLLIsEmpty(list))
+    {
+        MultiFind(avl->root, param, IsMatch, list);
+    }
+
+    return MultiRemove(avl->root, param, IsMatch, list, avl->cmp_func, DLLBegin(list));
+}
 
 
 
 
 
 
-/* Wrappers  &  Helpers */
 
 static size_t Height(avl_node_t *node)
 {
@@ -165,17 +179,17 @@ static avl_node_t *RotateRight(avl_node_t *node)
 
 static avl_node_t *RotateLeft(avl_node_t *node)
 {
-    avl_node_t *left = node->children[RIGHT];
-    avl_node_t *right = left->children[LEFT];
+    avl_node_t *right = node->children[RIGHT];
+    avl_node_t *left = right->children[LEFT];
 
-    left->children[LEFT] = node;
-    node->children[RIGHT] = right;
+    right->children[LEFT] = node;
+    node->children[RIGHT] = left;
 
     UpdateHeight(node);
-    UpdateHeight(left);
+    UpdateHeight(right);
     
 
-    return left;
+    return right;
 }
 
 static avl_node_t *Insert(avl_node_t *node, void *data, compare_func_t compare_func)
@@ -323,7 +337,7 @@ static avl_node_t *GetMin(avl_node_t *node)
 
 static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list)
 {
-    int val1=0, val2=0, add=0;
+    int left_count=0, right_count=0, add=0;
     if(NULL == node)
         return 0;
 
@@ -337,16 +351,28 @@ static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_
         add = 1;
     }
 
-    val1 = MultiFind(node->children[LEFT], param, IsMatch, list);
+    left_count = MultiFind(node->children[LEFT], param, IsMatch, list);
     {
-        if (-1 == val1)
+        if (-1 == left_count)
             return -1;
     }
-    val2 = MultiFind(node->children[RIGHT], param, IsMatch, list);
+    right_count = MultiFind(node->children[RIGHT], param, IsMatch, list);
     {
-        if (-1 == val1)
+        if (-1 == right_count)
             return -1;
     }
 
-    return (val1+val2+add);
+    return (left_count+right_count+add);
+}
+
+static int MultiRemove(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list, compare_func_t compare_func, dll_iterator_t iter)
+{
+    if(DLLNext(iter) == NULL)
+        return 0;
+    
+    if(DLLGetData(iter) == node->data)
+        Remove(node, node->data, compare_func);
+
+    MultiRemove(node->children[LEFT], node->children[LEFT]->data, IsMatch, list, compare_func, DLLNext(iter));
+    MultiRemove(node->children[RIGHT], node->children[RIGHT]->data, IsMatch, list, compare_func, DLLNext(iter));
 }
