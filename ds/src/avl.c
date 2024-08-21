@@ -5,6 +5,8 @@
 |  (")-("))	.. The only hard day was yesterday ! ..    ********|
 ***************************************************************/
 #include <stdlib.h> /*malloc, free*/
+#include <assert.h>
+
 #include "avl.h"
 
 enum children {
@@ -36,18 +38,18 @@ static int GetBalance(avl_node_t *node);
 static avl_node_t *CreateNode(void *data);
 static avl_node_t *RotateRight(avl_node_t *node);
 static avl_node_t *RotateLeft(avl_node_t *node);
-static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func);
+static avl_node_t *Balance(avl_node_t *node);
 
 
 /* Wrappers */
+static size_t Size(avl_node_t *node);
 static void FreeTree(avl_node_t *node);
 static avl_node_t *Insert(avl_node_t *node, void *data, compare_func_t compare_func);
 static void *Find(avl_node_t *node, const void *data, compare_func_t compare_func);
 static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t compare_func);
 static int ForEach(avl_node_t *node, action_func_t action_func, void *param);
-static size_t Size(avl_node_t *node);
 static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list);
-static int MultiRemove(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list, compare_func_t compare_func, dll_iterator_t iter);
+static int MultiRemove(avl_node_t *node, void *param, dll_t *list, compare_func_t compare_func, dll_iterator_t iter);
 
 
 
@@ -68,7 +70,7 @@ avl_t *AVLCreate(compare_func_t cmp_func)
 
 size_t AVLHeight(const avl_t *avl)
 {
-    return avl->root->height;   
+    return avl->root ? avl->root->height : 0;   
 }
 
 int AVLIsEmpty(const avl_t *avl)
@@ -78,12 +80,15 @@ int AVLIsEmpty(const avl_t *avl)
 
 void AVLDestroy(avl_t *avl)
 {
+    assert(avl != NULL);
     FreeTree(avl->root);
     free(avl);
 }
 
 void *AVLFind(const avl_t *avl, const void *data)
 {
+    assert(NULL != avl);
+    assert(NULL != data);
     return Find(avl->root, data, avl->cmp_func);
 }
 
@@ -94,42 +99,47 @@ size_t AVLSize(const avl_t *avl)
 
 int AVLForEach(avl_t *avl, action_func_t action_func, void *param)
 {
+    assert(NULL != avl);
     return ForEach(avl->root, action_func, param);
 }
 
 void AVLRemove(avl_t *avl, void *data)
 {
-    avl->root = Remove(avl->root, data, avl->cmp_func);
+    assert(NULL != avl);
+    avl->root = avl->root ? Remove(avl->root, data, avl->cmp_func) : NULL;
 }
 
-int AVLInsert(avl_t *avl, const void *data) /*Duplicate will be undefined*/
+int AVLInsert(avl_t *avl, const void *data)
 {
+    assert(NULL != avl);
+    assert(NULL != data);
     avl->root = Insert(avl->root, (void *)data, avl->cmp_func);
     return avl->root ? 1 : 0 ;
 } 
 
 int AVLMultiFind(const avl_t *avl, void *param, avl_is_match_t IsMatch , dll_t *list)
 {
+    assert(NULL != list);
+    assert(NULL != param);
+    assert(NULL != avl);
     return MultiFind(avl->root, param, IsMatch, list);
 }
 
 int AVLMultiRemove(avl_t *avl, void *param, avl_is_match_t IsMatch, dll_t *list)
 {
+    assert(NULL != list);
+    assert(NULL != param);
+    assert(NULL != avl);
 
-    if(1 == DLLIsEmpty(list))
-    {
-        MultiFind(avl->root, param, IsMatch, list);
-    }
-
-    return MultiRemove(avl->root, param, IsMatch, list, avl->cmp_func, DLLBegin(list));
+    MultiFind(avl->root, param, IsMatch, list);
+    return MultiRemove(avl->root, param, list, avl->cmp_func, DLLBegin(list));
 }
 
 
 
 
 
-
-
+/*Helpers and Wrappers definitions*/
 static size_t Height(avl_node_t *node)
 {
     return node != NULL ? node->height : 0;
@@ -209,7 +219,7 @@ static avl_node_t *Insert(avl_node_t *node, void *data, compare_func_t compare_f
 
     UpdateHeight(node);
 
-    return Balance(node, data, compare_func);
+    return Balance(node);
 }
 
 static void FreeTree(avl_node_t *node)
@@ -278,7 +288,7 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
     }
 
     UpdateHeight(node);
-    return Balance(node, (void *)data, compare_func);
+    return Balance(node);
 }
 
 static int ForEach (avl_node_t *node, action_func_t action_func, void *param)
@@ -301,7 +311,7 @@ static size_t Size(avl_node_t *node)
     return 1 + Size(node->children[LEFT]) + Size(node->children[RIGHT]);
 }
 
-static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_func)
+static avl_node_t *Balance(avl_node_t *node)
 {
         int balance = GetBalance(node);
     
@@ -365,11 +375,12 @@ static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_
     return (left_count+right_count+add);
 }
 
-static int MultiRemove(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_t *list, compare_func_t compare_func, dll_iterator_t iter)
+static int MultiRemove(avl_node_t *node, void *param, dll_t *list, compare_func_t compare_func, dll_iterator_t iter)
 {
-    if(DLLEnd(list) == iter)
+    (void)param;
+    if(DLLEnd(list) == iter || NULL == list)
         return 0;
     
     Remove(node, DLLGetData(iter),compare_func);
-    return MultiRemove(node, DLLGetData(iter), IsMatch, list, compare_func, DLLNext(iter));
+    return MultiRemove(node, DLLGetData(iter), list, compare_func, DLLNext(iter));
 }

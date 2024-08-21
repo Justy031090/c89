@@ -52,6 +52,7 @@ int IsMatchDll(const void *a, const void *b)
 {
     return *(int *)a == *(int *)b;
 }
+
 int PrintInt(void *data, void *param) {
     (void)param;
     printf("%d\n", *(int *)data);
@@ -182,7 +183,6 @@ void TestAVLForEach() {
         AVLInsert(avl, &values[i]);
     }
     count = AVLForEach(avl, PrintInt, NULL); 
-    printf("\nTotal nodes: %d\n", count);
     if (count == sizeof(values) / sizeof(values[0])) {
         printf("TestAVLForEach passed.\n");
     } else {
@@ -200,20 +200,18 @@ void TestAVLRemove() {
     size_t i = 0;
 
     if (avl == NULL) {
-        printf("TestAVLRemove() failed. AVL creation failed.\n");
+        printf("TestAVLRemove failed. AVL creation failed.\n");
         return;
     }
 
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         insert = AVLInsert(avl, &values[i]);
         if (insert != 1) {
-            printf("TestAVLRemove() failed. Insert failure for value %d.\n", values[i]);
+            printf("TestAVLRemove failed. Insert failure for value %d.\n", values[i]);
             AVLDestroy(avl);
             return;
         }
     }
-
-    printf("Tree before removals:\n");
 
     for (i = 0; i < 5; ++i) {
         to_remove = (int *)AVLFind(avl, &values[i]);
@@ -221,17 +219,13 @@ void TestAVLRemove() {
             AVLDestroy(avl);
             return;
         }
-        printf("Removing value: %d\n", *to_remove);
         AVLRemove(avl, to_remove);
-
-        printf("Tree after removing value %d:\n", *to_remove);
-
     }
 
     if (AVLIsEmpty(avl) || AVLSize(avl) == 2) {
-        printf("TestAVLRemove() passed.\n");
+        printf("TestAVLRemove passed.\n");
     } else {
-        printf("TestAVLRemove() failed.\n");
+        printf("TestAVLRemove failed.\n");
     }
 
     AVLDestroy(avl);
