@@ -8,6 +8,8 @@
 #include <assert.h>
 
 #include "avl.h"
+#define ALLOC_FAIL (-1)
+#define SUCCESS (1)
 
 enum children {
     LEFT = 0,
@@ -351,25 +353,25 @@ static int MultiFind(avl_node_t *node, void *param, avl_is_match_t IsMatch, dll_
     if(NULL == node)
         return 0;
 
-    if(1 == IsMatch(node->data, param))
+    if(SUCCESS == IsMatch(node->data, param))
     {
         if(NULL == DLLInsert(DLLBegin(list), node->data, list))
         {
             DLLDestroy(list);
-            return -1;
+            return ALLOC_FAIL;
         }
-        add = 1;
+        add = SUCCESS;
     }
 
     left_count = MultiFind(node->children[LEFT], param, IsMatch, list);
     {
-        if (-1 == left_count)
-            return -1;
+        if (ALLOC_FAIL == left_count)
+            return ALLOC_FAIL;
     }
     right_count = MultiFind(node->children[RIGHT], param, IsMatch, list);
     {
-        if (-1 == right_count)
-            return -1;
+        if (ALLOC_FAIL == right_count)
+            return ALLOC_FAIL;
     }
 
     return (left_count+right_count+add);
