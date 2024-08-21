@@ -236,7 +236,7 @@ static void FreeTree(avl_node_t *node)
 
 static void *Find(avl_node_t *node, const void *data, compare_func_t compare_func)
 {
-    int compare = -9;
+    int compare;
     if(NULL == node)
         return NULL;
     
