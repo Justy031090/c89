@@ -137,15 +137,15 @@ static size_t Height(avl_node_t *node)
 
 static int GetBalance(avl_node_t *node)
 {
-    return (int)Height(node->children[LEFT]) - (int)Height(node->children[RIGHT]);
+    return node ? (int)Height(node->children[LEFT]) - (int)Height(node->children[RIGHT]) : 0;
 }
 
 static int UpdateHeight(avl_node_t *node)
 {
     size_t left_height = Height(node->children[LEFT]);
     size_t right_height = Height(node->children[RIGHT]);
-    node->height = 1 + (left_height > right_height ? left_height : right_height);
-    return 1;
+    return node->height = 1 + (left_height > right_height ? left_height : right_height);
+   
 
 }
 
@@ -305,19 +305,19 @@ static avl_node_t *Balance(avl_node_t *node, void *data, compare_func_t compare_
 {
         int balance = GetBalance(node);
     
-        if(balance > 1 && compare_func(data, node->children[LEFT]->data) < 0)
+        if(balance > 1 && GetBalance(node->children[LEFT])  >= 0)
             return RotateRight(node);
 
-        if(balance > 1 && compare_func(data, node->children[LEFT]->data) > 0)
+        if(balance > 1 && GetBalance(node->children[LEFT])  < 0)
         {
             node->children[LEFT] = RotateLeft(node->children[LEFT]);
             return RotateRight(node);
         }
 
-        if(balance < -1 && compare_func(data, node->children[RIGHT]->data) > 0)
+        if(balance < -1 && GetBalance(node->children[RIGHT]) <= 0)
             return RotateLeft(node);
 
-        if(balance < -1 && compare_func(data, node->children[RIGHT]->data) < 0)
+        if(balance < -1 && GetBalance(node->children[RIGHT]) > 0)
         {
             node->children[RIGHT] = RotateRight(node->children[RIGHT]);
             return RotateLeft(node);

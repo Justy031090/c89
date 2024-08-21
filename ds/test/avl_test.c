@@ -214,12 +214,10 @@ void TestAVLRemove() {
     }
 
     printf("Tree before removals:\n");
-    PrintTree(avl->root);
 
     for (i = 0; i < 5; ++i) {
         to_remove = (int *)AVLFind(avl, &values[i]);
         if (to_remove == NULL) {
-            printf("TestAVLRemove() failed. to_remove is NULL for value %d\n", values[i]);
             AVLDestroy(avl);
             return;
         }
@@ -227,7 +225,7 @@ void TestAVLRemove() {
         AVLRemove(avl, to_remove);
 
         printf("Tree after removing value %d:\n", *to_remove);
-        PrintTree(avl->root);
+
     }
 
     if (AVLIsEmpty(avl) || AVLSize(avl) == 2) {
@@ -302,8 +300,6 @@ void TestAVLFindAll()
     DLLDestroy(dll);
 }
 
-
-
 void TestAVLRemoveAll()
 {
     avl_t *avl = AVLCreate(CompareInts);
@@ -327,18 +323,13 @@ void TestAVLRemoveAll()
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         insert = AVLInsert(avl, &values[i]);
         if (insert != 1) {
-            printf("TestAVLRemoveAll failed. Insert failure for value %d.\n", values[i]);
             AVLDestroy(avl);
             return;
         }
     }
-    PrintTree(avl->root);
-    DLLForEach(DLLBegin(dll), DLLEnd(dll), PrintDLL, NULL);
-    
+        
     AVLMultiRemove(avl,&param, IsMatch, dll);
-    PrintTree(avl->root);
-    
-    DLLForEach(DLLBegin(dll), DLLEnd(dll), PrintDLL, NULL);
+
     if(DLLSize(dll) != 4)
     {
         printf("TestAVLRemoveAll failed. Did not get all the expected values on dll.\n");
@@ -379,7 +370,7 @@ void TestAVLRemoveAll()
 }
 
 int main() {
-    /*
+
     TestAVLCreate();
     TestAVLInsertAndFind();
     TestAVLIsEmptyAndSize();
@@ -387,9 +378,7 @@ int main() {
     TestAVLForEach();
     TestAVLFindAll();
     TestAVLRemove();
-    */
-
-   TestAVLRemoveAll();
+    TestAVLRemoveAll();
     
     printf("All tests completed.\n");
     return 0;
