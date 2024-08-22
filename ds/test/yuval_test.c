@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "avl.h"
+#include "yuval.h"
 #include "dll.h"
 
 #define EQUAL (0)
@@ -9,7 +9,7 @@
 #define BIGGER (1)
 
 
-
+typedef struct node avl_node_t;
 
 enum children {
     LEFT = 0,
@@ -40,7 +40,7 @@ void PrintTree(avl_node_t *root)
     PrintTree(root->children[RIGHT]);
 }
 
-int CompareInts(const void *a, const void *b) {
+int CompareInts(void *a, void *b) {
     return (*(int *)a < *(int *)b) ? SMALLER : (*(int *)a > *(int *)b) ? BIGGER : EQUAL;
 }
 
@@ -91,12 +91,12 @@ void TestAVLHeight()
         AVLInsert(avl, &values[i]);
     }
     
-    if(3 == AVLHeight(avl))
+    if(2 == AVLHeight(avl))
     {
         printf("TestAVLHeight passed.\n");
     }
     else
-    {
+    {   
         printf("TestAVLHeight failed.\n");
     }
 
@@ -119,15 +119,17 @@ void TestAVLInsertAndFind() {
 
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         result = AVLInsert(avl, &values[i]);
-        if (result == 0) {
-            printf("TestAVLInsertAndFind failed.\n");
+        if (result != 0) {
+            printf("TestAVLInsertAndFind failed. Did not insert.\n");
             AVLDestroy(avl);
             return;
         }
     }
+    printf("Passed the Insert stage.");
     for (i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
         found = AVLFind(avl, &values[i]);
         if (found == NULL){
+            printf("Did not find a value.");
             passed = 0;
             break;
         }
@@ -196,7 +198,7 @@ void TestAVLRemove() {
     avl_t *avl = AVLCreate(CompareInts);
     int *to_remove = NULL;
     int insert = 0;
-    int values[] = {10,8,14,12,6,16,20};
+    int values[] = {5, 4, 8, 1, 3, 7, 9};
     size_t i = 0;
 
     if (avl == NULL) {
@@ -212,14 +214,8 @@ void TestAVLRemove() {
             return;
         }
     }
-    printf("Tree before remove\n");
-    PrintTree(avl->root);
-    to_remove = (int *)AVLFind(avl, &values[0]);
-    AVLRemove(avl, to_remove);
-    printf("Tree After remove\n");
-    PrintTree(avl->root);
 
-   /* for (i = 0; i < 5; ++i) {
+    for (i = 0; i < 5; ++i) {
         to_remove = (int *)AVLFind(avl, &values[i]);
         if (to_remove == NULL) {
             AVLDestroy(avl);
@@ -227,7 +223,6 @@ void TestAVLRemove() {
         }
         AVLRemove(avl, to_remove);
     }
-    */
 
     if (AVLIsEmpty(avl) || AVLSize(avl) == 2) {
         printf("TestAVLRemove passed.\n");
