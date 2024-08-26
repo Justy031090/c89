@@ -1,7 +1,7 @@
 /**************************************************************|	
 |		    .. AVL Tree Implementation ..              ********|
 |  (\.../)	.. Authored by Michael Bar 19/08/2024 ..   ********|
-|  (=';'=) 	.. code reviewd by TBD ..                  ********|
+|  (=';'=) 	.. code reviewd by Yonatan. I 25/08/2024 ..********|
 |  (")-("))	.. The only hard day was yesterday ! ..    ********|
 ***************************************************************/
 #include <stdlib.h> /*malloc, free*/
@@ -255,9 +255,7 @@ static avl_node_t *Remove(avl_node_t *node, const void *data, compare_func_t com
     avl_node_t *temp = NULL;
     int compare;
 
-    if (node == NULL) {
-        return NULL;
-    }
+    if (node == NULL)   return NULL;
 
     compare = compare_func(data, node->data);
 
