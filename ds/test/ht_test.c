@@ -13,64 +13,60 @@ int IsMatch(const void *a, const void *b);
 static int HashFunc(void *data);
 int IsMatchStr(const void*a, const void*b);
 static int HashFuncStr(void *data);
+char buffer[104334][256];
 
 int GetDictionary()
 {
 
-    hash_t *new_ht = HASHCreate(HashFuncStr, IsMatchStr, 5000);
+    hash_t *new_ht = HASHCreate(HashFuncStr, IsMatchStr, 105000);
+   
     FILE *dictionary = fopen("/usr/share/dict/words", "r");
-    char *buffer = malloc(100);
-    char *buffer_org = buffer;
-    size_t count = 0, i =0;
-    char *str;
+
+    char str[20];
+    void *res;
+    size_t i =0;
+     printf("here");
+
     if(dictionary == NULL)
     {
         printf("Didnt find dict\n");
         return 0;
     }
-    while(fgets(buffer, 26, dictionary) != NULL)
+    while(NULL != fgets(buffer[i], sizeof(buffer[i]), dictionary))
     {
-        fgets(buffer,26, dictionary);
-        HASHInsert(new_ht, buffer);
+        buffer[i][strlen(buffer[i]) -1] = '\0';
+        HASHInsert(new_ht, buffer[i]);
+        ++i;
     }
-
-
+    
     fclose(dictionary);
 
-    
-
-
-    return SpellChecker(new_ht);;
-}
-
-int SpellChecker(hash_t *hash)
-{
-    char str[20];
-    char *res;
     printf("Enter string\n");
-    fgets(str, sizeof(str), stdin);
-    
-    res = (char *)HASHFind(hash, str);
+    scanf("%s", str);
 
-    printf("result is %s\n", res);
-    
-    return 0 ;
+    res = HASHFind(new_ht, str);
+
+    HASHDestroy(new_ht);
+
+    return res != NULL;
 }
+
 
 int main()
 {
     int count = 0;
     hash_t *hash = NULL;
 
-    /*
     count += TestCreate();
     count += TestInsertAndFind();
     
     count += TestRemove();
     count += TestSizeAndForEach();
     count += TestIsEmpty();
+    printf("passed\n");
+    count += GetDictionary();
     
-    if (5 == count)
+    if (6 == count)
     {
         printf("\nAll Success\n\n");
     }
@@ -78,9 +74,7 @@ int main()
     {
         printf("\nFAIL!!\n\n");
     }
-    */
 
-   count = GetDictionary();
     return 0;
 }
 
@@ -260,12 +254,19 @@ int IsMatch(const void *a, const void *b)
 }
 int IsMatchStr(const void *a, const void *b)
 {
-    return strcmp(a, b);
+    return strcmp((char *)a, (char *)b) == 0;
 }
 
 static int HashFuncStr(void *data)
 {
-    return *(char *)data;
+    char *str = (char *)data;
+    int index = 0;
+    while('\0' != *str)
+    {
+        index += *str;
+        str++;
+    }
+    return index;
 }
 static int HashFunc(void *data)
 {

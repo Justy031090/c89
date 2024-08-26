@@ -68,7 +68,7 @@ int HASHInsert(hash_t *hash, void *val)
     list = GetListIdx(hash, index);
     if(NULL == list) return -1;
 
-    DLLPushFront(list, val);
+    DLLPushBack(list, val);
 
     return 1;
 }
@@ -116,8 +116,7 @@ void *HASHFind(hash_t *hash, void *val)
                 
         if(1 == hash->cmp_func(DLLGetData(iter), val))
             return DLLGetData(iter);
-
-
+        
         iter = DLLNext(iter);
     }
 
