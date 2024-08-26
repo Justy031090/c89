@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "ht.h"
 
 static int TestCreate();
@@ -10,11 +11,58 @@ static int TestIsEmpty();
 
 int IsMatch(const void *a, const void *b);
 static int HashFunc(void *data);
+int IsMatchStr(const void*a, const void*b);
+static int HashFuncStr(void *data);
+
+int GetDictionary()
+{
+
+    hash_t *new_ht = HASHCreate(HashFuncStr, IsMatchStr, 5000);
+    FILE *dictionary = fopen("/usr/share/dict/words", "r");
+    char *buffer = malloc(100);
+    char *buffer_org = buffer;
+    size_t count = 0, i =0;
+    char *str;
+    if(dictionary == NULL)
+    {
+        printf("Didnt find dict\n");
+        return 0;
+    }
+    while(fgets(buffer, 26, dictionary) != NULL)
+    {
+        fgets(buffer,26, dictionary);
+        HASHInsert(new_ht, buffer);
+    }
+
+
+    fclose(dictionary);
+
+    
+
+
+    return SpellChecker(new_ht);;
+}
+
+int SpellChecker(hash_t *hash)
+{
+    char str[20];
+    char *res;
+    printf("Enter string\n");
+    fgets(str, sizeof(str), stdin);
+    
+    res = (char *)HASHFind(hash, str);
+
+    printf("result is %s\n", res);
+    
+    return 0 ;
+}
 
 int main()
 {
-    size_t count = 0;
+    int count = 0;
+    hash_t *hash = NULL;
 
+    /*
     count += TestCreate();
     count += TestInsertAndFind();
     
@@ -30,7 +78,9 @@ int main()
     {
         printf("\nFAIL!!\n\n");
     }
+    */
 
+   count = GetDictionary();
     return 0;
 }
 
@@ -207,6 +257,15 @@ static int TestIsEmpty()
 int IsMatch(const void *a, const void *b)
 {
     return (*(int *)a == *(int *)b);
+}
+int IsMatchStr(const void *a, const void *b)
+{
+    return strcmp(a, b);
+}
+
+static int HashFuncStr(void *data)
+{
+    return *(char *)data;
 }
 static int HashFunc(void *data)
 {

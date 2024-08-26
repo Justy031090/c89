@@ -111,7 +111,7 @@ void *HASHFind(hash_t *hash, void *val)
     list = GetListIdx(hash, index);
     if(NULL == list) return NULL;
     iter = DLLBegin(list);
-    while(iter != DLLEnd(list) && iter != NULL)
+    while(iter != DLLEnd(list))
     {
                 
         if(1 == hash->cmp_func(DLLGetData(iter), val))
