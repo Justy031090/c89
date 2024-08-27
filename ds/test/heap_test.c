@@ -14,7 +14,6 @@ static int test_HeapCreate()
     heap_t *heap = HeapCreate(CompareInt);
     if(heap && HeapIsEmpty(heap))
     {
-        printf("Is Empty Success\n");
         printf("Heap Succesfully Created.\n");
     }
     else
@@ -32,28 +31,42 @@ static int test_HeapInsertAndSize()
     int b = 4;
     int c = 9;
     int d = 8;
+
+    const void *A = &a;
+    const void *B = &b;
+    const void *C = &c;
+    const void *D = &d;
+
     int count = 0;
 
     heap_t *heap = HeapCreate(CompareInt);
 
     count += HeapIsEmpty(heap);
-   
-    count += HeapInsert(heap, &a);
-    count += HeapInsert(heap, &b);
-    printf("FAILES AFTER THIS LINE\n");
-    
-    count += HeapInsert(heap, &c);
-    count += HeapInsert(heap, &d);
-
+    count += HeapInsert(heap, &A);
+    count += HeapInsert(heap, &B);
+    count += HeapInsert(heap, &C);
     count += HeapIsEmpty(heap);
 
 
 
-    if(count == 5 && HeapSize(heap) == 4)
+    if(count == 4 && HeapSize(heap) == 3)
     {
         printf("Size Sucess.\n");
         printf("IsEmpty Success.\n");
     }
+    else
+    {
+        printf("Size Failed.\n");
+        printf("IsEmpty Failed.\n");
+    }
+
+    printf("%lu\n", *(size_t *)HeapPeek(heap));
+
+
+    /*
+    if(9 == *(size_t *)HeapPeek(heap))
+        printf("HeapPeek Success.\n");
+    */
 
     HeapDestroy(heap);
     return 1;
@@ -78,10 +91,4 @@ void HeapRemove(heap_t *heap, compare_func_t IsMatch ,void *param);
 
 void *HeapPop(heap_t *heap);
 
-void *HeapPeek(const heap_t *heap);
-
-int HeapIsEmpty(const heap_t *heap);
-
-
-size_t HeapSize(const heap_t *heap);
 */

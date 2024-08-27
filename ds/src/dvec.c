@@ -72,9 +72,8 @@ size_t DVectorSize(const dvector_t *d_vector)
 
 void *DVectorGet(const dvector_t *d_vector, size_t idx)
 {
-	assert(NULL !=d_vector);
-	assert(idx <= d_vector->size);
-	return (void *)d_vector->d_vector_arr[idx];
+	if(idx < d_vector->size) return NULL;
+	return d_vector ? (void *)d_vector->d_vector_arr[idx] : NULL;
 }
 
 void DVectorDestroy(dvector_t *d_vector)
