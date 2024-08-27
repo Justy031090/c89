@@ -14,7 +14,7 @@ heap_t *HeapCreate(compare_func_t compare);
 void HeapDestroy(heap_t *heap);
 
 /*O(log n)*/
-int HeapInsert(heap_t *heap, const void **data);
+int HeapInsert(heap_t *heap, const void *data);
 
 /*O(n)*/
 void HeapRemove(heap_t *heap, compare_func_t IsMatch ,void *param);

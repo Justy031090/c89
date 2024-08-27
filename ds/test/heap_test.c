@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include "heap.h"
 
-static CompareInt(const void *a, const void *b)
+int CompareInt(const void *a, const void *b)
 {
-    return *(int *)a > *(int *)b;
+    return (*(int *)a - *(int *)b);
 }
-
-
 
 
 static int test_HeapCreate()
@@ -32,19 +30,19 @@ static int test_HeapInsertAndSize()
     int c = 9;
     int d = 8;
 
-    const void *A = &a;
-    const void *B = &b;
-    const void *C = &c;
-    const void *D = &d;
+    int *A = &a;
+    int *B = &b;
+    int *C = &c;
+    int *D = &d;
 
     int count = 0;
 
     heap_t *heap = HeapCreate(CompareInt);
 
     count += HeapIsEmpty(heap);
-    count += HeapInsert(heap, &A);
-    count += HeapInsert(heap, &B);
-    count += HeapInsert(heap, &C);
+    count += HeapInsert(heap, (const void **)&A);
+    count += HeapInsert(heap, (const void **)&B);
+    count += HeapInsert(heap, (const void **)&C);
     count += HeapIsEmpty(heap);
 
 
