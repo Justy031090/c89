@@ -1,3 +1,11 @@
+/**************************************************************|	
+|		    .. Different sort algorightms ..           ********|
+|  (\.../)	.. Authored by Michael Bar 25/08/2024 ..   ********|
+|  (=';'=) 	.. code reviewd by Dvir 26/08/2024 ..      ********|
+|  (")-("))	.. The only hard day was yesterday ! ..    ********|
+***************************************************************/
+
+
 #include <stddef.h> /*size_t*/
 #include <stdlib.h> /*malloc*/
 #include <string.h> /*memcpy*/

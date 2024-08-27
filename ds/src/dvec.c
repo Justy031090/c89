@@ -82,8 +82,6 @@ void DVectorDestroy(dvector_t *d_vector)
 	assert(NULL !=d_vector);
 	free(d_vector->d_vector_arr);
 	free(d_vector);
-	d_vector->d_vector_arr = NULL;
-	d_vector = NULL;
 }
 
 int DVectorPushBack(dvector_t *d_vector, const void *data)
@@ -110,8 +108,6 @@ int DVectorPushBack(dvector_t *d_vector, const void *data)
 	
 	return SUCCESS;
 }
-
-
 
 int DVectorPopBack(dvector_t *d_vector)
 {
@@ -154,8 +150,6 @@ int DVectorReserve(dvector_t *d_vector, size_t new_capacity)
 
 	return Resize(d_vector, to_allocate);
 }
-
-
 
 static int Resize(dvector_t *d_vector, size_t new_capacity)
 {

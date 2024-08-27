@@ -46,7 +46,7 @@ int GetDictionary()
 
     res = HASHFind(new_ht, str);
 
-    HASHDestroy(new_ht);
+    HASHDestroy(new_ht);z
 
     return res != NULL;
 }

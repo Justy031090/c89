@@ -4,16 +4,6 @@
 
 typedef struct dvector dvector_t;
 
-
-/* Function:
-Description - 
-Params:
-return value - 
-time complexity - 
-space complexity - 
-*/
-
-
 dvector_t *DVectorCreate(size_t capacity, size_t size_of_element);
 
 void DVectorDestroy(dvector_t *d_vector);
