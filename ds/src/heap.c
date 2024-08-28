@@ -1,7 +1,6 @@
 #include <stdlib.h> /* malloc */
-#include <string.h> /* memcpy */
 #include <assert.h>
-#include <stdio.h>
+#include <stdio.h> /*Heap Print*/
 
 #include "dvec.h"
 #include "heap.h"
@@ -15,7 +14,6 @@ struct heap
 static void Swap(void *idx1, void *idx2);
 static void HeapifyDownWrapper(heap_t *heap, size_t i);
 static void HeapifyUp(heap_t *heap, size_t i);
-static void HeapifyDown(heap_t *heap);
 
 heap_t *HeapCreate(compare_func_t compare)
 {
@@ -61,9 +59,12 @@ void HeapRemove(heap_t *heap, compare_func_t IsMatch, void *param)
         data = *(void **)DVectorGet(heap->vector, i);
         if (0 == IsMatch(data, param))
         {
+
             Swap(DVectorGet(heap->vector, i), DVectorGet(heap->vector, size - 1));
             DVectorPopBack(heap->vector);
-            if (i < DVectorSize(heap->vector))
+            size--;
+
+            if (i < size)
             {
                 HeapifyDownWrapper(heap, i);
                 HeapifyUp(heap, i);
@@ -74,6 +75,7 @@ void HeapRemove(heap_t *heap, compare_func_t IsMatch, void *param)
     }
 }
 
+
 void *HeapPop(heap_t *heap)
 {
     void *data = NULL;
@@ -82,7 +84,6 @@ void *HeapPop(heap_t *heap)
     assert(NULL != heap);
 
     if (HeapIsEmpty(heap)) return NULL;
-
     last_index = DVectorSize(heap->vector) - 1;
     data = *(void **)DVectorGet(heap->vector, 0);
 
@@ -92,6 +93,10 @@ void *HeapPop(heap_t *heap)
     }
 
     DVectorPopBack(heap->vector);
+
+    printf("After pop, heap size: %zu\n", DVectorSize(heap->vector));
+    HeapPrint(heap);
+
     if (!HeapIsEmpty(heap))
     {
         HeapifyDownWrapper(heap, 0);
@@ -112,7 +117,6 @@ int HeapIsEmpty(const heap_t *heap)
     assert(NULL != heap);
     return DVectorSize(heap->vector) == 0;
 }
-
 
 size_t HeapSize(const heap_t *heap)
 {
@@ -171,20 +175,6 @@ static void Swap(void *idx1, void *idx2)
     *(size_t *)idx1 ^= *(size_t *)idx2;
     *(size_t *)idx2 ^= *(size_t *)idx1;
     *(size_t *)idx1 ^= *(size_t *)idx2;
-}
-
-
-
-static void HeapifyDown(heap_t *heap)
-{
-    size_t size = DVectorSize(heap->vector);
-    int i = 0;
-    if (size == 0) return;
-
-    for (i = (size / 2) - 1; i >= 0; --i)
-    {
-        HeapifyDownWrapper(heap, i);
-    }
 }
 
 void HeapPrint(const heap_t *heap)

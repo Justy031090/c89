@@ -3,6 +3,15 @@
 #include "uid.h"
 
 
+struct task {
+    my_uid_t task_id;
+    time_t exe_time;
+    func_t func; 
+    void *params;
+    cleanup_func_t CleanUp;
+    void *cleanup_params;
+};
+
 task_t *TaskCreate(time_t exe_time, func_t func, void *params, cleanup_func_t CleanUp,void *cleanup_params)
 {
 	task_t *new_task = malloc(sizeof(task_t));
