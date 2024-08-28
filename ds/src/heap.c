@@ -12,7 +12,7 @@ struct heap
 };
 
 static void Swap(void *idx1, void *idx2);
-static void HeapifyDownWrapper(heap_t *heap, size_t i);
+static void HeapifyDown(heap_t *heap, size_t i);
 static void HeapifyUp(heap_t *heap, size_t i);
 
 heap_t *HeapCreate(compare_func_t compare)
@@ -66,15 +66,13 @@ void HeapRemove(heap_t *heap, compare_func_t IsMatch, void *param)
 
             if (i < size)
             {
-                HeapifyDownWrapper(heap, i);
-                HeapifyUp(heap, i);
+                HeapifyDown(heap, i);
             }
             break;
         }
         ++i;
     }
 }
-
 
 void *HeapPop(heap_t *heap)
 {
@@ -99,12 +97,11 @@ void *HeapPop(heap_t *heap)
 
     if (!HeapIsEmpty(heap))
     {
-        HeapifyDownWrapper(heap, 0);
+        HeapifyDown(heap, 0);
     }
 
     return data;
 }
-
 
 void *HeapPeek(const heap_t *heap)
 {
@@ -124,7 +121,7 @@ size_t HeapSize(const heap_t *heap)
     return DVectorSize(heap->vector);
 }
 
-static void HeapifyDownWrapper(heap_t *heap, size_t i)
+static void HeapifyDown(heap_t *heap, size_t i)
 {
     size_t size = DVectorSize(heap->vector);
     size_t left = 2 * i + 1;
@@ -152,7 +149,7 @@ static void HeapifyDownWrapper(heap_t *heap, size_t i)
     if (largest != i)
     {
         Swap(DVectorGet(heap->vector, i), DVectorGet(heap->vector, largest));
-        HeapifyDownWrapper(heap, largest);
+        HeapifyDown(heap, largest);
     }
 }
 
