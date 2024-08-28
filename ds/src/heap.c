@@ -5,6 +5,10 @@
 #include "dvec.h"
 #include "heap.h"
 
+#define INITIAL_CAPACITY 100
+#define SUCCESS 1
+#define FAIL -1
+
 struct heap
 {
     dvector_t *vector;
@@ -20,7 +24,7 @@ heap_t *HeapCreate(compare_func_t compare)
     heap_t *heap = malloc(sizeof(heap_t));
     if (NULL == heap) return NULL;
 
-    heap->vector = DVectorCreate(100, sizeof(void *));
+    heap->vector = DVectorCreate(INITIAL_CAPACITY, sizeof(void *));
     if (NULL == heap->vector)
     {
         free(heap);
@@ -39,11 +43,11 @@ void HeapDestroy(heap_t *heap)
 
 int HeapInsert(heap_t *heap, const void *data)
 {
-    if (DVectorPushBack(heap->vector, &data) != 1)
-        return 0;
+    if (DVectorPushBack(heap->vector, &data) != SUCCESS)
+        return FAIL;
 
     HeapifyUp(heap, DVectorSize(heap->vector) - 1);
-    return 1;
+    return SUCCESS;
 }
 
 void HeapRemove(heap_t *heap, compare_func_t IsMatch, void *param)
@@ -136,11 +140,6 @@ static void HeapifyDown(heap_t *heap, size_t i)
     {
         largest = left;
     }
-    else
-    {
-        largest = i;
-    }
-
     if (right_child && heap->cmp_func(*right_child, *(void **)DVectorGet(heap->vector, largest)) > 0)
     {
         largest = right;
