@@ -31,5 +31,6 @@ int HeapIsEmpty(const heap_t *heap);
 /*O(n)*/
 size_t HeapSize(const heap_t *heap);
 
+void HeapPrint(const heap_t *heap);
 
 #endif /* __HEAP_H__ */
