@@ -193,6 +193,17 @@ void RecursQuickSort(void *arr_to_sort, size_t size, size_t size_of_element, com
     
 }
 
+/* HeapSort Pseudo Code
+
+	-a max heap;
+	-iterate over the given array applying heapify each time to build the heap.
+	-push the root element to the array at index size-1
+	-pop from the heap.
+	-heapify to get next highest element at root.
+	-repeat swapping and heapify while the heap is not empty.
+
+	can be done both for max and min, depending on the heap tipe and sort type we want.
+*/
 
 /*UTILS*/
 static int _QSortSwap(void *a, void *b, size_t size_of_element)

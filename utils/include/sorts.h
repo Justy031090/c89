@@ -17,7 +17,6 @@ int RecursBinarySearch(int *arr_to_sort, size_t size_t, int target);
 int RecursMergeSort(int *arr_to_sort, size_t size_t);
 void RecursQuickSort(void *arr, size_t size, size_t element_size, int (*compare)(const void *lhs, const void *rhs));
 
-
 /*
 sll_t *MergeSortSLL(sll_t *list_a, sll_t *list_b);
 */
