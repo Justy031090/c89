@@ -168,17 +168,12 @@ static void HeapifyUp(heap_t *heap, size_t i)
 
 static void Swap(void *idx1, void *idx2)
 {
-    size_t size = sizeof(void *);
-    void *temp = malloc(size);
-
-    if (temp == NULL) return;
-
-    memcpy(temp, idx1, size);
-    memcpy(idx1, idx2, size);
-    memcpy(idx2, temp, size);
-
-    free(temp);
+    *(size_t *)idx1 ^= *(size_t *)idx2;
+    *(size_t *)idx2 ^= *(size_t *)idx1;
+    *(size_t *)idx1 ^= *(size_t *)idx2;
 }
+
+
 
 static void HeapifyDown(heap_t *heap)
 {

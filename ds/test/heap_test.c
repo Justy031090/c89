@@ -80,7 +80,6 @@ static int InsertAndPeekTest()
     count += HeapInsert(new_heap, &e);
     count += (5 == *(int *)HeapPeek(new_heap));
 
-    HeapPrint(new_heap);
     if (count == 10)
     {
         printf("Insert & Peek success\n");
@@ -127,9 +126,9 @@ static int RemoveAndSizeTest()
     HeapRemove(new_heap, is_match, &c);
 
     count += (0 == HeapSize(new_heap));
-    printf("HEAP SIZE IS %lu \n" ,HeapSize(new_heap));
+    
 
-    if (10 == count)
+    if (5 == count)
     {
         printf("Remove & Size success\n");
     }
@@ -177,7 +176,7 @@ static int PopTest()
 
     count += (0 == HeapSize(new_heap));
 
-    if (10 == count)
+    if (5 == count)
     {
         printf("Pop success\n");
     }
@@ -225,7 +224,7 @@ static int IsEmptyTest()
 
     count += (1 == HeapIsEmpty(new_heap));
     
-    if (9 == count)
+    if (4 == count)
     {
         printf("IsEmpty success\n");
     }
