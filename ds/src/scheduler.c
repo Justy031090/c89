@@ -30,7 +30,6 @@ static int MatchUID(const void *uid1, const void *uid2);
 is_match_t MatchUid = &MatchUID;
 compare_func_t compare_task = &TaskIsBefore;
 
-
 int SCHEDRun(sd_t *sd)
 {
 	int sleep_flag = 1;
@@ -43,7 +42,6 @@ int SCHEDRun(sd_t *sd)
 		task_scheduled = PQPeek(sd->pq);
 		sd->current_task = task_scheduled;
 
-		
 		if(time(NULL) >= TaskGetTime(sd->current_task))
 		{
 			PQDequeue(sd->pq);
@@ -57,8 +55,6 @@ int SCHEDRun(sd_t *sd)
 			else
 			{
 				SCHEDRemoveTask(sd->current_task->task_id, sd);
-				
-				
 			}
 		}
 		else

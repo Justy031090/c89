@@ -96,7 +96,7 @@ void *HeapPop(heap_t *heap)
 
     DVectorPopBack(heap->vector);
 
-    printf("After pop, heap size: %zu\n", DVectorSize(heap->vector));
+    printf("After pop, heap size: %lu\n", DVectorSize(heap->vector));
     HeapPrint(heap);
 
     if (!HeapIsEmpty(heap))

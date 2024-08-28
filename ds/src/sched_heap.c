@@ -1,166 +1,181 @@
-#include <assert.h>
-#include <time.h>
-#include <stdlib.h>
-#include <unistd.h>
+/*			.. Sheduler Implementation ..
+(\.../)		.. Authored by Michael Bar 31/07/2024 .. 
+(=';'=) 	.. code reviewd by Tamir 1/08/2024 ..
+(")-("))	.. The only hard day was yesterday ! ..
+*/
 
-#include "pq_heap.h"
-#include "sched_heap.h"
+
+#include <stddef.h>  /*size_t*/
+#include <stdlib.h> /*malloc*/
+#include <time.h> /*time*/
+#include <unistd.h> /*sleep*/
+#include <assert.h>
+
+
 #include "task.h"
 #include "uid.h"
+#include "sched_heap.h"
 
+#define SUCCESS (1)
 struct scheduler
 {
-    p_q_t *pq;
-    int stop;
-    task_t *runing_task;
+	p_q_t *pq;
+	int stop;
+	task_t *current_task;
 };
 
-static int IsEqualUID(const void *data, const void *param);
-static int time_priority_func(const void *data, const void *param);
+struct task {
+    my_uid_t task_id;
+    time_t exe_time;
+    func_t func; 
+    void *params;
+    cleanup_func_t CleanUp;
+    void *cleanup_params;
+};
 
-sched_t *SCHEDCreate()
+static int MatchUID(const void *uid1, const void *uid2);
+
+int SCHEDRun(sd_t *sd)
 {
-    sched_t *new_sched = (sched_t *)malloc(sizeof(sched_t));
-    if (NULL == new_sched) return NULL;
+	int sleep_flag = 1;
+	time_t rescheduler = 0;
+	task_t *task_scheduled = NULL;
+	sd->stop = 0;
+	
+	while(!PQHeapIsEmpty(sd->pq) && !sd->stop)
+	{
+		task_scheduled = PQHeapPeek(sd->pq);
+		sd->current_task = task_scheduled;
 
-    new_sched->pq = PQHeapCreate(time_priority_func);
-    if (NULL == new_sched->pq)
-    {
-        free(new_sched);
-        return NULL;
-    }
-    new_sched->runing_task = NULL;
-    return new_sched;
+		if(time(NULL) >= TaskGetTime(sd->current_task))
+		{
+			PQHeapDqueue(sd->pq);
+			rescheduler = sd->current_task->func(sd->current_task->params);
+		
+			if(rescheduler)
+			{
+				TaskSetTime(sd->current_task, time(NULL) + rescheduler);
+				PQHeapInsert(sd->current_task, sd->pq);
+			}
+			else
+			{
+				SCHEDRemoveTask(sd->current_task->task_id, sd);
+			}
+		}
+		else
+		{
+			while(0 != sleep_flag)
+			{
+				sleep_flag = sleep(TaskGetTime(sd->current_task) - time(NULL));
+			}		
+		}	
+		
+		sd->current_task = NULL;
+	}
+	
+	return SUCCESS;
 }
 
-void SCHEDDestroy(sched_t *sd)
+
+my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, cleanup_func_t clean_up, void *cleanup_params)
 {
-    PQHeapDestroy(sd->pq);
-    free(sd);
+	int *IsEnqueued = NULL;
+	my_uid_t uid = UIDGenerate();
+	task_t *new_task = NULL;
+	assert(NULL != sd);
+	assert(NULL != params);
+	new_task = TaskCreate(exe_time, func, params, clean_up, cleanup_params);
+	if(NULL == new_task) return bad_uid;
+
+	new_task->task_id = uid;
+	IsEnqueued = PQHeapDqueue(sd->pq);
+	return IsEnqueued ? uid : bad_uid;
 }
 
-my_uid_t SCHEDAddTask(sched_t *sd, time_t exe_time, func_t func, void *params, cleanup_func_t clean_up, void *clean_up_params)
-
+void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 {
-    task_t *new_task = TaskCreate(exe_time, func, params, clean_up, clean_up_params);
-    assert(NULL != sd);
-    assert(NULL != func);
-    assert(NULL != params);
-    assert(NULL != clean_up);
 
-    if (NULL == new_task)
-    {
-        return bad_uid;
-    }
-    if (0 == PQHeapInsert(&new_task, sd->pq))
-    {
-        return bad_uid;
-    }
+	assert(NULL != sd);
+	if(sd->current_task && UIDIsEqual(TaskGetUID(sd->current_task), task_id))
+	{
+		TaskCleanUp(sd->current_task);
+		free(sd->current_task);
+		return;
+	}
 
-    return TaskGetUID(new_task);
+	PQHeapErase(sd->pq, MatchUID, &task_id);
 }
 
-void SCHEDRemoveTask(my_uid_t task_id, sched_t *sd)
+int SCHEDIsEmpty(const sd_t *sd)
 {
-    assert(NULL != sd);
-    if (NULL != sd->runing_task && UIDIsEqual(TaskGetUID(sd->runing_task), task_id))
-    {
-        TaskCleanUp(sd->runing_task);
-        free(sd->runing_task);
-        sd->runing_task = NULL;
-        return;
-    }
-
-    PQHeapErase(sd->pq, IsEqualUID, (void *)&task_id);
+	assert(NULL != sd);
+	return PQHeapIsEmpty(sd->pq) && sd->current_task == NULL ? 1 : 0;
 }
 
-int SCHEDRun(sched_t *sd)
+size_t SCHEDSize(const sd_t *sd)
 {
-    task_t *runing_task;
-    time_t interval;
+	size_t sched_size = 0;
+	assert(NULL != sd);
+	sched_size = PQHeapSize(sd->pq);
+	return sd->current_task == NULL ? sched_size : sched_size + 1;
+}
+void SCHEDClear(sd_t *sd)
+{
+	size_t size = 0;
+	assert(NULL != sd);
 
-    assert(NULL != sd);
-
-    sd->stop = 0;
-    while (1 != sd->stop && 1 != SCHEDIsEmpty(sd))
-    {
-        runing_task = (task_t *)PQHeapPeek(sd->pq);
-
-        while (TaskGetTime(runing_task) > time(NULL))
-        {
-            sleep(difftime(TaskGetTime(runing_task), time(NULL)));
-        }
-
-        sd->runing_task = (task_t *)PQHeapDqueue(sd->pq);
-        interval = TaskRunTask(runing_task);
-        if (0 == interval)
-        {
-            SCHEDRemoveTask(TaskGetUID(runing_task), sd);
-        }
-        else
-        {
-            TaskSetTime(runing_task, time(NULL) + interval);
-            PQHeapInsert(&runing_task, sd->pq);
-        }
-    }
-    sd->runing_task = NULL;
-    return 1;
+	size = SCHEDSize(sd);
+	while(size)
+	{
+		free(PQHeapDqueue(sd->pq));
+		--size;
+	}
 }
 
-int SCHEDIsEmpty(const sched_t *sd)
+sd_t *SCHEDCreate()
 {
-    assert(NULL != sd);
-    assert(NULL != sd->pq);
-
-    if (NULL != sd->runing_task)
-    {
-        return 0;
-    }
-
-    return PQHeapIsEmpty(sd->pq);
+	sd_t *new_scheduler = malloc(sizeof(sd_t));
+	if(NULL == new_scheduler)
+	{
+		return NULL;
+	}
+	new_scheduler->pq = PQHeapCreate(TaskIsBefore);
+	if(NULL == new_scheduler->pq)
+	{
+		free(new_scheduler);
+		return NULL;
+	}
+	new_scheduler->stop = 1;
+	new_scheduler->current_task = NULL;
+	
+	return new_scheduler;
 }
 
-size_t SCHEDSize(const sched_t *sd)
+void SCHEDDestroy(sd_t *sd)
 {
-    return PQHeapSize(sd->pq);
+	assert(NULL != sd);
+	SCHEDClear(sd);
+	PQHeapDestroy(sd->pq);
+	free(sd);
+}
+void SCHEDStop(sd_t *sd)
+{
+	sd->stop = 1;
 }
 
-void SCHEDClear(sched_t *sd)
+static int MatchUID(const void *uid1, const void *uid2)
 {
-    int i = 0;
-    while (1 != SCHEDIsEmpty(sd))
-    {
-        free(PQHeapDqueue(sd->pq));
-        i++;
-    }
+	my_uid_t ud1 = TaskGetUID((task_t *)uid1);
+	my_uid_t *ud2 = (my_uid_t *)uid2;
+	int res = UIDIsEqual(ud1, *ud2);
+	if (1 == res)
+	{
+		free((task_t *)uid1);
+	}
+	return res;
 }
 
-void SCHEDStop(sched_t *sd)
-{
-    sd->stop = 1;
-}
 
-static int IsEqualUID(const void *data, const void *param)
-{
-    int res = 0;
-	task_t *datacpy = (task_t *)data;
-    assert(NULL != param);
-    assert(NULL != data);
 
-    res = UIDIsEqual(TaskGetUID((task_t *)datacpy), *(my_uid_t *)param);
 
-    if (1 == res)
-    {
-        free(datacpy);
-    }
-    return res;
-}
 
-static int time_priority_func(const void *data, const void *param)
-{
-    if (TaskGetTime((task_t *)data) >= TaskGetTime((task_t *)param))
-    {
-        return 0;
-    }
-    return 1;
-}

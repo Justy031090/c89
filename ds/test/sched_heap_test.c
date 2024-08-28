@@ -5,7 +5,7 @@
 typedef struct params
 {
 	int a;
-	sched_t *sd;
+	sd_t *sd;
 }p_t;
 time_t printfunc2(void *params)
 {
@@ -45,11 +45,10 @@ static void CleanUp(void *params)
 
 int main()
 {
-	sched_t *new_sd = SCHEDCreate();
+	sd_t *new_sd = SCHEDCreate();
 	p_t params1;
 	my_uid_t task1_id; 
 	my_uid_t task2_id;
-	size_t size = 0;
 	params1.a = 1;
 	params1.sd = new_sd;
 	
@@ -82,6 +81,7 @@ int main()
 	{
 		printf("Size FAIL\n");
 	}
+
 	SCHEDRun(new_sd);
 	printf("if printed 14523... then size success & run1 success &stop success\n");
 	task1_id = SCHEDAddTask(new_sd, time(NULL)+1, printfunc1, (void *)&params1, CleanUp, (void *)&params1);
