@@ -1,9 +1,3 @@
-/*			.. Sheduler Implementation ..
-(\.../)		.. Authored by Michael Bar 31/07/2024 .. 
-(=';'=) 	.. code reviewd by Tamir 1/08/2024 ..
-(")-("))	.. The only hard day was yesterday ! ..
-*/
-
 
 #include <stddef.h>  /*size_t*/
 #include <stdlib.h> /*malloc*/
@@ -44,7 +38,7 @@ int SCHEDRun(sd_t *sd)
 	
 	while(!PQHeapIsEmpty(sd->pq) && !sd->stop)
 	{
-		task_scheduled = PQHeapPeek(sd->pq);
+		task_scheduled = (task_t *)PQHeapPeek(sd->pq);
 		sd->current_task = task_scheduled;
 
 		if(time(NULL) >= TaskGetTime(sd->current_task))
@@ -96,14 +90,14 @@ void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 {
 
 	assert(NULL != sd);
-	if(sd->current_task && UIDIsEqual(TaskGetUID(sd->current_task), task_id))
+	if(sd->current_task && UIDIsEqual(sd->current_task->task_id, task_id))
 	{
 		TaskCleanUp(sd->current_task);
 		free(sd->current_task);
 		return;
 	}
 
-	PQHeapErase(sd->pq, MatchUID, (void *)&task_id);
+	PQHeapErase(sd->pq, MatchUID, &task_id);
 }
 
 int SCHEDIsEmpty(const sd_t *sd)
