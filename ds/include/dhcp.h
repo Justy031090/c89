@@ -1,12 +1,13 @@
 #ifndef __DHCP_H__
 #define __DHCP_H__
 
+#include <stddef.h> /*size_t*/
+
 #define SUBNET_BYTES (4)
 
 typedef struct dhcp dhcp_t;
 
 typedef struct node node_t;
-
 
 dhcp_t* DHCPCreate(const unsigned char subnet[SUBNET_BYTES],  size_t mask);
 
