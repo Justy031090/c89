@@ -103,7 +103,7 @@ void SCHEDRemoveTask(my_uid_t task_id, sd_t *sd)
 		return;
 	}
 
-	PQHeapErase(sd->pq, MatchUID, &task_id);
+	PQHeapErase(sd->pq, MatchUID, (void *)&task_id);
 }
 
 int SCHEDIsEmpty(const sd_t *sd)
