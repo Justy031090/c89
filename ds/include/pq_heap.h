@@ -3,6 +3,7 @@
 
 #include "heap.h"
 typedef int (*priority_func_t)(const void *a, const void *b);
+typedef int(*is_match_t)(const void *a, const void*b);
 
 typedef struct p_q p_q_t;
 
