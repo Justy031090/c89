@@ -79,7 +79,7 @@ int SCHEDRun(sd_t *sd)
 
 my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, cleanup_func_t clean_up, void *cleanup_params)
 {
-	int *IsEnqueued = NULL;
+	int IsEnqueued = 0;
 	my_uid_t uid = UIDGenerate();
 	task_t *new_task = NULL;
 	assert(NULL != sd);
@@ -88,7 +88,7 @@ my_uid_t SCHEDAddTask(sd_t *sd, time_t exe_time, func_t func, void *params, clea
 	if(NULL == new_task) return bad_uid;
 
 	new_task->task_id = uid;
-	IsEnqueued = PQHeapDqueue(sd->pq);
+	IsEnqueued = PQHeapInsert(new_task ,sd->pq);
 	return IsEnqueued ? uid : bad_uid;
 }
 
