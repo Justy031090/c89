@@ -71,7 +71,6 @@ void PQHeapClear(p_q_t *pq)
 	}
 }
 
-
 int PQHeapInsert(const void *data, p_q_t *pq)
 {
     return HeapInsert(pq->heap, data);
@@ -81,7 +80,4 @@ void PQHeapErase(p_q_t *pq, is_match_t is_match, void *param)
 {
     HeapRemove(pq->heap, is_match, param);
 }
-
-
-
 
