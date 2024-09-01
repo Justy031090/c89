@@ -76,7 +76,7 @@ size_t CountFreeIps(const dhcp_t *dhcp)
 
     assert(NULL != dhcp);
 
-    total_ips = (1 << (TOTAL_BITS - dhcp->mask));
+    total_ips = (1 << (TOTAL_BITS - dhcp->mask)) - 2;;
     used_ips = CountFreeNodes(dhcp->root);
 
     return total_ips - used_ips;
@@ -89,6 +89,9 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     size_t i, bit;
     int bit_val;
     
+    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == 0) return 0;
+    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)))
+        return 0;
 
     for (i = 0; i < SUBNET_BYTES; ++i) 
     {
@@ -99,9 +102,7 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
             {
                 current->children[bit_val] = CreateNode(current);
                 if (current->children[bit_val] == NULL) 
-                {
                     return 0;
-                }
             }
             current = current->children[bit_val];
         }
@@ -110,9 +111,9 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     if (current->is_full) 
     {
         smallest = FindSmallest(dhcp->root);
-        if (smallest == NULL) return 0; 
+        if (smallest == NULL) return 0;
+
         GetIpFromNode(smallest,current_ip, dhcp->mask);
-        
         memcpy(dest_ip, current_ip, SUBNET_BYTES);
     }
     else 
@@ -135,17 +136,12 @@ int FreeIp(dhcp_t *dhcp, unsigned char ip[SUBNET_BYTES])
         for(bit = 0; bit < BITS_IN_BYTE; ++bit)
         {
             bit_val = (ip[i] >> (BITS_IN_BYTE -1 - bit)) & 1;
-            if(current->children[bit_val] == NULL)
-            {
-                return 0;
-            }
+            if(current->children[bit_val] == NULL) return 0;
+            
             current =  current->children[bit_val];
         }
     }
-    if(0 == current->is_full)
-    {
-        return 0;
-    }
+    if(0 == current->is_full) return 0;
 
     current->is_full = 0;
     return 1;
@@ -206,10 +202,10 @@ static node_t *FindSmallest(node_t *node)
 static void GetIpFromNode(node_t *node, unsigned char *ip, size_t mask)
 {
     unsigned char current_ip[SUBNET_BYTES] = {0};
-    node_t *current;
+    node_t *current = NULL;
     size_t position = 0;
-    size_t byte;
-    size_t bit;
+    size_t byte = 0;
+    size_t bit = 0;
 
     current = node;
 
