@@ -88,20 +88,29 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     node_t *current = dhcp->root;
     node_t *smallest = NULL;
     unsigned char current_ip[SUBNET_BYTES] = {0};
+    unsigned char cpy_ip[SUBNET_BYTES];
     size_t i, bit;
     int bit_val;
     
-    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == 0) return 0;
-    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 1)
-        return 0;
-    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 2)
-        return 0;
+    memcpy(cpy_ip, ip, SUBNET_BYTES);
+    if(memcmp(cpy_ip, dhcp->subnet, SUBNET_BYTES) == 0)
+    {
+        cpy_ip[SUBNET_BYTES - 1] = 1;
+    }
+    else if(memcmp(cpy_ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 1)
+    {
+        cpy_ip[SUBNET_BYTES - 1] = 253;
+    }
+    else if(memcmp(cpy_ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 2)
+    {
+        cpy_ip[SUBNET_BYTES - 1] = 253;
+    }
 
     for (i = 0; i < SUBNET_BYTES; ++i) 
     {
         for (bit = 0; bit < BITS_IN_BYTE; ++bit) 
         {
-            bit_val = (ip[i] >> (BITS_IN_BYTE - 1 - bit)) & 1;
+            bit_val = (cpy_ip[i] >> (BITS_IN_BYTE - 1 - bit)) & 1;
             if (current->children[bit_val] == NULL) 
             {
                 current->children[bit_val] = CreateNode(current);
@@ -123,7 +132,7 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     else 
     {
         current->is_full = 1;
-        memcpy(dest_ip, ip, SUBNET_BYTES);
+        memcpy(dest_ip, cpy_ip, SUBNET_BYTES);
     }
 
     return 1; 
