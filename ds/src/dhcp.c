@@ -16,6 +16,7 @@
 #define BITS_IN_BYTE 8
 #define TOTAL_BITS 32
 #define OCTET_MAX 255
+#define PRE_ALLOCATED 3
 
 enum children {
     LEFT = 0,
@@ -73,13 +74,14 @@ size_t CountFreeIps(const dhcp_t *dhcp)
 {   
     size_t total_ips = 0;
     size_t used_ips = 0;
-
+    size_t sum = 0;
     assert(NULL != dhcp);
 
-    total_ips = (1 << (TOTAL_BITS - dhcp->mask)) - 2;;
+    total_ips = (1 << (TOTAL_BITS - dhcp->mask));
     used_ips = CountFreeNodes(dhcp->root);
-
-    return total_ips - used_ips;
+    printf("USED IPS %lu\n\n",used_ips);
+    sum = (total_ips - PRE_ALLOCATED - (used_ips));
+    return sum;
 }
 
 int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char dest_ip[SUBNET_BYTES]) {
@@ -90,7 +92,9 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     int bit_val;
     
     if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == 0) return 0;
-    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)))
+    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 1)
+        return 0;
+    if(memcmp(ip, dhcp->subnet, SUBNET_BYTES) == (1 << (TOTAL_BITS - dhcp->mask)) - 2)
         return 0;
 
     for (i = 0; i < SUBNET_BYTES; ++i) 
@@ -182,7 +186,6 @@ static size_t CountFreeNodes(node_t *node)
 
     count += CountFreeNodes(node->children[LEFT]);
     count += CountFreeNodes(node->children[RIGHT]);
-
     return count;
 }
 

@@ -48,11 +48,15 @@ void test_CountFreeIps() {
     size_t mask = 24;
     unsigned char subnet[SUBNET_BYTES] = {192, 168, 1, 0};
     unsigned char ip[SUBNET_BYTES] = {192, 168, 1, 1};
-    unsigned char broadcast[SUBNET_BYTES] = {192, 168, 1, 0};
-    unsigned char network[SUBNET_BYTES] = {192, 168, 1, 255};
+    unsigned char ip2[SUBNET_BYTES] = {192, 168, 1, 2};
+    unsigned char broadcast[SUBNET_BYTES] = {192, 168, 1, 255};
+    unsigned char server[SUBNET_BYTES] = {192, 168, 1, 254};
+    unsigned char network[SUBNET_BYTES] = {192, 168, 1, 0};
     unsigned char dest_ip[SUBNET_BYTES];
+    unsigned char dest_ip2[SUBNET_BYTES];
     unsigned char dest_network[SUBNET_BYTES];
     unsigned char dest_broadcast[SUBNET_BYTES];
+    unsigned char dest_server[SUBNET_BYTES];
 
     size_t free_ips = 0;
     dhcp_t *dhcp = DHCPCreate(subnet, mask);
@@ -84,10 +88,20 @@ void test_CountFreeIps() {
             printf("FAIL !!!- allocated Network IP.\n");
             printf("Allocated IP: %d.%d.%d.%d\n", dest_network[0], dest_network[1], dest_network[2], dest_network[3]);
         }
+        if (AllocateIp(dhcp, server, dest_server))
+        {
+            printf("FAIL !!!- allocated Network IP.\n");
+            printf("Allocated IP: %d.%d.%d.%d\n", dest_server[0], dest_server[1], dest_server[2], dest_server[3]);
+        }
+
+        if(AllocateIp(dhcp, ip2, dest_ip2));
+        {
+            printf("2nd Allocation: %d.%d.%d.%d\n", dest_ip2[0], dest_ip2[1], dest_ip2[2], dest_ip2[3]);
+        }
 
         free_ips = CountFreeIps(dhcp);
  
-        if(free_ips != 253) 
+        if(free_ips != 251) 
         {
             printf("FAIL !!!   CountFreeIps after allocation: %lu\n", free_ips);
         }
