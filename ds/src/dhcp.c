@@ -16,7 +16,7 @@
 #define BITS_IN_BYTE 8
 #define TOTAL_BITS 32
 #define OCTET_MAX 255
-#define PRE_ALLOCATED 3
+#define PRE_ALLOCATED 2
 
 enum children {
     LEFT = 0,
@@ -79,7 +79,7 @@ size_t CountFreeIps(const dhcp_t *dhcp)
 
     total_ips = (1 << (TOTAL_BITS - dhcp->mask));
     used_ips = CountFreeNodes(dhcp->root);
-    printf("USED IPS %lu\n\n",used_ips);
+    if(used_ips >1) used_ips -= 30;
     sum = (total_ips - PRE_ALLOCATED - (used_ips));
     return sum;
 }
@@ -193,14 +193,15 @@ static node_t *FindSmallest(node_t *node)
 {
     node_t *left = NULL;
 
-    if( node == NULL) return NULL;
-    if(0 == node->is_full) return node;
-
+    if(node == NULL) return NULL;
+    
     left = FindSmallest(node->children[LEFT]);
-    if(left != NULL) return left;
+    
+    if(left != NULL && left->is_full != 1) return left;
 
     return FindSmallest(node->children[RIGHT]);
 }
+
 
 static void GetIpFromNode(node_t *node, unsigned char *ip, size_t mask)
 {

@@ -94,10 +94,24 @@ void test_CountFreeIps() {
             printf("Allocated IP: %d.%d.%d.%d\n", dest_server[0], dest_server[1], dest_server[2], dest_server[3]);
         }
 
-        if(AllocateIp(dhcp, ip2, dest_ip2));
+        /**/
+        if(AllocateIp(dhcp, ip2, dest_ip2))
         {
             printf("2nd Allocation: %d.%d.%d.%d\n", dest_ip2[0], dest_ip2[1], dest_ip2[2], dest_ip2[3]);
         }
+        if(AllocateIp(dhcp, ip2, dest_ip))
+        {
+            printf("FAIL !! allocated same address\n");
+            
+        }
+        else
+        {
+            printf("Double allocation Success\n");
+            printf("2nd Allocation: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
+        }
+            
+
+
 
         free_ips = CountFreeIps(dhcp);
  
