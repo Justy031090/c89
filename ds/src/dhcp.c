@@ -84,7 +84,7 @@ size_t CountFreeIps(const dhcp_t *dhcp)
     total_ips = (1 << (TOTAL_BITS - dhcp->mask));
     used_ips = CountFreeNodes(dhcp->root);
 
-    return total_ips - PRE_ALLOCATED - used_ips;
+    return total_ips - used_ips;
 }
 
 int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char dest_ip[SUBNET_BYTES])
@@ -139,11 +139,12 @@ static int CreateNode(node_t *parent, int side)
     if (NULL == new_node)
         return 0;
 
-    new_node->parent = parent;
+
     new_node->is_full = 0;
     new_node->children[LEFT] = NULL;
     new_node->children[RIGHT] = NULL;
     parent->children[side] = new_node;
+    new_node->parent = parent;
     return 1;
 }
 
@@ -218,7 +219,6 @@ static int IsReservedIp(const unsigned char *ip, const unsigned char *subnet, si
 static int CreateMinPath(node_t *node, int *ip_store, size_t total_bits)
 {
     int result = 0;
-
     if( 0 == total_bits)
     {
         node->is_full = 1;
