@@ -17,17 +17,17 @@ typedef enum move_to
 } possible_moves;
 
 static int possible_moves_arr[8] = {ddr, rrd, rru, uur, uul, llu, lld, ddl};
-static size_t next_min_idx[8] = {0};
-static size_t next_min_count[8] = {0};
+static int next_min_idx[8] = {0};
+static int next_min_count[8] = {0};
 
 static int RecKnightTour(size_t cur_index, bitarr_t map, unsigned char *moves);
 static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves);
 static void DisplayPath(unsigned char moves[BOARD]);
 static int IsValid(size_t current, size_t next, bitarr_t map);
 static int Abs(int num);
-static void _Swap(size_t *arr, size_t idx1, size_t idx2);
-static size_t PossibleMovesOfNext(size_t candidate, bitarr_t map);
-static void BubbleSort(size_t *arr,size_t *arr2, size_t arr_size);
+static void _Swap(int *arr, size_t idx1, size_t idx2);
+static int PossibleMovesOfNext(size_t candidate, bitarr_t map);
+static void BubbleSort(int *arr,int *arr2, size_t arr_size);
 
 
 void KnightTour(size_t start_index)
@@ -35,7 +35,10 @@ void KnightTour(size_t start_index)
     unsigned char moves[BOARD] = {0};
     int res = 0;
     bitarr_t arr = 0;
+    res = RecKnightTour(start_index, arr, moves);
+    DisplayPath(moves);
     res = WKnightsTour(start_index, arr, moves);
+    printf("\n\n");
     DisplayPath(moves);
 }
 
@@ -92,7 +95,7 @@ static int Abs(int num)
     return num < 0 ? -num : num;
 }
 
-static size_t PossibleMovesOfNext(size_t candidate, bitarr_t map)
+static int PossibleMovesOfNext(size_t candidate, bitarr_t map)
 {
     size_t count = 0, i = 0, next_move = 0;
     for(i=0; i<ROW; ++i)
@@ -107,12 +110,12 @@ static size_t PossibleMovesOfNext(size_t candidate, bitarr_t map)
 
 static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves)
 {
-    int result = 0, i =0, j=0;
+    int result = 0, i =0, j=0, pos_moves = 0;
     size_t next = 0;
-    size_t pos_moves = 0, min = 0, best_match = 0;
+    size_t min = 0, best_match = 0;
 
     map = BitArrSetOn(map, cur_index);
-    
+
     if(BitArrCountOn(map) == 64)
     {
         *moves = cur_index;
@@ -122,22 +125,34 @@ static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves)
     for(i = 0; i<ROW; ++i)
     {
         next = cur_index + possible_moves_arr[i];
-        pos_moves = PossibleMovesOfNext(next, map);
-
-        next_min_idx[i] = next;
-        next_min_count[i] = pos_moves;
+        if(IsValid(cur_index, next, map))
+        {
+            pos_moves = PossibleMovesOfNext(next, map);
+            next_min_idx[i] = next;
+            next_min_count[i] = pos_moves;
+        }
+        else
+        {
+            next_min_count[i] = 9;
+            next_min_idx[i] = -1;
+        }
     }
 
-    BubbleSort(next_min_count,next_min_idx, ROW);
-    
+    BubbleSort(next_min_count, next_min_idx, ROW);
+
     for(i = 0; i <ROW ; ++i)
-    {
-        result = RecKnightTour(next_min_idx[i], map, moves + 1);
-        if(result)
+    {   
+        if(next_min_idx[i] == -1)
+            continue;
         {
-            *moves = cur_index;
-            return 1;
-        } 
+            result = WKnightsTour(next_min_idx[i], map, moves + 1);
+            if(result)
+            {
+                *moves = cur_index;
+                return 1;
+            } 
+        }
+
     }
 
     return 0;
@@ -145,7 +160,7 @@ static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves)
 
 
 
-static void BubbleSort(size_t *arr, size_t *arr2,  size_t arr_size)
+static void BubbleSort(int *arr, int *arr2,  size_t arr_size)
 {
 	size_t i = 0;
 	int flag = 1;	
@@ -165,7 +180,7 @@ static void BubbleSort(size_t *arr, size_t *arr2,  size_t arr_size)
 }
 
 
-static void _Swap(size_t *arr, size_t idx1, size_t idx2)
+static void _Swap(int *arr, size_t idx1, size_t idx2)
 {
 
 	arr[idx1] ^= arr[idx2];
