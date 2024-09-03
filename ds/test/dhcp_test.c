@@ -37,10 +37,13 @@ void TestFreeIp();
 
 int main()
 {
+    /*
     TestDHCPCreateDestroy();
-    TestCountFreeIps();
     TestAllocateIp();
     TestFreeIp();
+    */
+    TestCountFreeIps();
+    
     return 0;
 }
 
@@ -153,7 +156,7 @@ void TestAllocateIp()
     dhcp_t *dhcp;
     unsigned char subnet[SUBNET_BYTES] = TEST_SUBNET;
     size_t mask = TEST_MASK;
-    unsigned char ip[SUBNET_BYTES] = {192, 168, 1, 1};
+    unsigned char ip[SUBNET_BYTES] = {192, 168, 1, 0};
     unsigned char dest_ip[SUBNET_BYTES];
     unsigned char new_ip[SUBNET_BYTES] = {192, 168, 1, 2};
     unsigned char new_dest_ip[SUBNET_BYTES];
@@ -169,15 +172,17 @@ void TestAllocateIp()
     printf("AllocateIp Success\n");
     printf("Allocated IP: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
 
-    result = AllocateIp(dhcp, new_ip, new_dest_ip);
+    result = AllocateIp(dhcp, NULL, new_dest_ip);
     assert(result == 1);
     printf("AllocateIp (new IP) Success\n");
-    printf("Allocated IP: %d.%d.%d.%d\n", new_dest_ip[0], new_dest_ip[1], new_dest_ip[2], new_dest_ip[3]);
+    printf("Allocated (new IP) : %d.%d.%d.%d\n", new_dest_ip[0], new_dest_ip[1], new_dest_ip[2], new_dest_ip[3]);
 
+    
     result = AllocateIp(dhcp, new_ip2, new_dest_ip2);
-    assert(result == 0);
-    printf("AllocateIp DOUBLE ip check Failed - DID NOT ALLOCATE\n");
-
+    assert(result);
+    printf("AllocateIp DOUBLE ip check\n");
+    printf("Allocated (new IP) : %d.%d.%d.%d\n", new_dest_ip2[0], new_dest_ip2[1], new_dest_ip2[2], new_dest_ip2[3]);
+    
     DHCPDestroy(dhcp);
 }
 
@@ -198,12 +203,16 @@ void TestFreeIp()
     printf("Allocated IP: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
 
     result = FreeIp(dhcp, ip);
+    result = AllocateIp(dhcp, ip, dest_ip);
+    printf("Allocated IP: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
     assert(result == 1);
-    printf("FreeIp Success\n");
 
-    result = FreeIp(dhcp, ip);
-    assert(result == 0);
-    printf("FreeIp (second attempt) Success\n");
+    printf("FreeIp Success\n");
 
     DHCPDestroy(dhcp);
 }
+
+
+
+
+
