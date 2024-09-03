@@ -13,7 +13,7 @@
 #define SIZE ((sizeof(size_t)) * (CHAR_BIT))
 #define MAX_NIBBLE_VALUE (15)
 #define NIBBLE_OPTIONS (16)
-#define SET (1)
+#define SET ((size_t)1)
 
 static bitarr_t Mirror64 (bitarr_t arr);
 static bitarr_t Mirror32 (bitarr_t arr);
