@@ -5,6 +5,7 @@
 #include <unistd.h> /*fork, execvp*/
 #include <stdio.h> /*printf*/
 
+#include "simple_shell.h"
 #define ARG_SIZE 100
 
 void handler(char *command, int frk)
@@ -57,11 +58,4 @@ void handler(char *command, int frk)
         else
             printf("Process exited with status %d\n", WEXITSTATUS(status));
     }
-}
-
-
-int main()
-{
-    handler()
-    return 0;
 }
