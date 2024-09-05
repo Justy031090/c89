@@ -1,3 +1,10 @@
+
+/**************************************************************|	
+|		    .. DHCP & Trie Implementation ..           ********|
+|  (\.../)	.. Authored by Michael Bar 31/8/2024 ..    ********|
+|  (=';'=) 	.. code reviewd by Adi 31/08/2024 ..       ********|
+|  (")-("))	.. The only hard day was yesterday ! ..    ********|
+***************************************************************/
 #include <stddef.h> /*size_t*/
 #include <stdlib.h> /*malloc, free*/
 #include <assert.h>

@@ -1,4 +1,12 @@
-#include <stdio.h>
+/**************************************************************|	
+|		    .. Knight Tour Problem Forced & heuristic..********|
+|  (\.../)	.. Authored by Michael Bar 3/9/2024 ..     ********|
+|  (=';'=) 	.. code reviewd by Dvir 4/09/2024 ..       ********|
+|  (")-("))	.. The only hard day was yesterday ! ..    ********|
+***************************************************************/
+
+
+#include <stdio.h> /*printf*/
 
 #include "ktour.h"
 #define BOARD 64
@@ -16,9 +24,9 @@ typedef enum move_to
     rrd = 10
 } possible_moves;
 
-static int possible_moves_arr[8] = {ddr, rrd, rru, uur, uul, llu, lld, ddl};
-static int next_min_idx[8] = {0};
-static int next_min_count[8] = {0};
+static int possible_moves_arr[ROW] = {ddr, rrd, rru, uur, uul, llu, lld, ddl};
+static int next_min_idx[ROW] = {0};
+static int next_min_count[ROW] = {0};
 
 static int RecKnightTour(size_t cur_index, bitarr_t map, unsigned char *moves);
 static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves);
@@ -48,7 +56,7 @@ static int RecKnightTour(size_t cur_index, bitarr_t map, unsigned char *moves)
     size_t next = 0;
 
     map = BitArrSetOn(map, cur_index);
-    if(BitArrCountOn(map) == 64)
+    if(BitArrCountOn(map) == BOARD)
     {
         *moves = cur_index;
         return 1;
@@ -76,7 +84,7 @@ static int IsValid(size_t current, size_t next, bitarr_t map)
 {
     if(next >= BOARD || next < 0 || BitArrGet(map, next)) return 0;
 
-    return (1 == Abs(current % 8 - next % 8) && 2 == Abs(current/8 - next/8)) || (2 == Abs(current % 8 - next % 8) && 1 == Abs(current/8 - next/8));
+    return (1 == Abs(current % ROW - next % ROW) && 2 == Abs(current/ROW - next/ROW)) || (2 == Abs(current % ROW - next % ROW) && 1 == Abs(current/ROW - next/ROW));
 }
 
 static void DisplayPath(unsigned char moves[BOARD])
@@ -116,7 +124,7 @@ static int WKnightsTour(size_t cur_index, bitarr_t map, unsigned char *moves)
 
     map = BitArrSetOn(map, cur_index);
 
-    if(BitArrCountOn(map) == 64)
+    if(BitArrCountOn(map) == BOARD)
     {
         *moves = cur_index;
         return 1;
