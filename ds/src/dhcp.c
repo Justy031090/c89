@@ -8,6 +8,12 @@
 #define BITS_IN_BYTE 8
 #define TOTAL_BITS 32
 #define OCTET_MAX 255
+#define SPECIAL_IPS 3
+#define SERVER 254
+#define NETWORK 0
+#define BROADCAST 255
+#define FAIL -1
+#define SUCCESS 1
 
 enum children
 {
@@ -33,11 +39,12 @@ struct dhcp
 static int CreateNode(node_t *parent, int side);
 static void FreeNode(node_t *node);
 static size_t CountFreeNodes(node_t *node);
-static int CreateRequestedPath(node_t *node, int bit_rep, int *result, size_t num_of_bits);
-static int CreateMinPath(node_t *node, int *result, size_t num_of_bits);
+static int CreateRequestedPath(node_t *node, int bit_rep, int *result, int num_of_bits);
+static int CreateMinPath(node_t *node, int *result, int num_of_bits);
 static void CheckIsFull(node_t *node);
 static int GetBits(const unsigned char *ip, size_t mask);
 static int FreeIpHandler(node_t *node, int bit_rep, size_t total_bits);
+static int AllocateNBS(dhcp_t *dhcp, const unsigned char subnet[SUBNET_BYTES]);
 
 dhcp_t *DHCPCreate(const unsigned char subnet[SUBNET_BYTES], size_t mask)
 {
@@ -62,9 +69,12 @@ dhcp_t *DHCPCreate(const unsigned char subnet[SUBNET_BYTES], size_t mask)
     dhcp->root->parent = NULL;
 
     memcpy(dhcp->subnet, subnet, SUBNET_BYTES);
-    AllocateIp(dhcp,network, dummy);
-    AllocateIp(dhcp,broadcast, dummy);
-    AllocateIp(dhcp, server, dummy);
+
+    if(!AllocateNBS(dhcp, subnet))
+    {
+        DHCPDestroy(dhcp);
+        return NULL;
+    }
 
     return dhcp;
 }
@@ -83,7 +93,7 @@ static size_t CountFreeNodes(node_t *node)
     if (node == NULL)
         return 0;
 
-    count = (node->is_full == 1) ? 1 : 0;
+    count = (node->is_full == 1 && NULL == node->children[LEFT] && NULL == node->children[RIGHT]) ? 1 : 0;
     count += CountFreeNodes(node->children[LEFT]);
     count += CountFreeNodes(node->children[RIGHT]);
 
@@ -107,9 +117,9 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
 {
     int result = 0;
     int num_of_bits = TOTAL_BITS - dhcp->mask;
-    int status = -1;
+    int status = FAIL;
 
-    if (ip == NULL)
+    if (ip == NULL || ip[SUBNET_BYTES-1] == NETWORK || ip[SUBNET_BYTES-1] == BROADCAST || ip[SUBNET_BYTES-1] == SERVER)
     {
         status = CreateMinPath(dhcp->root, &result, num_of_bits);
     }
@@ -128,20 +138,21 @@ int AllocateIp(dhcp_t *dhcp, const unsigned char ip[SUBNET_BYTES], unsigned char
     return status;
 }
 
-static int CreateMinPath(node_t *node, int *result, size_t num_of_bits)
+static int CreateMinPath(node_t *node, int *result, int num_of_bits)
 {
+
+    if(node == NULL) return FAIL;
+
     if (num_of_bits == 0)
     {
         node->is_full = 1;
-        return 1;
+        return SUCCESS;
     }
 
     if (node->children[LEFT] == NULL)
     {
-        if (!CreateNode(node, LEFT))
-        {
-            return -1;
-        }
+        if (!CreateNode(node, LEFT)) return FAIL;
+        
     }
 
     if (!node->children[LEFT]->is_full)
@@ -150,112 +161,93 @@ static int CreateMinPath(node_t *node, int *result, size_t num_of_bits)
         if (CreateMinPath(node->children[LEFT], result, num_of_bits - 1) == 1)
         {
             CheckIsFull(node);
-            return 1;
+            return SUCCESS;
         }
     }
 
     if (node->children[RIGHT] == NULL)
     {
-        if (!CreateNode(node, RIGHT))
-        {
-            return -1;
-        }
+        if (!CreateNode(node, RIGHT)) return FAIL;
     }
 
     if (!node->children[RIGHT]->is_full)
     {
         *result = (*result << 1) | 1;
-        if (CreateMinPath(node->children[RIGHT], result, num_of_bits - 1) == 1)
+        if (CreateMinPath(node->children[RIGHT], result, num_of_bits - 1))
         {
             CheckIsFull(node);
-            return 1;
+            return SUCCESS;
         }
     }
 
-    return -1;
+    return FAIL;
 }
 
-static int CreateRequestedPath(node_t *node, int bit_representation, int *result, size_t num_of_bits)
+static int CreateRequestedPath(node_t *runner, int bit_representation, int *result, int num_of_bits)
 {
-    int bit = (1 << (num_of_bits - 1)) & bit_representation;
+
+    int bit = 1 << (num_of_bits - 1);
+    bit &= bit_representation;
 
     if (num_of_bits == 0)
     {
-        node->is_full = 1;
-        return 1;
+        runner->is_full = 1;
+        return SUCCESS;
     }
 
-    if (bit == LEFT)
+    if (!bit)
     {
-        if (node->children[LEFT] == NULL)
+        if (runner->children[LEFT] == NULL)
         {
-            if (CreateNode(node, LEFT) == -1)
-            {
-                return -1;
-            }
+            if (!CreateNode(runner, LEFT)) return FAIL;
         }
-
-        if (!node->children[LEFT]->is_full)
+        if (!runner->children[LEFT]->is_full)
         {
-            *result = (*result << 1);
-            if (CreateRequestedPath(node->children[LEFT], bit_representation, result, num_of_bits - 1) == 1)
+            *result <<= 1;
+            if (CreateRequestedPath(runner->children[LEFT], bit_representation, result, num_of_bits - 1) == 1)
             {
-                CheckIsFull(node);
-                return 1;
+                CheckIsFull(runner);
+                return SUCCESS;
             }
-            else
+            *result >>= 1;
+            if (runner->children[RIGHT] == NULL || !runner->children[RIGHT]->is_full)
             {
-                *result = (*result >> 1);
-                if (node->children[RIGHT] == NULL)
-                {
-                    if (CreateNode(node, RIGHT) == -1)
-                    {
-                        return -1;
-                    }
-                }
                 *result = (*result << 1) | 1;
-                if (CreateMinPath(node->children[RIGHT], result, num_of_bits - 1) == 1)
+                if (runner->children[RIGHT] == NULL)
                 {
-                    CheckIsFull(node);
-                    return 1;
+                    if (!CreateNode(runner, RIGHT)) return FAIL;
+                }
+                if (CreateMinPath(runner->children[RIGHT], result, num_of_bits - 1) == 1)
+                {
+                    CheckIsFull(runner);
+                    return SUCCESS;
                 }
             }
         }
         else
         {
-            if (CreateMinPath(node->children[RIGHT], result, num_of_bits - 1) == 1)
-            {
-                CheckIsFull(node);
-                return 1;
-            }
+            return CreateMinPath(runner->children[RIGHT], result, num_of_bits - 1);
         }
     }
     else
     {
-        if (node->children[RIGHT] == NULL)
+        if (runner->children[RIGHT] == NULL)
         {
-            if (CreateNode(node, RIGHT) == -1)
-            {
-                return -1;
-            }
+            if (!CreateNode(runner, RIGHT)) return FAIL;
         }
-
-        if (!node->children[RIGHT]->is_full)
+        if (!runner->children[RIGHT]->is_full)
         {
             *result = (*result << 1) | 1;
-            if (CreateRequestedPath(node->children[RIGHT], bit_representation, result, num_of_bits - 1) == 1)
+            if (CreateRequestedPath(runner->children[RIGHT], bit_representation, result, num_of_bits - 1))
             {
-                CheckIsFull(node);
-                return 1;
+                CheckIsFull(runner);
+                return SUCCESS;
             }
-            else
-            {
-                *result = (*result >> 1);
-            }
+            *result >>= 1;
         }
+        else if (runner->children[RIGHT]->is_full) return FAIL;
     }
-
-    return -1;
+    return FAIL;
 }
 
 int FreeIp(dhcp_t *dhcp, unsigned char ip[SUBNET_BYTES])
@@ -269,7 +261,7 @@ static int FreeIpHandler(node_t *node, int bit_representation, size_t num_of_bit
     if (num_of_bits == 0)
     {
         node->is_full = 0;
-        return 1;
+        return SUCCESS;
     }
 
     bit = (1 << (num_of_bits - 1)) & bit_representation;
@@ -291,7 +283,7 @@ static int CreateNode(node_t *parent, int side)
 {
     node_t *new_node = (node_t *)malloc(sizeof(node_t));
     if (NULL == new_node)
-        return 0;
+        return FAIL;
 
     new_node->is_full = 0;
     new_node->children[LEFT] = NULL;
@@ -299,7 +291,7 @@ static int CreateNode(node_t *parent, int side)
     new_node->parent = parent;
     parent->children[side] = new_node;
 
-    return 1;
+    return SUCCESS;
 }
 
 static void FreeNode(node_t *node)
@@ -341,4 +333,22 @@ static void CheckIsFull(node_t *node)
         node->is_full = (node->children[LEFT] && node->children[LEFT]->is_full) &&
                         (node->children[RIGHT] && node->children[RIGHT]->is_full);
     }
+}
+
+static int AllocateNBS(dhcp_t *dhcp, const unsigned char subnet[SUBNET_BYTES])
+{
+    int i = 0;
+    unsigned char dummy[SUBNET_BYTES];
+    unsigned char allocator[SUBNET_BYTES];
+    unsigned char NBS[SPECIAL_IPS] = {0, 254, 255};
+
+    for(i = 0; i< SPECIAL_IPS; ++i)
+    {
+        memcpy(allocator, subnet, SUBNET_BYTES);
+        allocator[SUBNET_BYTES-1] = NBS[i];
+        if(!AllocateIp(dhcp, allocator, dummy))
+            return FAIL;
+    }
+
+    return SUCCESS;
 }

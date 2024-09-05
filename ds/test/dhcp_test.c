@@ -84,7 +84,7 @@ void TestCountFreeIps()
 
     free_ips = CountFreeIps(dhcp);
     printf("Initial free IPs count: %lu\n", free_ips);
-    assert(free_ips == 256);
+    assert(free_ips == 253);
 
     if (AllocateIp(dhcp, ip, dest_ip))
     {
@@ -97,14 +97,16 @@ void TestCountFreeIps()
 
     free_ips = CountFreeIps(dhcp);
     printf("Free IPs count after one allocation: %lu\n", free_ips);
-    assert(free_ips == 255);
+    assert(free_ips == 252);
 
+    
     AllocateIp(dhcp, broadcast, dest_broadcast);
     if (memcmp(broadcast, dest_broadcast, SUBNET_BYTES) == 0)
     {
         printf("FAIL !!!- allocated Broadcast IP.\n");
         printf("Allocated IP: %d.%d.%d.%d\n", dest_broadcast[0], dest_broadcast[1], dest_broadcast[2], dest_broadcast[3]);
     }
+    else printf("Allocated IP: %d.%d.%d.%d\n", dest_broadcast[0], dest_broadcast[1], dest_broadcast[2], dest_broadcast[3]);
 
     AllocateIp(dhcp, network, dest_network);
     if (memcmp(network, dest_network, SUBNET_BYTES) == 0)
@@ -112,6 +114,7 @@ void TestCountFreeIps()
         printf("FAIL !!!- allocated Network IP.\n");
         printf("Allocated IP: %d.%d.%d.%d\n", dest_network[0], dest_network[1], dest_network[2], dest_network[3]);
     }
+    else printf("Allocated IP: %d.%d.%d.%d\n", dest_network[0], dest_network[1], dest_network[2], dest_network[3]);
 
     AllocateIp(dhcp, server, dest_server);
     if (memcmp(server, dest_server, SUBNET_BYTES) == 0)
@@ -119,7 +122,10 @@ void TestCountFreeIps()
         printf("FAIL !!!- allocated Server IP.\n");
         printf("Allocated IP: %d.%d.%d.%d\n", dest_server[0], dest_server[1], dest_server[2], dest_server[3]);
     }
+    else printf("Allocated IP: %d.%d.%d.%d\n", dest_server[0], dest_server[1], dest_server[2], dest_server[3]);
 
+    free_ips = CountFreeIps(dhcp);
+    
     if (AllocateIp(dhcp, ip, dest_ip))
     {
         printf("2nd Allocation: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
@@ -135,18 +141,16 @@ void TestCountFreeIps()
         printf("Double allocation Success\n");
         printf("2nd Allocation AFTER: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
         printf("2nd Allocation BEFORE: %d.%d.%d.%d\n", dest_ip[0], dest_ip[1], dest_ip[2], dest_ip[3]);
-    }
-
+    }  
+    
     free_ips = CountFreeIps(dhcp);
-    printf("Free IPs count after allocation and freeing: %lu\n", free_ips);
-    assert(free_ips == 254);
-
-    FreeIp(dhcp, dest_ip);
+    assert(free_ips == 248);
+    
     FreeIp(dhcp, dest_ip);
 
     free_ips = CountFreeIps(dhcp);
-    printf("Final free IPs count: %lu\n", free_ips);
-    assert(free_ips == 256);
+    printf("Free IPs count after allocation and one freeing: %lu\n", free_ips);
+    assert(free_ips == 249);
 
     DHCPDestroy(dhcp);
 }
@@ -166,6 +170,9 @@ void TestAllocateIp()
 
     dhcp = DHCPCreate(subnet, mask);
     assert(dhcp != NULL);
+
+
+
 
     result = AllocateIp(dhcp, ip, dest_ip);
     assert(result == 1);
