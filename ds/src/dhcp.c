@@ -1,13 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/**************************************************************|	
+|		    .. DHCP & Trie Implementation ..           ********|
+|  (\.../)	.. Authored by Michael Bar 5/9/2024 ..     ********|
+|  (=';'=) 	.. code reviewd by Noam 5/09/2024 ..       ********|
+|  (")-("))	.. The only hard day was yesterday ! ..    ********|
+***************************************************************/
+
+
+#include <stdlib.h> /*malloc*/
+#include <string.h> /*memcpy*/
 #include <assert.h>
 
 #include "dhcp.h"
 
 #define BITS_IN_BYTE 8
 #define TOTAL_BITS 32
-#define OCTET_MAX 255
 #define SPECIAL_IPS 3
 #define SERVER 254
 #define NETWORK 0
@@ -307,13 +313,13 @@ static void FreeNode(node_t *node)
 
 static int GetBits(const unsigned char *ip, size_t bit_num)
 {
-    int bytes = (bit_num + 7) / 8;
+    int bytes = (bit_num + 7) / BITS_IN_BYTE;
     int start = SUBNET_BYTES - bytes;
     int result = 0, i = 0;
 
     for (i = 0; i < bytes; i++)
     {
-        result = (result << 8) | ip[start + i];
+        result = (result << BITS_IN_BYTE) | ip[start + i];
     }
 
     return result;
@@ -340,7 +346,7 @@ static int AllocateNBS(dhcp_t *dhcp, const unsigned char subnet[SUBNET_BYTES])
     int i = 0;
     unsigned char dummy[SUBNET_BYTES];
     unsigned char allocator[SUBNET_BYTES];
-    unsigned char NBS[SPECIAL_IPS] = {0, 254, 255};
+    unsigned char NBS[SPECIAL_IPS] = {NETWORK, SERVER, BROADCAST};
 
     for(i = 0; i< SPECIAL_IPS; ++i)
     {
