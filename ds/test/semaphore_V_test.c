@@ -25,10 +25,12 @@ union semun
 
 void Initialize(const char *name)
 {
+    key_t key = 0;
+    union semun arg;
     strncpy(sem_name, name, MAX_NAME_LENGTH - 1);
     sem_name[MAX_NAME_LENGTH - 1] = '\0';
 
-    key_t key = ftok(PATHNAME, *sem_name);
+    key = ftok(PATHNAME, *sem_name);
     if (key == -1)
     {
         exit(EXIT_FAILURE);
@@ -40,7 +42,7 @@ void Initialize(const char *name)
         exit(EXIT_FAILURE);
     }
 
-    union semun arg;
+    
     arg.val = 0;
     if (semctl(sem_id, 0, GETVAL) == -1)
     {
@@ -54,6 +56,7 @@ void Initialize(const char *name)
 void Increment(int amount, int undo)
 {
     struct sembuf sop;
+    int value = 0;
     sop.sem_num = 0;
     sop.sem_op = amount;
     sop.sem_flg = undo ? SEM_UNDO : 0;
@@ -63,7 +66,7 @@ void Increment(int amount, int undo)
         return;
     }
 
-    int value = semctl(sem_id, 0, GETVAL);
+    value = semctl(sem_id, 0, GETVAL);
     if (value == -1)
     {
         return;
@@ -126,6 +129,9 @@ void GetVal()
 
 int main(int argc, char *argv[])
 {
+    char op = 0;
+    int undo = 0;
+    int amount = 0;
     if (argc < 3)
     {
         fprintf(stderr, "Usage: %s [name] [D|I|V] [number] [undo]\n", argv[0]);
@@ -134,9 +140,7 @@ int main(int argc, char *argv[])
 
     Initialize(argv[1]);
 
-    char op = toupper(argv[2][0]);
-    int amount = 0;
-    int undo = 0;
+    op = toupper(argv[2][0]);
 
     if (argc > 3)
     {
