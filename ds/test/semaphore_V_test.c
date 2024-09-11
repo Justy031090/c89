@@ -80,11 +80,7 @@ void Increment(int amount, int undo)
 void Decrement(int amount, int undo)
 {
     int current_value = semctl(sem_id, 0, GETVAL);
-    if (current_value == -1)
-    {
-
-        return;
-    }
+    if (current_value == -1) return;
 
     if (current_value >= amount)
     {
@@ -93,16 +89,11 @@ void Decrement(int amount, int undo)
         sop.sem_op = -amount;
         sop.sem_flg = undo ? SEM_UNDO : 0;
 
-        if (semop(sem_id, &sop, 1) == -1)
-        {
-            return;
-        }
+        if (semop(sem_id, &sop, 1) == -1) return;
+        
 
         current_value = semctl(sem_id, 0, GETVAL);
-        if (current_value == -1)
-        {
-            return;
-        }
+        if (current_value == -1) return;
         else
         {
             printf("Semaphore '%s' decremented by %d. New value: %d\n", sem_name, amount, current_value);
@@ -117,10 +108,8 @@ void Decrement(int amount, int undo)
 void GetVal()
 {
     int value = semctl(sem_id, 0, GETVAL);
-    if (value == -1)
-    {
-        return;
-    }
+    if (value == -1) return;
+    
     else
     {
         printf("Current value of semaphore '%s': %d\n", sem_name, value);
