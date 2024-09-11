@@ -48,18 +48,12 @@ void Initialize(char *name)
     key_t key = 0;
     union semun arg;
 
-    printf("HERE\n");
-
     if(NULL == CreateDir(name, sem_name))
         return;
-
-
 
     key = ftok(sem_name, *name);
     if (key == -1)
         return;
-    
-
     
     sem_id = semget(key, NUM_OF_SEMAPHORES, IPC_CREAT | PERMISSION);
     if (sem_id == -1)
