@@ -31,8 +31,13 @@ char *CreateDir(char *sem_name, char *dst)
 {
     char *new_path = strcat(HOME, PATHNAME);
     FILE *temp = NULL;
-    mkdir(new_path, DIR_PERMISSION);
+
+    if(0 != mkdir(new_path, DIR_PERMISSION) && errno != EEXIST) return NULL;
+     
     temp = fopen(strcat(new_path, sem_name), "a+");
+    
+    if(temp == NULL) return NULL;
+
     fclose(temp);
     strcpy(dst, new_path);
     return dst;
@@ -43,29 +48,43 @@ void Initialize(char *name)
     key_t key = 0;
     union semun arg;
 
-    CreateDir(name, sem_name);
+    printf("HERE\n");
+
+    if(NULL == CreateDir(name, sem_name))
+        return;
+
+
 
     key = ftok(sem_name, *name);
     if (key == -1)
-    {
-        exit(EXIT_FAILURE);
-    }
+        return;
+    
 
+    
     sem_id = semget(key, NUM_OF_SEMAPHORES, IPC_CREAT | PERMISSION);
     if (sem_id == -1)
-    {
-        exit(EXIT_FAILURE);
-    }
+        return;
 
     
     arg.val = 0;
+
     if (semctl(sem_id, 0, GETVAL) == -1)
     {
         if (semctl(sem_id, 0, SETVAL, arg) == -1)
         {
-            exit(EXIT_FAILURE);
+            return;
         }
     }
+}
+
+
+void Destroy(char *name)
+{
+
+    semctl(sem_id, 0, IPC_RMID);
+    remove(name);
+    fprintf(stderr, "Semaphore %s was removed.\n", name);
+    
 }
 
 void Increment(int amount, int undo)
@@ -166,6 +185,7 @@ int main(int argc, char *argv[])
         }
         Decrement(amount, undo);
         break;
+
     case 'I':
         if (argc < 4)
         {
@@ -174,9 +194,15 @@ int main(int argc, char *argv[])
         }
         Increment(amount, undo);
         break;
+
     case 'V':
         GetVal();
         break;
+
+    case 'X':
+        Destroy(sem_name);
+        break;
+
     default:
         fprintf(stderr, "Invalid operation. Use D, I, or V.\n");
         exit(EXIT_FAILURE);
