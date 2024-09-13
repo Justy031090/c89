@@ -6,14 +6,14 @@
 #include <sys/types.h>
 
 pid_t process1_pid;
-void handle_sigusr1(int signum, siginfo_t *info, void *context);
+void HandleUsr1(int signum, siginfo_t *info, void *context);
 
 int main()
 {
     struct sigaction sa_usr1;
 
     sa_usr1.sa_flags = SA_SIGINFO;
-    sa_usr1.sa_sigaction = handle_sigusr1;
+    sa_usr1.sa_sigaction = HandleUsr1;
     sigemptyset(&sa_usr1.sa_mask);
     sigaction(SIGUSR1, &sa_usr1, NULL);
 
@@ -25,7 +25,7 @@ int main()
     return 0;
 }
 
-void handle_sigusr1(int signum, siginfo_t *info, void *context)
+void HandleUsr1(int signum, siginfo_t *info, void *context)
 {
 
     printf("Process2 received SIGUSR1. Sending SIGUSR2 to process1...\n");

@@ -15,7 +15,7 @@ typedef struct
     long long int *result;
 } thread_args_t;
 
-void *sum_divisors(void *args)
+void *SumDivisors(void *args)
 {
     thread_args_t *threadArgs = (thread_args_t *)args;
     long long int sum = 0;
@@ -31,7 +31,7 @@ void *sum_divisors(void *args)
     pthread_exit(NULL);
 }
 
-long long int multithreaded_sum_divisors(int number)
+long long int MultiSumOfDivisors(int number)
 {
     pthread_t threads[NUM_THREADS];
     thread_args_t threadArgs[NUM_THREADS];
@@ -45,7 +45,7 @@ long long int multithreaded_sum_divisors(int number)
         threadArgs[i].end = (i == NUM_THREADS - 1) ? number : (i + 1) * range;
         threadArgs[i].number = number;
         threadArgs[i].result = &results[i];
-        pthread_create(&threads[i], NULL, sum_divisors, (void *)&threadArgs[i]);
+        pthread_create(&threads[i], NULL, SumDivisors, (void *)&threadArgs[i]);
     }
 
     long long int total_sum = 0;
@@ -58,7 +58,7 @@ long long int multithreaded_sum_divisors(int number)
     return total_sum;
 }
 
-long long int loop_sum_divisors(int number)
+long long int LoopSumDivisors(int number)
 {
     long long int sum = 0;
     int i;
@@ -81,14 +81,14 @@ int main()
     long long int multithreaded_sum, loop_sum;
 
     start_time = clock();
-    multithreaded_sum = multithreaded_sum_divisors(number);
+    multithreaded_sum = MultiSumOfDivisors(number);
     end_time = clock();
     multithreaded_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("Sum of divisors (multithreaded) for %d: %lld\n", number, multithreaded_sum);
     printf("Time taken (multithreaded): %.2f seconds\n", multithreaded_time);
 
     start_time = clock();
-    loop_sum = loop_sum_divisors(number);
+    loop_sum = LoopSumDivisors(number);
     end_time = clock();
     loop_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("Sum of divisors (loop) for %d: %lld\n", number, loop_sum);
