@@ -6,23 +6,22 @@
 
 #define _DEFAULT_SOURCE
 #include "uid.h"
+#include "stdatomic.h"
 
 const my_uid_t bad_uid = {0,0,0,0};
 
 my_uid_t UIDGenerate()
 {
 	my_uid_t new_uid;
-	static size_t counter = 1;
+	atomic_size_t counter = 1; /*changed from static to be thread-safe*/
 	time_t sec = time(&sec);
 	if(0 > sec)
 		return bad_uid;
 	
-	new_uid.counter = counter;
+	new_uid.counter = atomic_fetch_add(&counter, 1);;
 	new_uid.timestamp = sec;
 	new_uid.pid = getpid();
 	new_uid.ip = gethostid();
-	
-	++counter;
 	
 	return new_uid;
 }
