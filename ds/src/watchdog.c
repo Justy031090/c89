@@ -5,8 +5,6 @@
 #include <stdlib.h> /*itoa*/
 #include <signal.h> /*sigaction, kill*/
 
-
-
 #include "watchdog.h"
 
 #define FAIL -1
@@ -94,8 +92,6 @@ static int CreateWatchDogImage(process_args_t *process_args)
     }
     return SUCCESS;
 }
-
-
 
 
 static void CleanAppEverything()
