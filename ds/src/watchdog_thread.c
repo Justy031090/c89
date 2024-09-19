@@ -2,7 +2,7 @@
 
 #include <pthread.h> /*Threads*/
 #include <unistd.h> /*fork, execvp*/
-#include <stdlib.h> /*itoa*/
+#include <stdlib.h> /*getenv*/
 #include <signal.h> /*sigaction, kill*/
 
 #include "watchdog.h"
@@ -19,6 +19,8 @@ typedef struct process_args
     char **argv;
 } process_args_t;
 
+static size_t signal_counter = 0;
+
 static void CleanupEverything();
 static void SigHandler(int signum, siginfo_t *info, void *context);
 static int CreateThread(process_args_t *process_args);
@@ -26,33 +28,25 @@ static int CreateWatchDogImage(process_args_t *process_args);
 
 int WDStart(size_t threshold, size_t interval, int argc, char **argv)
 {
-    struct sigaction sigto_wd;
+    struct sigaction sa;
     process_args_t  *process_args = malloc(sizeof(process_args_t));
     if(!process_args) return FAIL;
 
 
-    sigto_wd.sa_flags = SA_SIGINFO;
-    sigto_wd.sa_sigaction = SigHandler;
-    sigemptyset(&sigto_wd.sa_mask);
-    sigaction(SIGUSR1, &sigto_wd, NULL);
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = SigHandler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGUSR1, &sa, NULL);
 
-
-    /*Create Thread*/
-    /*Create WD Image Inside the Thread*/
     CreateThread(process_args);
 
-    /*Thread should run while recieving signals from WD and sending them back*/
-
 }
-
 
 void WDStop(void)
 {
     CleanupEverything();
     TermHandler();
 }
-
-
 
 static void TermHandler()
 {
@@ -62,8 +56,8 @@ static void TermHandler()
 
 static void SigHandler(int signum, siginfo_t *info, void *context)
 {
-    /*Sending signal back*/
-    kill(info->si_pid, SIGUSR1);
+    if(signum == SIGUSR1)
+        signal_counter = 0;
 }
 
 static int CreateThread(process_args_t *process_args)
@@ -79,22 +73,24 @@ static int CreateThread(process_args_t *process_args)
 static int CreateWatchDogImage(process_args_t *process_args)
 {
     /*Create Watchdog PID*/
-    pid_t process_id = fork();
-    if(process_id < 0) return FAIL;
+    pid_t watchdog_pid = fork();
+    pid_t monitored_id = getpid();
+    int is_debug = 1;
+    if(watchdog_pid < 0) return FAIL;
 
-    if(0 != setenv("WD_PID",process_id,1)) return FAIL;
+    if(0 != setenv("WD_PID",watchdog_pid,1)) return FAIL;
+    if(0 != setenv("MONITORED_PID", monitored_id, 1))
 
     /*Load Watchdog image*/
-    if(!execlp(argv[0], (void *)process_args, NULL)) /*Check how to recieve the path.*/
+
+    #ifdef DNDEBUG
+        is_debug = 0;
+    #endif
+
+    if(!execlp(argv[is_debug], (void *)process_args, NULL))
     {
             free(process_args);
             return FAIL;
     }
     return SUCCESS;
-}
-
-
-static void CleanAppEverything()
-{
-    /*Use destroy for everything*/
 }

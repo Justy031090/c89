@@ -13,7 +13,7 @@ const my_uid_t bad_uid = {0,0,0,0};
 my_uid_t UIDGenerate()
 {
 	my_uid_t new_uid;
-	atomic_size_t counter = 1; /*changed from static to be thread-safe*/
+	static atomic_size_t counter = 1; /*changed from static to be thread-safe*/
 	time_t sec = time(&sec);
 	if(0 > sec)
 		return bad_uid;
