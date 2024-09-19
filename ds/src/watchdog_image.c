@@ -5,6 +5,7 @@
 #include <sys/shm.h> /*Shared Memory Functions*/
 #include <sys/sem.h> /*Semaphore Functions*/
 #include <sys/ipc.h> /*ftok*/
+#include <stdlib.h> /*getenv*/
 
 #include "sched_heap.h"
 
@@ -33,7 +34,7 @@ typedef struct process_args
 
 static time_t SendSignal(void *signum);
 static void SigHandler(int signum);
-static void TerminateSignal(pid_t process_id);
+static time_t TerminateSignal();
 static time_t CheckCounter(void *thresh);
 static int ReviveProcess(char **argv);
 static void Cleanup(void *param);
@@ -47,7 +48,7 @@ int WDprocessStart(size_t counter, size_t interval, size_t threshold)
     int signal_param = SIGUSR1;
     size_t thresh = threshold;
 
-
+    /*Tasks to send signals and check that monitored process is alive*/
     SCHEDAddTask(sched, time(NULL), SendSignal, &signal_param, Cleanup, NULL);
     SCHEDAddTask(sched, time(NULL), CheckCounter, &thresh, Cleanup, NULL);
 
@@ -57,9 +58,12 @@ int WDprocessStart(size_t counter, size_t interval, size_t threshold)
     sigaction(SIGUSR1, &sigto_thread, NULL);
     sigaction(SIGUSR2, &sigto_thread, NULL);
 
-
-    SCHEDRun(sched);
-
+    while(!suicide)
+    {
+        SCHEDRun(sched);
+    }
+ 
+    SCHEDAddTask(sched, time(NULL), TerminateSignal, NULL, Cleanup, NULL);
     
     SCHEDStop(sched);
     SCHEDDestroy(sched);
@@ -67,6 +71,7 @@ int WDprocessStart(size_t counter, size_t interval, size_t threshold)
     return 1;
 }
 
+/*Sends SIGUSR1 every Interval to Check if Alive*/
 static time_t SendSignal(void *signum)
 {
     char *pid = getenv("MONITORED_PID");
@@ -76,6 +81,7 @@ static time_t SendSignal(void *signum)
     return interval;
 }
 
+/*Handles SIGUSR1 for checking the monitored process is alive, and SIGUSR2 for Watchdog termination*/
 static void SigHandler(int signum)
 {
     if(signum == SIGUSR1)
@@ -84,6 +90,7 @@ static void SigHandler(int signum)
         suicide = 1;
 }
 
+/*Checking if threshold was not met. */
 static time_t CheckCounter(void *thresh)
 {
     is_alive = signal_counter < *(size_t *)thresh;
@@ -91,7 +98,7 @@ static time_t CheckCounter(void *thresh)
 }
 
 
-
+/*Shared memory from the Monitored app to get the arguments localy*/
 static int InitializeSharedMem(size_t threshold, size_t interval, int argc, char **argv)
 {
     key_t key = 0;
@@ -122,10 +129,17 @@ static void Cleanup(void *param)
     (void)param;
 }
 
-
+/*Revive the monitored process if it fails*/
 static int ReviveProcess(char **argv)
 {
     pid_t monitored_process = fork();
     if(FAIL == monitored_process) return FAIL;
     if(!execlp(argv[1], NULL)) return FAIL;
+    if(0 != setenv("MONITORED_PID", monitored_process, 1)) return FAIL;
+}
+
+static time_t TerminateSignal()
+{
+
+    return 0;
 }

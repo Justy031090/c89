@@ -164,7 +164,7 @@ static void SetSigAction(struct sigaction *sa)
 }
 
 /*Revive the watchdog process if failed (signal_counter >= threshold)*/
-static int Revive()
+static int Revive(char **argv)
 {
-
+    CreateWatchDogImage(argv);
 }
