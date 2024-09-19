@@ -4,42 +4,45 @@
 #include <unistd.h> /*fork, execvp*/
 #include <stdlib.h> /*getenv*/
 #include <signal.h> /*sigaction, kill*/
+#include <sys/shm.h> /*Shared Memory Functions*/
+#include <sys/sem.h> /*Semaphore Functions*/
+#include <sys/ipc.h> /*ftok*/
 
 #include "watchdog.h"
 
 #define FAIL -1
 #define SUCCESS 1
+#define PERMISSION 0666
+#define SEM_PATHNAME "/tmp/semaphore"
+#define SHM_PATHNAME "/tmp/shared-memory"
+#define NUM_OF_SEMAPHORES 2
+#define PROJECT_ID 8
 
 
 typedef struct process_args
 {
-    size_t threshold;
-    size_t interval;
     int argc;
     char **argv;
+    size_t threshold;
+    size_t interval;
 } process_args_t;
 
 static size_t signal_counter = 0;
 
-static void CleanupEverything();
 static void SigHandler(int signum, siginfo_t *info, void *context);
-static int CreateThread(process_args_t *process_args);
-static int CreateWatchDogImage(process_args_t *process_args);
+static int CreateThread();
+static int CreateWatchDogImage();
+static void CleanupEverything();
 
 int WDStart(size_t threshold, size_t interval, int argc, char **argv)
 {
     struct sigaction sa;
-    process_args_t  *process_args = malloc(sizeof(process_args_t));
-    if(!process_args) return FAIL;
+    SetSigAction(&sa);
+    if(!InitializeSemaphore()) return FAIL;
+    if(!InitializeSharedMem(threshold, interval, argc, argv)) return FAIL;
+    if(!CreateThread()) return FAIL;
 
-
-    sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = SigHandler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGUSR1, &sa, NULL);
-
-    CreateThread(process_args);
-
+    return SUCCESS;
 }
 
 void WDStop(void)
@@ -48,6 +51,7 @@ void WDStop(void)
     TermHandler();
 }
 
+/*Static Functions*/
 static void TermHandler()
 {
     char *pid_c = getenv("WD_PID");
@@ -60,37 +64,83 @@ static void SigHandler(int signum, siginfo_t *info, void *context)
         signal_counter = 0;
 }
 
-static int CreateThread(process_args_t *process_args)
+static int CreateThread()
 {
     pthread_t working_thread;
-    if(0 == pthread_create(&working_thread, NULL, CreateWatchDogImage, process_args))
+    if(0 == pthread_create(&working_thread, NULL, CreateWatchDogImage, NULL))
         return SUCCESS;
     
     return FAIL;
 }
 
 
-static int CreateWatchDogImage(process_args_t *process_args)
+static int CreateWatchDogImage()
 {
-    /*Create Watchdog PID*/
-    pid_t watchdog_pid = fork();
-    pid_t monitored_id = getpid();
     int is_debug = 1;
+
+    /*Get PID of the current process and watchdog process*/
+    pid_t monitored_id = getpid();
+    pid_t watchdog_pid = fork();
     if(watchdog_pid < 0) return FAIL;
 
-    if(0 != setenv("WD_PID",watchdog_pid,1)) return FAIL;
-    if(0 != setenv("MONITORED_PID", monitored_id, 1))
-
-    /*Load Watchdog image*/
-
+    /*Check Which image of the Watchdog should be loaded*/
     #ifdef DNDEBUG
         is_debug = 0;
     #endif
 
-    if(!execlp(argv[is_debug], (void *)process_args, NULL))
-    {
-            free(process_args);
-            return FAIL;
-    }
+    /*Set ENV variables to easily access both*/
+    if(0 != setenv("WD_PID",watchdog_pid,1)) return FAIL;
+    if(0 != setenv("MONITORED_PID", monitored_id, 1)) return FAIL;
+
+    /*Load the Appropriate watchdog image, arg[2] - release path or arg[3] - debug path,  must be provided by the user*/
+    if(!execlp(argv[is_debug + 2], NULL)) return FAIL;
+
     return SUCCESS;
+}
+
+
+/*Create System V shared memory segment to acess the args*/
+int InitializeSharedMem(size_t threshold, size_t interval, int argc, char **argv)
+{
+    key_t key = 0;
+    int shm_id = 0;
+    process_args_t *shared_args = NULL;
+
+    key = ftok(SHM_PATHNAME, PROJECT_ID);
+    shm_id = shmget(key, sizeof(process_args_t), IPC_CREAT | PERMISSION);
+    shared_args = (process_args_t *)shmat(shm_id, NULL, SHM_RDONLY);
+    if(shared_args)
+    {
+        shared_args->interval = interval;
+        shared_args->threshold = threshold;
+        shared_args->argc = argc;
+        shared_args->argv = argv;
+
+        return SUCCESS;
+    }
+
+    return FAIL;
+}
+
+/*Create System V semaphores for shared mem control & process control*/
+int InitializeSemaphore()
+{
+    key_t key = 0;
+    int sem_id = 0;
+
+    key = ftok(SEM_PATHNAME, PROJECT_ID);
+    if(FAIL == key) return FAIL;
+    sem_id = semget(key, NUM_OF_SEMAPHORES, IPC_CREAT | PERMISSION);
+    if(FAIL == sem_id) return FAIL;
+
+    return SUCCESS;
+}
+
+
+static void SetSigAction(struct sigaction *sa)
+{
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = SigHandler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGUSR1, &sa, NULL);
 }
