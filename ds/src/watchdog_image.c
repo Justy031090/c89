@@ -18,9 +18,7 @@
 #define PROJECT_ID 8
 
 int suicide = 0;
-int is_alive = 1;
 size_t interval = 0;
-size_t threshold = 0;
 size_t signal_counter = 0;
 
 
@@ -34,50 +32,43 @@ typedef struct process_args
 
 static time_t SendSignal(void *signum);
 static void SigHandler(int signum);
-static time_t TerminateSignal();
 static time_t CheckCounter(void *thresh);
 static int ReviveProcess(char **argv);
 static void Cleanup(void *param);
+static void SetSigAction(struct sigaction *sa);
 
 
-
-int WDprocessStart(size_t counter, size_t interval, size_t threshold)
+int WDprocessStart(size_t threshold, size_t interval, size_t argc, char **argv)
 {
     struct sigaction sigto_thread;
     sd_t *sched = SCHEDCreate();
     int signal_param = SIGUSR1;
-    size_t thresh = threshold;
+
+    SetSigAction(&sigto_thread);
 
     /*Tasks to send signals and check that monitored process is alive*/
     SCHEDAddTask(sched, time(NULL), SendSignal, &signal_param, Cleanup, NULL);
-    SCHEDAddTask(sched, time(NULL), CheckCounter, &thresh, Cleanup, NULL);
-
-    sigto_thread.sa_flags = SA_SIGINFO;
-    sigto_thread.sa_sigaction = SigHandler;
-    sigemptyset(&sigto_thread.sa_mask);
-    sigaction(SIGUSR1, &sigto_thread, NULL);
-    sigaction(SIGUSR2, &sigto_thread, NULL);
+    SCHEDAddTask(sched, time(NULL), CheckCounter, &threshold, Cleanup, NULL);
 
     while(!suicide)
     {
         SCHEDRun(sched);
     }
  
-    SCHEDAddTask(sched, time(NULL), TerminateSignal, NULL, Cleanup, NULL);
-    
     SCHEDStop(sched);
     SCHEDDestroy(sched);
 
-    return 1;
+    return SUCCESS;
 }
 
 /*Sends SIGUSR1 every Interval to Check if Alive*/
 static time_t SendSignal(void *signum)
 {
     char *pid = getenv("MONITORED_PID");
-    pid_t user_pid = (pid_t)atoi(pid);
-    kill(user_pid, *(int *)signum);
+    pid_t monitored_pid = (pid_t)atoi(pid);
+    kill(monitored_pid, *(int *)signum);
     signal_counter++;
+
     return interval;
 }
 
@@ -93,34 +84,13 @@ static void SigHandler(int signum)
 /*Checking if threshold was not met. */
 static time_t CheckCounter(void *thresh)
 {
-    is_alive = signal_counter < *(size_t *)thresh;
+    if(signal_counter >= *(size_t *)thresh)
+    {
+        ReviveProcess(NULL);
+    }
+    
     return interval;
 }
-
-
-/*Shared memory from the Monitored app to get the arguments localy*/
-static int InitializeSharedMem(size_t threshold, size_t interval, int argc, char **argv)
-{
-    key_t key = 0;
-    int shm_id = 0;
-    process_args_t *shared_args = NULL;
-
-    key = ftok(SHM_PATHNAME, PROJECT_ID);
-    shm_id = shmget(key, sizeof(process_args_t), NULL);
-    shared_args = (process_args_t *)shmat(shm_id, NULL, SHM_RDONLY);
-    if(shared_args)
-    {
-        shared_args->interval = interval;
-        shared_args->threshold = threshold;
-        shared_args->argc = argc;
-        shared_args->argv = argv;
-
-        return SUCCESS;
-    }
-
-    return FAIL;
-}
-
 
 static void Cleanup(void *param)
 {
@@ -132,14 +102,30 @@ static void Cleanup(void *param)
 /*Revive the monitored process if it fails*/
 static int ReviveProcess(char **argv)
 {
+    char monitored_pid_st[10];
     pid_t monitored_process = fork();
     if(FAIL == monitored_process) return FAIL;
     if(!execlp(argv[1], NULL)) return FAIL;
-    if(0 != setenv("MONITORED_PID", monitored_process, 1)) return FAIL;
+
+    snprintf(monitored_pid_st, sizeof(monitored_pid_st), "%d", monitored_process);
+    if(0 != setenv("MONITORED_PID", monitored_pid_st, 1)) return FAIL;
+
+    return SUCCESS;
 }
 
 static time_t TerminateSignal()
 {
 
     return 0;
+}
+
+
+
+
+/*sets current sigaction structure*/
+static void SetSigAction(struct sigaction *sa) {
+    sa->sa_flags = SA_SIGINFO;
+    sa->sa_sigaction = SigHandler;
+    sigemptyset(&sa->sa_mask);
+    sigaction(SIGUSR1, sa, NULL);
 }

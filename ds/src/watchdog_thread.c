@@ -8,17 +8,21 @@
 #include <sys/sem.h> /*Semaphore Functions*/
 #include <sys/ipc.h> /*ftok*/
 #include <limits.h> /*MAX_PATH*/
+#include <stdatomic.h> /*Atomic Size_t*/
 
 #include "watchdog.h"
+#include "sched_heap.h"
 
 #define FAIL -1
-#define SUCCESS 1
+#define SUCCESS 0
+#define TRUE 1
 #define PERMISSION 0666
 #define SEM_PATHNAME "/tmp/semaphore"
 #define SHM_PATHNAME "/tmp/shared-memory"
 #define PROC_PATH "/proc/self/exe"
 #define NUM_OF_SEMAPHORES 2
 #define PROJECT_ID 8
+#define PID_MAX_SIZE 32
 
 
 typedef struct process_args
@@ -29,90 +33,122 @@ typedef struct process_args
     size_t interval;
 } process_args_t;
 
-static size_t signal_counter = 0;
 
-static void SigHandler(int signum);
-static void TermHandler();
-static int CreateThread(char **argv);
+/*Global variables*/
+static int shm_id;
+static int sem_id;
+static sd_t *sched;
+static atomic_size_t signal_counter = 0;
+static process_args_t *shared_args;
+static pthread_t working_thread;
+
+/*Static functions*/
+static void *WatchdogRun(void *arg);
+static void SignalHandler(int signum);
 static int CreateWatchDogImage(char **argv);
 static int InitializeSharedMem(size_t threshold, size_t interval, int argc, char **argv);
 static int InitializeSemaphore();
-static void SetSigAction(struct sigaction *sa);
-static int Revive();
 static void CleanupEverything();
+static time_t SendSignal(void *param);
+static time_t CheckCounter(void *param);
 
 int WDStart(size_t threshold, size_t interval, int argc, char **argv)
 {
     struct sigaction sa;
     SetSigAction(&sa);
-    if(!InitializeSemaphore()) return FAIL;
-    if(!InitializeSharedMem(threshold, interval, argc, argv)) return FAIL;
-    if(!CreateThread(argv)) return FAIL;
+
+    if(FAIL == InitializeSemaphore()) return FAIL;
+    if(FAIL == InitializeSharedMem(threshold, interval, argc, argv)) return FAIL;
+    
+    sched = SHEDCreate();
+    if(NULL == sched) return FAIL;
+
+    sa.sa_handler = SigHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    if(FAIL == sigaction(SIGUSR1, &sa, NULL)) return FAIL;
+
+    SCHEDAddTask(sched, time(NULL), SendSignal, NULL, NULL, NULL);
+    SCHEDAddTask(sched, time(NULL), CheckCounter, &shared_args->threshold, NULL, NULL);
+
+
+    if(0 != pthread_create(&working_thread, NULL, WatchdogRun, argv)) return FAIL;
 
     return SUCCESS;
 }
 
 void WDStop(void)
 {
-    CleanupEverything();
-    TermHandler();
+    char *wd_pid = getenv("WD_PID");
+    pid_t pid = 0;
+
+    if(wd_pid != NULL)
+    {   pid = atoi(wd_pid);
+        kill(pid, SIGUSR2);
+    }
+
+    pthread_join(working_thread, NULL);
+    Cleanup();
 }
 
 
 
 /*Static Functions*/
-static void TermHandler()
+
+static void *WatchdogRun(void *arg)
 {
-    char *pid_c = getenv("WD_PID");
-    kill(atoi(pid_c), SIGUSR2);
+    char **argv = (char **)arg;
+
+    if(FAIL == CreateWatchDogImage(argv)) return NULL;
+
+    while(TRUE)
+    {
+        SCHEDRun(sched);
+    }
+
+    return NULL;
 }
 
-static void SigHandler(int signum)
+
+static void SignalHandler(int signum)
 {
     if(signum == SIGUSR1)
-        signal_counter = 0;
+        atomic_store(&signal_counter, 0);
 }
 
-/*Creates the Working Thread to launch watchdog*/
-static int CreateThread(char **argv)
-{
-    pthread_t working_thread;
-    if(0 == pthread_create(&working_thread, NULL, CreateWatchDogImage, argv))
-        return SUCCESS;
-    
-    return FAIL;
-}
 
 /*Creates the Watchdog image*/
 static int CreateWatchDogImage(char **argv)
 {
-    int is_debug = 1;
-    ssize_t path_size = 0;
     char full_path[PATH_MAX];
+    char wd_pid_str[PID_MAX_SIZE];
+    char monitored_pid_str[PID_MAX_SIZE];
+    pid_t watchdog_pid = 0;
 
-    /*Get PID of the current process and watchdog process*/
-    pid_t monitored_id = getpid();
-    pid_t watchdog_pid = fork();
-    if(watchdog_pid < 0) return FAIL;
+    // Get the full path of the current executable
+    if (FAIL == readlink(PROC_PATH, full_path, sizeof(full_path) - 1)) return FAIL;
 
-
-    /*Check the path to the monitored App*/
-    path_size = readlink(PROC_PATH, full_path, PATH_MAX);
-    if(!path_size) return FAIL;
+    watchdog_pid = fork();
+    if (FAIL == watchdog_pid) return FAIL;
     
-    full_path[path_size] = '\0';
+    if (SUCCESS == watchdog_pid) 
+    {
+        #ifdef DNDEBUG
+            if (FAIL == execl(argv[2], full_path, NULL)) return FAIL;
+        #else
+            if (FAIL == execl(argv[3], full_path, NULL)) return FAIL;
+        #endif
+    }
+    else 
+    { 
+        snprintf(wd_pid_str, sizeof(wd_pid_str), "%d", watchdog_pid);
+        snprintf(monitored_pid_str, sizeof(monitored_pid_str), "%d", getpid());
 
-    /*Check Which image of the Watchdog should be loaded*/
-    #ifdef DNDEBUG
-        is_debug = 0;
-    #endif
-
-    /*Set ENV variables to easily access both*/
-    if(0 != setenv("WD_PID",watchdog_pid,1)) return FAIL;
-    if(0 != setenv("MONITORED_PID", monitored_id, 1)) return FAIL;
-
-    /*Load the Appropriate watchdog image, arg[2] - release path or arg[3] - debug path,  must be provided by the user*/
-    if(!execlp(argv[is_debug + 2], full_path, NULL)) return FAIL;
+        // Set environment variables
+        if (FAIL == setenv("WD_PID", wd_pid_str, TRUE)) return FAIL;
+        if (FAIL == setenv("MONITORED_PID", monitored_pid_str, TRUE)) return FAIL;
+    }
 
     return SUCCESS;
 }
@@ -120,51 +156,86 @@ static int CreateWatchDogImage(char **argv)
 /*Create System V shared memory segment to acess the args*/
 static int InitializeSharedMem(size_t threshold, size_t interval, int argc, char **argv)
 {
-    key_t key = 0;
-    int shm_id = 0;
-    process_args_t *shared_args = NULL;
+    key_t key = ftok(SHM_PATHNAME, PROJECT_ID);
+    if(FAIL == key) return FAIL;
 
-    key = ftok(SHM_PATHNAME, PROJECT_ID);
     shm_id = shmget(key, sizeof(process_args_t), IPC_CREAT | PERMISSION);
-    shared_args = (process_args_t *)shmat(shm_id, NULL, SHM_RDONLY);
-    if(shared_args)
-    {
-        shared_args->interval = interval;
-        shared_args->threshold = threshold;
-        shared_args->argc = argc;
-        shared_args->argv = argv;
+    if(FAIL == shm_id) return FAIL;
 
-        return SUCCESS;
-    }
+    shared_args = (process_args_t *)shmat(shm_id, NULL, 0);
+    if(!shared_args) return FAIL;
 
-    return FAIL;
+    shared_args->interval = interval;
+    shared_args->threshold = threshold;
+    shared_args->argc = argc;
+    shared_args->argv = argv;
+
+    return SUCCESS;
 }
 
 /*Create System V semaphores for shared mem control & process control*/
 static int InitializeSemaphore()
 {
-    key_t key = 0;
-    int sem_id = 0;
-
-    key = ftok(SEM_PATHNAME, PROJECT_ID);
+    key_t key = ftok(SEM_PATHNAME, PROJECT_ID);
     if(FAIL == key) return FAIL;
+
     sem_id = semget(key, NUM_OF_SEMAPHORES, IPC_CREAT | PERMISSION);
     if(FAIL == sem_id) return FAIL;
 
     return SUCCESS;
 }
 
-/*sets current sigaction structure*/
-static void SetSigAction(struct sigaction *sa)
+static void CleanupEverything()
 {
-    sa->sa_flags = SA_SIGINFO;
-    sa->sa_sigaction = SigHandler;
-    sigemptyset(&sa->sa_mask);
-    sigaction(SIGUSR1, &sa, NULL);
+    SCHEDStop(sched);
+    SCHEDDestroy(sched);
+    shmdt(shared_args);
+    shmctl(shm_id, IPC_RMID, NULL);
+    semctl(sem_id, 0, IPC_RMID);
 }
 
-/*Revive the watchdog process if failed (signal_counter >= threshold)*/
+static time_t SendSignal(void *param)
+{   
+    pid_t pid = 0;
+    (void)param;
+    char *monitored_pid = getenv("MONITORED_PID");
+    if(NULL != monitored_pid)
+    {
+        pid = atoi(monitored_pid);
+        kill(monitored_pid, SIGUSR1);
+        atomic_fetch_add(&signal_counter, 1);
+    }
+
+    return shared_args->interval;
+}
+
+static time_t CheckCounter(void *param)
+{
+    size_t threshold = *(size_t *)param;
+    pid_t pid = 0;
+    char *monitored_pid = NULL;
+
+    if(atomic_load(&signal_counter) >= threshold)
+    {
+        /*revive*/
+
+        monitored_pid = getenv("MONITORED_PID");
+        if(NULL != monitored_pid)
+        {
+            pid = atoi(monitored_pid);
+            kill(monitored_pid, SIGUSR2);
+            CreateWatchDogImage(shared_args->argv);
+        }
+    }
+
+    return shared_args->interval;
+}
+
+
+
+
+
 static int Revive(char **argv)
 {
-    CreateWatchDogImage(argv);
+    return CreateWatchDogImage(argv);
 }
