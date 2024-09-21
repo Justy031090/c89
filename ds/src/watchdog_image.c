@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+
 #include <pthread.h>
 #include <stdatomic.h>
 #include <signal.h>
@@ -105,18 +106,8 @@ time_t CheckCounter(void *param)
 
 int WatchdogInitialize()
 {
-    // Initialize semaphores and shared memory
-    if (InitializeSemaphore(&sem_id) == FAIL)
-    {
-        return FAIL;
-    }
-
-    if (InitializeSharedMem(&shared_args, &shm_id, 0, 0, 0, NULL) == FAIL)
-    {
-        return FAIL;
-    }
-
-    // Signal that watchdog is ready
+    if (InitializeSemaphore(&sem_id) == FAIL) return FAIL;
+    if (InitializeSharedMem(&shared_args, &shm_id, 0, 0, 0, NULL) == FAIL) return FAIL;
     if (SemaphorePost(sem_id, SEM_SYNC) == FAIL)
     {
         LogError("Watchdog: Failed to post sync semaphore");

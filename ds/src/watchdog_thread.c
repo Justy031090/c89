@@ -59,7 +59,7 @@ static void *WatchdogRun(void *arg)
 {
     char **argv = (char **)arg;
 
-    if(FAIL == CreateWatchDogImage(argv)) return NULL;
+    if(FAIL == CreateWatchDogImage(argv, sem_id, shared_args)) return NULL;
 
     SCHEDAddTask(sched, time(NULL), SendSignal, NULL, NULL, NULL);
     SCHEDAddTask(sched, time(NULL), CheckCounter, &shared_args->threshold, NULL, NULL);
@@ -101,7 +101,7 @@ static time_t CheckCounter(void *param)
     pid_t pid = 0;
     if(atomic_load(&signal_counter) >= threshold)
     {
-        if(FAIL == CreateWatchDogImage(shared_args->argv)) return FAIL;
+        if(FAIL == CreateWatchDogImage(shared_args->argv, sem_id, shared_args)) return FAIL;
     }
 
     return shared_args->interval;

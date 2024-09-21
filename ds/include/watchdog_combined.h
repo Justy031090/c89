@@ -45,7 +45,7 @@ void CleanupEverything(sd_t *sched, process_args_t *shared_args, int shm_id, int
 void SetSigAction(struct sigaction *sa, handler_t handler);
 time_t SendSignal(void *param);
 time_t CheckCounter(void *param);
-int CreateWatchdogProcess(char **argv);
+int CreateWatchDogImage(char **argv, int sem_id, process_args_t *shared_args);
 int SemaphoreWait(int sem_id, int sem_num);
 int SemaphorePost(int sem_id, int sem_num);
 int SemaphoreSetValue(int sem_id, int sem_num, int value);
