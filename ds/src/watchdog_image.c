@@ -1,131 +1,127 @@
-#define _POSIX_C_SOURCE 200112L /*siginfo_t*/
+#define _POSIX_C_SOURCE 200809L
+#include <pthread.h>
+#include <stdatomic.h>
+#include <signal.h>
 
-#include <signal.h> /*sigaction, kill*/
-#include <unistd.h> /*fork, execvp*/
-#include <sys/shm.h> /*Shared Memory Functions*/
-#include <sys/sem.h> /*Semaphore Functions*/
-#include <sys/ipc.h> /*ftok*/
-#include <stdlib.h> /*getenv*/
-
-#include "sched_heap.h"
-
-#define FAIL -1
-#define SUCCESS 1
-#define PERMISSION 0666
-#define SEM_PATHNAME "/tmp/semaphore"
-#define SHM_PATHNAME "/tmp/shared-memory"
-#define NUM_OF_SEMAPHORES 2
-#define PROJECT_ID 8
-
-int suicide = 0;
-size_t interval = 0;
-size_t signal_counter = 0;
+#include "watchdog.h"
+#include "watchdog_combined.h"
 
 
-typedef struct process_args
-{
-    int argc;
-    char **argv;
-    size_t threshold;
-    size_t interval;
-} process_args_t;
+static int shm_id;
+static int sem_id;
+static sd_t *sched;
+static process_args_t *shared_args;
 
-static time_t SendSignal(void *signum);
-static void SigHandler(int signum);
-static time_t CheckCounter(void *thresh);
-static int ReviveProcess(char **argv);
-static void Cleanup(void *param);
-static void SetSigAction(struct sigaction *sa);
+atomic_size_t signal_counter = 0;
+volatile sig_atomic_t should_stop = 0;
 
 
 int WDprocessStart(size_t threshold, size_t interval, size_t argc, char **argv)
 {
-    struct sigaction sigto_thread;
-    sd_t *sched = SCHEDCreate();
-    int signal_param = SIGUSR1;
+    struct sigaction sa;
 
-    SetSigAction(&sigto_thread);
+    if(FAIL == InitializeSemaphore(&sem_id)) return FAIL;
+    if(FAIL == InitializeSharedMem(&shared_args, &shm_id, 0, 0, 0, NULL)) return FAIL;
+
+    WatchdogInitialize();
+
+    sched = SHEDCreate();
+    if(NULL == sched) return FAIL;
+
+    SetSigAction(&sa, SignalHandler);
+
+    if (FAIL == sigaction(SIGUSR1, &sa, NULL)) return FAIL;
+    if (FAIL == sigaction(SIGUSR2, &sa, NULL)) return FAIL;
 
     /*Tasks to send signals and check that monitored process is alive*/
-    SCHEDAddTask(sched, time(NULL), SendSignal, &signal_param, Cleanup, NULL);
-    SCHEDAddTask(sched, time(NULL), CheckCounter, &threshold, Cleanup, NULL);
+    SCHEDAddTask(sched, time(NULL), SendSignal, NULL, NULL, NULL);
+    SCHEDAddTask(sched, time(NULL), CheckCounter, &shared_args->threshold, NULL, NULL);
 
-    while(!suicide)
+    while(!should_stop)
     {
         SCHEDRun(sched);
     }
  
-    SCHEDStop(sched);
-    SCHEDDestroy(sched);
+    CleanupEverything(sched, shared_args, shm_id, sem_id);
 
     return SUCCESS;
 }
 
 /*Sends SIGUSR1 every Interval to Check if Alive*/
-static time_t SendSignal(void *signum)
+time_t SendSignal(void *param)
 {
-    char *pid = getenv("MONITORED_PID");
-    pid_t monitored_pid = (pid_t)atoi(pid);
-    kill(monitored_pid, *(int *)signum);
-    signal_counter++;
-
-    return interval;
+    (void)param;
+    pid_t pid = 0;
+    char *monitored_pid = getenv("MONITORED_PID");
+    if (monitored_pid != NULL)
+    {
+        pid = atoi(monitored_pid);
+        kill(pid, SIGUSR1);
+        atomic_fetch_add(&signal_counter, 1);
+    }
+    return shared_args->interval;
 }
 
 /*Handles SIGUSR1 for checking the monitored process is alive, and SIGUSR2 for Watchdog termination*/
-static void SigHandler(int signum)
+static void SignalHandler(int signum)
 {
-    if(signum == SIGUSR1)
-        signal_counter = 0;
-    if(signum == SIGUSR2)
-        suicide = 1;
-}
-
-/*Checking if threshold was not met. */
-static time_t CheckCounter(void *thresh)
-{
-    if(signal_counter >= *(size_t *)thresh)
+    if (signum == SIGUSR1)
     {
-        ReviveProcess(NULL);
+        atomic_store(&signal_counter, 0);
     }
-    
-    return interval;
+    else if (signum == SIGUSR2)
+    {
+        should_stop = TRUE;
+    }
 }
 
-static void Cleanup(void *param)
+
+time_t CheckCounter(void *param)
 {
-    /*Need to cleanup everything allocated.*/
-    /*Including Semaphores & Shared memory*/
-    (void)param;
+    size_t threshold = *(size_t *)param;
+    pid_t new_pid = 0;
+    char new_monitored_pid[PID_MAX_SIZE];
+    if (atomic_load(&signal_counter) >= threshold)
+    {
+        new_pid = fork();
+        if (SUCCESS == new_pid)
+        {
+            execv(shared_args->argv[0], shared_args->argv);
+ 
+        }
+        else if (SUCCESS < new_pid)
+        {
+            snprintf(new_monitored_pid, sizeof(new_monitored_pid), "%d", new_pid);
+            if (FAIL == setenv("MONITORED_PID", new_monitored_pid, 1))
+            {
+                LogError("Failed to set MONITORED_PID environment variable");
+            }
+        }
+    }
+    return shared_args->interval;
 }
 
-/*Revive the monitored process if it fails*/
-static int ReviveProcess(char **argv)
-{
-    char monitored_pid_st[10];
-    pid_t monitored_process = fork();
-    if(FAIL == monitored_process) return FAIL;
-    if(!execlp(argv[1], NULL)) return FAIL;
 
-    snprintf(monitored_pid_st, sizeof(monitored_pid_st), "%d", monitored_process);
-    if(0 != setenv("MONITORED_PID", monitored_pid_st, 1)) return FAIL;
+
+int WatchdogInitialize()
+{
+    // Initialize semaphores and shared memory
+    if (InitializeSemaphore(&sem_id) == FAIL)
+    {
+        return FAIL;
+    }
+
+    if (InitializeSharedMem(&shared_args, &shm_id, 0, 0, 0, NULL) == FAIL)
+    {
+        return FAIL;
+    }
+
+    // Signal that watchdog is ready
+    if (SemaphorePost(sem_id, SEM_SYNC) == FAIL)
+    {
+        LogError("Watchdog: Failed to post sync semaphore");
+        return FAIL;
+    }
 
     return SUCCESS;
-}
-
-static time_t TerminateSignal()
-{
-
-    return 0;
-}
-
-
-
-
-/*sets current sigaction structure*/
-static void SetSigAction(struct sigaction *sa) {
-    sa->sa_flags = SA_SIGINFO;
-    sa->sa_sigaction = SigHandler;
-    sigemptyset(&sa->sa_mask);
-    sigaction(SIGUSR1, sa, NULL);
 }

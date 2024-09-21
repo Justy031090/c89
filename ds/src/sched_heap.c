@@ -31,43 +31,43 @@ static int MatchUID(const void *uid1, const void *uid2);
 
 int SCHEDRun(sd_t *sd)
 {
-	int sleep_flag = 1;
-	time_t rescheduler = 0;
-	task_t *task_scheduled = NULL;
-	sd->stop = 0;
-	
-	while(!PQHeapIsEmpty(sd->pq) && !sd->stop)
-	{
-		task_scheduled = (task_t *)PQHeapPeek(sd->pq);
-		sd->current_task = task_scheduled;
+    int sleep_flag = 1;
+    time_t rescheduler = 0;
+    task_t *task_scheduled = NULL;
+    sd->stop = 0;
 
-		if(time(NULL) >= TaskGetTime(sd->current_task))
-		{
-			PQHeapDqueue(sd->pq);
-			rescheduler = sd->current_task->func(sd->current_task->params);
-		
-			if(rescheduler)
-			{
-				TaskSetTime(sd->current_task, time(NULL) + rescheduler);
-				PQHeapInsert(sd->current_task, sd->pq);
-			}
-			else
-			{
-				SCHEDRemoveTask(sd->current_task->task_id, sd);
-			}
-		}
-		else
-		{
-			while(0 != sleep_flag)
-			{
-				sleep_flag = sleep(TaskGetTime(sd->current_task) - time(NULL));
-			}		
-		}	
-		
-		sd->current_task = NULL;
-	}
-	
-	return SUCCESS;
+    while (!PQHeapIsEmpty(sd->pq) && !sd->stop)
+    {
+        task_scheduled = (task_t *)PQHeapPeek(sd->pq);
+        sd->current_task = task_scheduled;
+
+        if (time(NULL) >= TaskGetTime(sd->current_task))
+        {
+            PQHeapDqueue(sd->pq);
+            rescheduler = sd->current_task->func(sd->current_task->params);
+
+            if (rescheduler)
+            {
+                TaskSetTime(sd->current_task, time(NULL) + rescheduler);
+                PQHeapInsert(sd->current_task, sd->pq);
+            }
+            else
+            {
+                SCHEDRemoveTask(sd->current_task->task_id, sd);
+            }
+        }
+        else
+        {
+            sleep_flag = TaskGetTime(sd->current_task) - time(NULL);
+            if (sleep_flag > 0) {
+                sleep(sleep_flag);
+            }
+        }
+
+        sd->current_task = NULL;
+    }
+
+    return SUCCESS;
 }
 
 
