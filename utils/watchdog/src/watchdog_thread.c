@@ -26,8 +26,6 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
     struct sigaction sa;
     int i = 0;
 
-     printf("WDStart: Entering function\n");
-    printf("WDStart: Initializing IPC\n");
     if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS)
     {
         printf("WDStart: InitializeIPC failed\n");
@@ -69,18 +67,14 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
     SCHEDAddTask(scheduler, time(NULL), ResetCounterTask, shared_args, NULL, NULL);
 
 
-        printf("WDStart: About to create watchdog thread\n");
     if (pthread_create(&working_thread, NULL, WatchdogRun, argv) != SUCCESS) {
-        printf("WDStart: Failed to create watchdog thread\n");
-                SCHEDDestroy(scheduler);
+        SCHEDDestroy(scheduler);
         CleanupIPC(shared_args, sem_thread, sem_process);
         return FAIL;
     }
 
 
-    printf("WDStart: Watchdog thread created, waiting for it to be ready\n");
-    sem_wait(sem_thread); /* Wait for watchdog thread to be ready */
-    printf("WDStart: Watchdog thread signaled it's ready\n");
+    sem_wait(sem_thread);
 
     return SUCCESS;
 }
@@ -99,34 +93,20 @@ static void *WatchdogRun(void *arg)
 {
     char **argv = (char **)arg;
 
-     printf("WatchdogRun: Entering function\n");
-    if (CreateWatchDogImage(argv, shared_args) != SUCCESS)
-    {
-        return NULL;
-    }
 
-    printf("WatchdogRun: About to signal that thread is ready\n");
-    sem_post(sem_thread);  /* Signal that watchdog thread is ready */
-    printf("WatchdogRun: Signaled that thread is ready\n");
+    if (CreateWatchDogImage(argv, shared_args) != SUCCESS) return NULL;
 
-    printf("WatchdogRun: Entering main loop\n");
+    sem_post(sem_thread);
+
     while (!should_stop)
     {
-        printf("WatchdogRun: Running scheduler\n");
         SCHEDRun(scheduler);
-        printf("WatchdogRun: Scheduler returned\n");
         
-        if (should_stop)
-        {
-            printf("WatchdogRun: Stop signal received\n");
-            break;
-        }
+        if (should_stop) break;
         
-        printf("WatchdogRun: Sleeping for 1 second\n");
         sleep(1);
     }
     
-    printf("WatchdogRun: Exiting function\n");
     return NULL;
 }
 
