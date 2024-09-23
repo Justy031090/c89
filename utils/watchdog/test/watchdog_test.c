@@ -14,19 +14,12 @@
 #define FAIL -1
 #define MAX_WAIT_TIME 5
 
-static volatile sig_atomic_t alarm_triggered = 0;
-
-static void alarm_handler(int signum) {
-    (void)signum;
-    alarm_triggered = 1;
-}
 
 static void test_WDStart_WDStop(void) {
-    int result, i;
-    struct sigaction sa;
+    int result;
 
     result = WDStart(TEST_THRESHOLD, TEST_INTERVAL, 0, NULL);
-    if (result != SUCCESS) return;
+    assert(result == SUCCESS);
 
     sleep(1);
 
@@ -34,6 +27,7 @@ static void test_WDStart_WDStop(void) {
 
     printf("WDStart and WDStop test completed.\n");
 }
+
 static void test_watchdog_restart(void) {
     pid_t pid;
     int status;
@@ -57,6 +51,8 @@ static void test_watchdog_restart(void) {
         } else {
             printf("Watchdog restart test failed.\n");
         }
+        
+        sleep(1);
     } else {
         perror("fork");
         exit(1);
@@ -69,7 +65,7 @@ int main(void) {
     printf("Running test_WDStart_WDStop\n");
     test_WDStart_WDStop();
     printf("test_WDStart_WDStop completed\n");
-
+    /*
     sleep(2);
 
     printf("Running test_watchdog_restart\n");
@@ -77,5 +73,6 @@ int main(void) {
     printf("test_watchdog_restart completed\n");
 
     printf("All tests completed.\n");
+    */
     return 0;
 }

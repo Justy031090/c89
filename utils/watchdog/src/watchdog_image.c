@@ -6,13 +6,15 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <stdatomic.h>
 
 #include "watchdog_combined.h"
 
 static process_args_t *shared_args = NULL;
 static sem_t *sem_thread = NULL;
 static sem_t *sem_process = NULL;
-static volatile sig_atomic_t should_stop = 0;
+atomic_int should_stop = 0;
+static atomic_size_t signal_counter = ATOMIC_VAR_INIT(0);
 static sd_t *scheduler = NULL;
 
 static void SignalHandler(int signum);
@@ -22,10 +24,8 @@ int main(int argc, char *argv[])
     struct sigaction sa;
     my_uid_t task_id;
 
-    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS) {
-        return TRUE;
-    }
-
+    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS) return TRUE;
+    
     sa.sa_handler = SignalHandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -77,10 +77,32 @@ static void SignalHandler(int signum)
 {
     if (signum == SIG_RESET)
     {
-        shared_args->counter = 0;
+        atomic_store(&signal_counter, 0);
+        printf("Recieved signal from thread\n");
     }
     else if (signum == SIG_STOP)
     {
-        should_stop = TRUE;
+        atomic_fetch_add(&should_stop, 1);
     }
+}
+
+
+time_t ResetCounterTask(void *params)
+{
+    process_args_t *shared_args = (process_args_t *)params;
+    atomic_store(&signal_counter, 0);
+    return shared_args->interval;
+}
+
+time_t CheckThresholdTask(void *params)
+{
+    process_args_t *shared_args = (process_args_t *)params;
+    if (signal_counter >= shared_args->threshold)
+    {
+        if (kill(shared_args->client_pid, SIG_TERMINATE) == FAIL) {
+            LogError("Failed to send SIGTERM to client process");
+        }
+        atomic_store(&signal_counter, 0);
+    }
+    return shared_args->interval;
 }

@@ -33,7 +33,6 @@ typedef struct ProcessArgs {
     int argc;
     pid_t client_pid;
     pid_t watchdog_pid;
-    volatile sig_atomic_t counter;
     char argv[MAX_ARGUMENTS][MAX_ARGUMENT_SIZE];
 } process_args_t;
 
