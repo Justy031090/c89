@@ -79,18 +79,15 @@ void DVectorDestroy(dvector_t *d_vector)
 
 int DVectorPushBack(dvector_t *d_vector, const void *data)
 {	
-	assert(NULL !=d_vector);
-	
-	if((d_vector->size) == d_vector->capacity)
-	{
-        if (DVectorReserve(d_vector, d_vector->capacity * GROWTH_FACTOR) == MEM_FAIL)
-            return FAIL;
-	}
-	
-	memcpy(d_vector->d_vector_arr + (d_vector->size * d_vector->size_of_element), data, d_vector->size_of_element);
+    assert(NULL != d_vector);
+    if((d_vector->size) == d_vector->capacity)
+    {
+        if (DVectorReserve(d_vector, d_vector->capacity * GROWTH_FACTOR) == FAIL) return FAIL;
+    }
+    memcpy(d_vector->d_vector_arr + (d_vector->size * d_vector->size_of_element), data, d_vector->size_of_element);
     d_vector->size++;
 
-	return SUCCESS;
+    return SUCCESS;
 }
 
 int DVectorPopBack(dvector_t *d_vector)

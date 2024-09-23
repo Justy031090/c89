@@ -31,7 +31,7 @@ task_t *TaskCreate(time_t exe_time, func_t func, void *params, cleanup_func_t Cl
 
 time_t TaskGetTime(task_t *task)
 {
-	return task->exe_time;
+    return task->exe_time;
 }
 
 my_uid_t TaskGetUID(task_t *task)
@@ -62,10 +62,24 @@ void TaskDestroy(task_t *task)
 }
 int TaskIsBefore(const void *task1, const void *task2)
 {
-	  if (TaskGetTime((task_t *)task1) >= TaskGetTime((task_t *)task2))
-	  	return 1;
-	  	
-	  return -1;
+    const task_t *t1, *t2;
+    time_t time1, time2;
 
+    if (task1 == NULL || task2 == NULL)return 0;
+
+    t1 = (const task_t *)task1;
+    t2 = (const task_t *)task2;
+
+    if (t1 == NULL || t2 == NULL) return 0;
+
+    time1 = TaskGetTime((task_t *)t1);
+    time2 = TaskGetTime((task_t *)t2);
+
+    if (time1 < time2)
+        return 1;
+    else if (time1 > time2)
+        return -1;
+    else
+        return 0;
 }
 

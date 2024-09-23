@@ -51,9 +51,7 @@ void HeapDestroy(heap_t *heap)
 
 int HeapInsert(heap_t *heap, const void *data)
 {
-    if (DVectorPushBack(heap->vector, &data) != SUCCESS)
-        return FAIL;
-
+    if (DVectorPushBack(heap->vector, &data) != SUCCESS) return FAIL;
     HeapifyUp(heap, DVectorSize(heap->vector) - 1);
     return SUCCESS;
 }
@@ -162,17 +160,28 @@ static void HeapifyDown(heap_t *heap, size_t i)
 
 static void HeapifyUp(heap_t *heap, size_t i)
 {
-    size_t parent = (i - 1) / 2;
-    size_t size = DVectorSize(heap->vector);
-    void **current = (void **)DVectorGet(heap->vector, i);
-    void **parent_node = (parent < size) ? (void **)DVectorGet(heap->vector, parent) : NULL;
+    size_t parent;
+    void **current, **parent_node;
+    int compare_result;
 
-    if (parent < size && heap->cmp_func(*current, *parent_node) > 0)
+    while (i > 0)
     {
+        parent = (i - 1) / 2;
+        current = DVectorGet(heap->vector, i);
+        parent_node = DVectorGet(heap->vector, parent);
+
+        if (current == NULL || parent_node == NULL || *current == NULL || *parent_node == NULL) return;
+
+        compare_result = heap->cmp_func(*(void**)current, *(void**)parent_node);
+
+        if (compare_result <= 0) break;
+
         Swap(current, parent_node);
-        HeapifyUp(heap, parent);
+        i = parent;
     }
 }
+
+
 
 static void Swap(void *idx1, void *idx2)
 {
@@ -187,19 +196,8 @@ void HeapPrint(const heap_t *heap)
     size_t i = 0;
     void *element = NULL;
 
-    if (heap == NULL)
-    {
-        printf("Heap is NULL\n");
-        return;
-    }
-
-    if (size == 0)
-    {
-        printf("Heap is empty\n");
-        return;
-    }
-
-    printf("Heap contents:\n");
+    if (heap == NULL) return;
+    if (size == 0) return;
 
     for (i = 0; i < size; ++i)
     {
