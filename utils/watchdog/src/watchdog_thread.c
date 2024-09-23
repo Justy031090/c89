@@ -20,19 +20,16 @@ static sd_t *scheduler = NULL;
 static void *WatchdogRun(void *arg);
 static void SignalHandler(int signum);
 static time_t SendSignalTask(void *params);
+int CreateWatchDogImage(char **argv, process_args_t *shared_args);
+
 
 int WDStart(size_t threshold, size_t interval, int argc, char **argv)
 {
     struct sigaction sa;
     int i = 0;
 
-    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS)
-    {
-        printf("WDStart: InitializeIPC failed\n");
-        return FAIL;
-    }
+    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS)  return FAIL;
 
-    printf("WDStart: Setting up shared args\n");
     shared_args->threshold = threshold;
     shared_args->interval = interval;
     shared_args->argc = argc;
@@ -48,17 +45,18 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
     sa.sa_handler = SignalHandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
+
     if (sigaction(SIG_RESET, &sa, NULL) == FAIL)
     {
-        LogError("Failed to set up signal handler");
         CleanupIPC(shared_args, sem_thread, sem_process);
         return FAIL;
     }
 
+    if (CreateWatchDogImage(argv, shared_args) != SUCCESS) return FAIL;
+
     scheduler = SCHEDCreate();
     if (scheduler == NULL)
     {
-        LogError("Failed to create scheduler");
         CleanupIPC(shared_args, sem_thread, sem_process);
         return FAIL;
     }
@@ -66,19 +64,17 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
     SCHEDAddTask(scheduler, time(NULL), SendSignalTask, shared_args, NULL, NULL);
     SCHEDAddTask(scheduler, time(NULL), ResetCounterTask, shared_args, NULL, NULL);
 
-
-    if (pthread_create(&working_thread, NULL, WatchdogRun, argv) != SUCCESS) {
+    if (pthread_create(&working_thread, NULL, WatchdogRun, NULL) != SUCCESS)
+    {
         SCHEDDestroy(scheduler);
         CleanupIPC(shared_args, sem_thread, sem_process);
         return FAIL;
     }
 
-
-    sem_wait(sem_thread);
-
+    sem_post(sem_thread);
+    sem_wait(sem_process);
     return SUCCESS;
 }
-
 void WDStop(void)
 {
     should_stop = TRUE;
@@ -91,13 +87,6 @@ void WDStop(void)
 
 static void *WatchdogRun(void *arg)
 {
-    char **argv = (char **)arg;
-
-
-    if (CreateWatchDogImage(argv, shared_args) != SUCCESS) return NULL;
-
-    sem_post(sem_thread);
-
     while (!should_stop)
     {
         SCHEDRun(scheduler);
@@ -125,4 +114,35 @@ static time_t SendSignalTask(void *params)
     kill(shared_args->watchdog_pid, SIG_RESET);
     shared_args->counter++;
     return shared_args->interval;
+}
+
+int CreateWatchDogImage(char **argv, process_args_t *shared_args)
+{
+    pid_t watchdog_pid = fork();
+    char pid_str[PID_STR_SIZE];
+    char *watchdog_path = NULL;
+
+    if (watchdog_pid == FAIL) {
+        printf("CreateWatchDogImage: Fork failed\n");
+        return FAIL;
+    }
+    else if (watchdog_pid == SUCCESS)
+    {
+        /* Child process */
+        watchdog_path = getenv(ENV_DEBUG) ? "./watchdog_debug.out" : "./watchdog_release.out";
+        printf("CreateWatchDogImage: Child process starting. Path: %s\n", watchdog_path);
+        execv(watchdog_path, argv);
+        return FAIL;
+        
+    }
+    else
+    {
+        /* Parent process */
+        printf("CreateWatchDogImage: Parent process. Watchdog PID: %d\n", watchdog_pid);
+        snprintf(pid_str, sizeof(pid_str), "%d", watchdog_pid);
+        setenv(ENV_WD_PID, pid_str, TRUE);
+        shared_args->watchdog_pid = watchdog_pid;
+    }
+
+    return SUCCESS;
 }

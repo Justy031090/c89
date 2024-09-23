@@ -19,11 +19,12 @@ static void SignalHandler(int signum);
 
 int main(int argc, char *argv[])
 {
-struct sigaction sa;
-my_uid_t task_id;
+    struct sigaction sa;
+    my_uid_t task_id;
 
-
-    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS) return TRUE;
+    if (InitializeIPC(&shared_args, &sem_thread, &sem_process) != SUCCESS) {
+        return TRUE;
+    }
 
     sa.sa_handler = SignalHandler;
     sigemptyset(&sa.sa_mask);
@@ -41,47 +42,37 @@ my_uid_t task_id;
         return TRUE;
     }
 
-{
     task_id = SCHEDAddTask(scheduler, time(NULL), ResetCounterTask, shared_args, NULL, NULL);
     if (UIDIsEqual(task_id, bad_uid))
     {
-        LogError("Failed to add ResetCounterTask");
         SCHEDDestroy(scheduler);
         CleanupIPC(shared_args, sem_thread, sem_process);
         return TRUE;
     }
-}
 
-{
     task_id = SCHEDAddTask(scheduler, time(NULL), CheckThresholdTask, shared_args, NULL, NULL);
     if (UIDIsEqual(task_id, bad_uid))
     {
-        LogError("Failed to add CheckThresholdTask");
         SCHEDDestroy(scheduler);
         CleanupIPC(shared_args, sem_thread, sem_process);
         return TRUE;
     }
-}
 
-    sem_post(sem_process); /* Signal that watchdog process is ready */
+    sem_post(sem_process);
+    sem_wait(sem_thread);
 
-while (!should_stop)
-{
-    SCHEDRun(scheduler);
-    
-    if (should_stop)
+    while (!should_stop)
     {
-        printf("Watchdog image: Stop signal received\n");
-    }
-    else if (SCHEDIsEmpty(scheduler)) break;
-}
+        SCHEDRun(scheduler);
 
-    printf("Watchdog image: Exiting\n");
+        if (should_stop || SCHEDIsEmpty) break;        
+        sleep(1);
+    }
+
     SCHEDDestroy(scheduler);
     CleanupIPC(shared_args, sem_thread, sem_process);
     return SUCCESS;
 }
-
 static void SignalHandler(int signum)
 {
     if (signum == SIG_RESET)

@@ -69,6 +69,7 @@ void CleanupIPC(process_args_t *shared_args, sem_t *sem_thread, sem_t *sem_proce
     }
 }
 
+/*
 int CreateWatchDogImage(char **argv, process_args_t *shared_args)
 {
     pid_t watchdog_pid = fork();
@@ -90,6 +91,8 @@ int CreateWatchDogImage(char **argv, process_args_t *shared_args)
 
     return SUCCESS;
 }
+
+*/
 
 void LogError(const char *msg)
 {
