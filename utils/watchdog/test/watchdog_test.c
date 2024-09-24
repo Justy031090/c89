@@ -1,78 +1,92 @@
-/* watchdog_test.c */
-#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <assert.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <string.h>
+
+#include "watchdog_combined.h"
 #include "watchdog.h"
 
 #define TEST_THRESHOLD 3
-#define TEST_INTERVAL 2
-#define SUCCESS 0
-#define FAIL -1
-#define MAX_WAIT_TIME 5
+#define TEST_INTERVAL 1
+#define TEST_DURATION 5
 
-
-static void test_WDStart_WDStop(void) {
+static void test_WDStart_WDStop(void)
+{
     int result;
+
+    printf("Testing WDStart and WDStop...\n");
 
     result = WDStart(TEST_THRESHOLD, TEST_INTERVAL, 0, NULL);
-    assert(result == SUCCESS);
-
-    sleep(1);
-
+    if (result != SUCCESS) {
+        fprintf(stderr, "WDStart failed with error code: %d\n", result);
+        exit(EXIT_FAILURE);
+    }
+    
+    assert(strcmp(getenv(ENV_WD_RUNNING), "1") == 0);
+    assert(strcmp(getenv(ENV_PROCESS_TYPE), PROCESS_TYPE_CLIENT) == 0);
+    
+    sleep(TEST_DURATION);
+    
     WDStop();
+    assert(getenv(ENV_WD_RUNNING) == NULL);
+    assert(getenv(ENV_PROCESS_TYPE) == NULL);
 
-    printf("WDStart and WDStop test completed.\n");
+    printf("WDStart and WDStop test passed.\n");
 }
 
-static void test_watchdog_restart(void) {
+static void test_watchdog_termination(void)
+{
+    int result;
     pid_t pid;
     int status;
-    int result;
 
-    printf("Testing watchdog restart functionality...\n");
+    printf("Testing watchdog termination...\n");
 
     pid = fork();
-    if (pid == 0) {
+    if (pid == 0)
+    {
         /* Child process */
         result = WDStart(TEST_THRESHOLD, TEST_INTERVAL, 0, NULL);
-        assert(result == SUCCESS);
-        sleep(TEST_THRESHOLD * TEST_INTERVAL + 1);
-        /* This should not be reached if the watchdog works correctly */
-        exit(1);
-    } else if (pid > 0) {
-        /* Parent process */
-        waitpid(pid, &status, 0);
-        if (WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM) {
-            printf("Watchdog restart test passed.\n");
-        } else {
-            printf("Watchdog restart test failed.\n");
+        if (result != SUCCESS) {
+            fprintf(stderr, "WDStart failed with error code: %d\n", result);
+            exit(EXIT_FAILURE);
         }
         
-        sleep(1);
-    } else {
+        assert(strcmp(getenv(ENV_WD_RUNNING), "1") == 0);
+        assert(strcmp(getenv(ENV_PROCESS_TYPE), PROCESS_TYPE_CLIENT) == 0);
+        
+        /* Simulate a hang by sleeping longer than the threshold */
+        sleep(TEST_THRESHOLD * TEST_INTERVAL * 2);
+        
+        /* This should not be reached if the watchdog works correctly */
+        exit(EXIT_FAILURE);
+    }
+    else if (pid > 0)
+    {
+        /* Parent process */
+        waitpid(pid, &status, 0);
+        assert(WIFSIGNALED(status) && WTERMSIG(status) == SIG_STOP);
+        printf("Watchdog termination test passed.\n");
+    }
+    else
+    {
         perror("fork");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
-int main(void) {
+int main(void)
+{
     printf("Starting Watchdog Test Suite\n");
 
-    printf("Running test_WDStart_WDStop\n");
     test_WDStart_WDStop();
-    printf("test_WDStart_WDStop completed\n");
-    /*
-    sleep(2);
+    sleep(1);
 
-    printf("Running test_watchdog_restart\n");
-    test_watchdog_restart();
-    printf("test_watchdog_restart completed\n");
+    test_watchdog_termination();
 
-    printf("All tests completed.\n");
-    */
-    return 0;
+    printf("All tests completed successfully.\n");
+    return EXIT_SUCCESS;
 }

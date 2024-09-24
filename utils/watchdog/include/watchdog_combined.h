@@ -1,46 +1,88 @@
-#ifndef __WATCHDOG_COMBINED_H__
-#define __WATCHDOG_COMBINED_H__
+#ifndef WATCHDOG_H
+#define WATCHDOG_H
 
-#include <sys/types.h>
-#include <time.h>
+#include <stddef.h>
 #include <semaphore.h>
 #include <signal.h>
+#include <time.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <errno.h>
 
-#include "sched_heap.h"
-
+#define TRUE 1
 #define SUCCESS 0
 #define FAIL -1
-#define TRUE 1
+#define SCHED_RUN_FAILURE -2
+#define IPC_FAILURE -3
+#define SIGNAL_HANDLER_FAILURE -4
+#define WATCHDOG_CREATION_FAILURE -5
+#define SCHEDULER_CREATION_FAILURE -6
+#define TASK_ADDITION_FAILURE -7
+#define THREAD_CREATION_FAILURE -8
+#define SET_ENV_FAILURE -9
 
-#define SHM_NAME "/watchdog_shm"
 #define SEM_NAME_THREAD "/watchdog_sem_thread"
 #define SEM_NAME_PROCESS "/watchdog_sem_process"
+#define PERMISSION 0666
+
 #define ENV_WD_PID "WD_PID"
-#define ENV_DEBUG "DEBUG"
+#define ENV_CLIENT_PID "WD_CLIENT_PID"
+#define ENV_THRESHOLD "WD_THRESHOLD"
+#define ENV_INTERVAL "WD_INTERVAL"
+#define ENV_WD_RUNNING "WD_RUNNING"
+#define ENV_PROCESS_TYPE "WD_PROCESS_TYPE"
+#define PROCESS_TYPE_CLIENT "CLIENT"
+#define PROCESS_TYPE_WATCHDOG "WATCHDOG"
 
-#define MAX_ARGUMENTS 10
-#define MAX_ARGUMENT_SIZE 255
-#define PID_STR_SIZE 32
-#define PERMISSIONS 0666
+#define DEBUG_FILE "./watchdog_debug.log"
 
-#define SIG_RESET SIGUSR1
+#define SIG_CHECK SIGUSR1
 #define SIG_STOP SIGUSR2
-#define SIG_TERMINATE SIGTERM
 
-typedef struct ProcessArgs {
-    size_t threshold;
-    size_t interval;
-    int argc;
-    pid_t client_pid;
-    pid_t watchdog_pid;
-    char argv[MAX_ARGUMENTS][MAX_ARGUMENT_SIZE];
-} process_args_t;
+static FILE *debug_file = NULL;
 
-int InitializeIPC(process_args_t **shared_args, sem_t **sem_thread, sem_t **sem_process);
-void CleanupIPC(process_args_t *shared_args, sem_t *sem_thread, sem_t *sem_process);
-int CreateWatchDogImage(char **argv, process_args_t *shared_args);
-void LogError(const char *msg);
-time_t ResetCounterTask(void *params);
+int InitializeIPC(sem_t **sem_thread, sem_t **sem_process);
+void CleanupIPC(sem_t *sem_thread, sem_t *sem_process);
+void LogMessage(const char *format, ...);
+time_t SendSignalTask(void *params);
 time_t CheckThresholdTask(void *params);
 
-#endif /* __WATCHDOG_COMBINED_H__ */
+#ifndef NDEBUG
+static void DebugLog(const char *format, ...)
+{
+    va_list args;
+    time_t now;
+    char time_str[26];
+
+    if (debug_file == NULL)
+    {
+        debug_file = fopen(DEBUG_FILE, "a");
+        if (debug_file == NULL)
+        {
+            fprintf(stderr, "Failed to open debug file\n");
+            return;
+        }
+    }
+
+    time(&now);
+    ctime_r(&now, time_str);
+    time_str[24] = '\0'; /* Remove newline */
+
+    fprintf(debug_file, "[%s] [PID %d] ", time_str, (int)getpid());
+    
+    va_start(args, format);
+    vfprintf(debug_file, format, args);
+    va_end(args);
+
+    fprintf(debug_file, "\n");
+    fflush(debug_file);
+}
+#else
+#define DebugLog(...)
+#endif
+
+
+
+
+#endif /* WATCHDOG_H */

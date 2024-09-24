@@ -24,7 +24,8 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv);
 /*
 This function will terminate the watchdog process and free 
 all resources that were allocated during the operation of the watchdog.
+if failed to free any resources - returns non-zero value;
  */
-void WDStop();
+int WDStop(void);
 
 #endif
