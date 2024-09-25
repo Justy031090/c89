@@ -7,135 +7,89 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdatomic.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 #include "watchdog.h"
 #include "watchdog_combined.h"
 #include "sched_heap.h"
 
-static sd_t *scheduler = NULL;
-static int should_stop = 0;
-static size_t signal_counter = 0;
+sd_t *scheduler = NULL;
+extern sem_t *sem_thread;
+extern int stop_wd ;
+extern pid_t current_pid;
+extern struct sigaction sa;
+extern struct sigaction sa2;
 
-static void SignalHandler(int signum);
-static time_t SendSignalTask(void *params);
-static time_t CheckAliveTask(void *params);
+void SignalHandler(int signum);
+void SignalHandler2(int signum);
+time_t SendSignal(void *params);
+time_t CheckThreshold(void *params);
+static int CleanupWatchdog(void);
 
 int main(int argc, char *argv[])
 {
+
     struct sigaction sa;
     my_uid_t task1, task2;
+    char pid_buffer[32];
     size_t threshold, interval;
 
-    #ifdef DEBUG
-    DebugLog("Watchdog process starting with PID: %d", (int)getpid());
-    #endif
-
-    /* Initialize sigaction for SIGUSR1 and SIGUSR2 */
     sa.sa_handler = SignalHandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
+
+    sa2.sa_handler = SignalHandler2;
+    sigemptyset(&sa2.sa_mask);
+    sa2.sa_flags = 0;
     
-    if (sigaction(SIG_CHECK, &sa, NULL) == -1 || sigaction(SIG_STOP, &sa, NULL) == -1)
+    if (sigaction(SIG_CHECK, &sa, NULL) == -1 || sigaction(SIG_STOP, &sa2, NULL) == -1)
     {
-        #ifdef DEBUG
         DebugLog("Failed to set up signal handlers");
-        #endif
         return SIGNAL_HANDLER_FAILURE;
     }
 
-    /* Create scheduler */
-    scheduler = SCHEDCreate();
-    if (scheduler == NULL)
-    {
-        #ifdef DEBUG
-        DebugLog("Failed to create scheduler");
-        #endif
-        return SCHEDULER_CREATION_FAILURE;
-    }
-
-    /* Get threshold and interval from environment variables */
     threshold = (size_t)atoi(getenv(ENV_THRESHOLD));
     interval = (size_t)atoi(getenv(ENV_INTERVAL));
 
-    /* Add tasks to scheduler */
-    task1 = SCHEDAddTask(scheduler, time(NULL), SendSignalTask, NULL, NULL, NULL);
-    task2 = SCHEDAddTask(scheduler, time(NULL), CheckAliveTask, NULL, NULL, NULL);
+    WDStart(threshold, interval, argc, argv);
+    sprintf(pid_buffer, "%d", (int)getpid());
 
-    if (UIDIsEqual(send_task, bad_uid) || UIDIsEqual(check_task, bad_uid))
+
+    while (!stop_wd)
     {
-        #ifdef DEBUG
-        DebugLog("Failed to add tasks to scheduler");
-        #endif
-        SCHEDDestroy(scheduler);
-        return TASK_ADDITION_FAILURE;
-    }
+        task1 = SCHEDAddTask(scheduler, time(NULL), SendSignal, pid_buffer, NULL, NULL);
+        task2 = SCHEDAddTask(scheduler, time(NULL) + 1, CheckThreshold, argv, NULL, NULL);
 
-    #ifdef DEBUG
-    DebugLog("Watchdog process initialized successfully");
-    #endif
-
-    /* Main loop */
-    while (!should_stop)
-    {
-        if (SCHEDRun(scheduler) != SUCCESS)
+        if (UIDIsEqual(task1, bad_uid) || UIDIsEqual(task2, bad_uid))
         {
-            #ifdef DEBUG
+            DebugLog("Failed to add tasks to scheduler");
+            CleanupWatchdog();
+            return TASK_ADDITION_FAILURE;
+        }
+
+        if (SCHEDRun(scheduler) == FAIL)
+        {
             DebugLog("Scheduler run failed");
-            #endif
             break;
+        }
+        if(current_pid)
+        {
+            sprintf(pid_buffer, "%d", current_pid);
+            current_pid = 0;
         }
     }
 
+    return CleanupWatchdog();
+}
+
+
+static int CleanupWatchdog(void)
+{
     SCHEDDestroy(scheduler);
-    #ifdef DEBUG
+    sem_close(sem_thread);
+    sem_unlink(SEM_NAME_THREAD);
     DebugLog("Watchdog process exiting");
-    #endif
     return SUCCESS;
-}
-
-static void SignalHandler(int signum)
-{
-    if (signum == SIG_CHECK)
-    {
-        signal_counter = 0;
-        #ifdef DEBUG
-        DebugLog("Received check signal, reset counter");
-        #endif
-    }
-    else if (signum == SIG_STOP)
-    {
-        should_stop = 1;
-        #ifdef DEBUG
-        DebugLog("Received stop signal, preparing to exit");
-        #endif
-    }
-}
-
-static time_t SendSignalTask(void *params)
-{
-    pid_t client_pid = atoi(getenv(ENV_CLIENT_PID));
-    kill(client_pid, SIG_CHECK);
-    #ifdef DEBUG
-    DebugLog("Sent check signal to client process");
-    #endif
-    return (time_t)atoi(getenv(ENV_INTERVAL));
-}
-
-static time_t CheckAliveTask(void *params)
-{
-    size_t threshold = (size_t)atoi(getenv(ENV_THRESHOLD));
-    signal_counter++;
-    #ifdef DEBUG
-    DebugLog("Check alive task, counter: %lu, threshold: %lu", 
-             (unsigned long)signal_counter, (unsigned long)threshold);
-    #endif
-    if (signal_counter >= threshold)
-    {
-        #ifdef DEBUG
-        DebugLog("Threshold reached, restarting client process");
-        #endif
-        /* Implement client process restart logic here */
-        signal_counter = 0;
-    }
-    return (time_t)atoi(getenv(ENV_INTERVAL));
 }

@@ -42,11 +42,11 @@
 
 static FILE *debug_file = NULL;
 
-int InitializeIPC(sem_t **sem_thread, sem_t **sem_process);
-void CleanupIPC(sem_t *sem_thread, sem_t *sem_process);
+void SignalHandler(int signum);
+void SignalHandler2(int signum);
+time_t SendSignal(void *params);
+time_t CheckThreshold(void *params);
 void LogMessage(const char *format, ...);
-time_t SendSignalTask(void *params);
-time_t CheckThresholdTask(void *params);
 
 #ifndef NDEBUG
 static void DebugLog(const char *format, ...)
@@ -57,7 +57,7 @@ static void DebugLog(const char *format, ...)
 
     if (debug_file == NULL)
     {
-        debug_file = fopen(DEBUG_FILE, "a");
+        debug_file = fopen(DEBUG_FILE, "a+");
         if (debug_file == NULL)
         {
             fprintf(stderr, "Failed to open debug file\n");
@@ -67,7 +67,7 @@ static void DebugLog(const char *format, ...)
 
     time(&now);
     ctime_r(&now, time_str);
-    time_str[24] = '\0'; /* Remove newline */
+    time_str[24] = '\0';
 
     fprintf(debug_file, "[%s] [PID %d] ", time_str, (int)getpid());
     
@@ -79,7 +79,7 @@ static void DebugLog(const char *format, ...)
     fflush(debug_file);
 }
 #else
-#define DebugLog(...)
+#define DebugLog(x) do {} while(0)
 #endif
 
 

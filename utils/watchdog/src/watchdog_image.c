@@ -18,23 +18,21 @@
 #include "sched_heap.h"
 
 /* Static variables */
-static pthread_t working_thread;
-static sem_t *sem_thread = NULL;
-static sem_t *sem_process = NULL;
-static int stop_wd = 0;
-static atomic_size_t signal_counter = ATOMIC_VAR_INIT(0);
-static sd_t *scheduler = NULL;
-static pid_t current_pid = 0;
-static int is_watchdog_process = 0;
+pthread_t working_thread;
+sem_t *sem_thread = NULL;
+int stop_wd = 0;
+atomic_size_t signal_counter = ATOMIC_VAR_INIT(0);
+pid_t current_pid = 0;
 struct sigaction sa, sa2;
-
 
 /* Function prototypes */
 static void *WatchdogRun(void *arg);
-static void SignalHandler(int signum);
+void SignalHandler(int signum);
+void SignalHandler2(int signum);
 static int CreateWatchDogImage(char **argv);
 static int SetENV(size_t threshold, size_t interval);
-
+time_t SendSignal(void *params);
+time_t CheckThreshold(void *params);
 
 int WDStart(size_t threshold, size_t interval, int argc, char **argv)
 {
@@ -47,22 +45,25 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
     sem_thread = sem_open(SEM_NAME_THREAD, O_CREAT, PERMISSION, 0);
     if(!sem_thread)
     {
+        #ifdef DEBUG
         DebugLog("Failed to create thread semaphore");
+        #endif
         return IPC_FAILURE;
     };
 
     if (!getenv(ENV_WD_PID))
     {
-        if(SUCCESS != pthread_create(&working_thread, NULL, WatchdogRun, NULL))
+        if(SUCCESS != pthread_create(&working_thread, NULL, WatchdogRun, argv))
         {
             sem_close(sem_thread);
+            #ifdef DEBUG
             DebugLog("Failed to create watchdog thread");
+            #endif
             return THREAD_CREATION_FAILURE;
         }
     
-
         /* Set environment variables and check args*/
-        if(SUCCESS != SetENV) return SET_ENV_FAILURE;
+        if(SUCCESS != SetENV(threshold, interval)) return SET_ENV_FAILURE;
         if(argc > 2)
         {
             arg = argv[0];
@@ -78,13 +79,17 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
             if(SUCCESS != setenv(ENV_WD_PID, buffer, TRUE))
             {
                 sem_close(sem_thread);
+                #ifdef DEBUG
                 DebugLog("Failed to set ENV_WD_PID");
+                #endif
                 return SET_ENV_FAILURE;
             }
             if(FAIL == sem_post(sem_thread))
             {
                 sem_close(sem_thread);
+                #ifdef DEBUG
                 DebugLog("Failed to post semaphore");
+                #endif
                 return IPC_FAILURE;
             }
         }
@@ -94,7 +99,9 @@ int WDStart(size_t threshold, size_t interval, int argc, char **argv)
         if(FAIL == sem_post(sem_thread))
         {
             sem_close(sem_thread);
+            #ifdef DEBUG
             DebugLog("Failed to post semaphore");
+            #endif
             return IPC_FAILURE;
         }
     }
@@ -107,11 +114,13 @@ int WDStop(void)
     char *pid_str = getenv(ENV_WD_PID);
     if(!pid_str) return SET_ENV_FAILURE;
 
-    kill(atoi(gedenv(ENV_WD_PID)),SIG_STOP);
+    kill(atoi(getenv(ENV_WD_PID)),SIG_STOP);
     wait(&stat);
     if(SUCCESS != stat)
     {
+        #ifdef DEBUG
         DebugLog("Exited from watchdog,");
+        #endif
         return stat;
     }
 
@@ -119,23 +128,33 @@ int WDStop(void)
 
     if(FAIL == pthread_join(working_thread, NULL))
     {   
+        #ifdef DEBUG
         DebugLog("Thread join error.");
+        #endif
         return FAIL;
     }
 
     if(FAIL == sem_close(sem_thread))
     {
+        #ifdef DEBUG
         DebugLog("Closing semaphore fail.");
+        #endif
         return IPC_FAILURE;
     }
 
     return SUCCESS;
 }
 
-static void SignalHandler(int signum)
+void SignalHandler(int signum)
 {
     (void) signum;
     atomic_store(&signal_counter, 0);
+}
+
+void SignalHandler2(int signum)
+{
+    (void)signum;
+    stop_wd = 1;
 }
 
 static int CreateWatchDogImage(char **argv)
@@ -147,7 +166,9 @@ static int CreateWatchDogImage(char **argv)
     if (watchdog_pid < SUCCESS)
     {
         sem_close(sem_thread);
+        #ifdef DEBUG
         DebugLog("Fork failed: %s", strerror(errno));
+        #endif
         return WATCHDOG_CREATION_FAILURE;
     }
     if (watchdog_pid == SUCCESS)
@@ -157,14 +178,18 @@ static int CreateWatchDogImage(char **argv)
         if(SUCCESS != setenv(ENV_WD_PID, pid_str, TRUE))
         {
             sem_close(sem_thread);
+            #ifdef DEBUG
             DebugLog("Failed to set ENV_WD_PID");
+            #endif
             return SET_ENV_FAILURE;
         }
         
         if(SUCCESS != execvp(argv[0], argv))
         {
             sem_close(sem_thread);
+            #ifdef DEBUG
             DebugLog("execvp failed: %s", strerror(errno));
+            #endif
             return WATCHDOG_CREATION_FAILURE;
         }
     }
@@ -174,7 +199,9 @@ static int CreateWatchDogImage(char **argv)
         if(SUCCESS != setenv(ENV_WD_PID, pid_str, TRUE))
         {
             sem_close(sem_thread);
+            #ifdef DEBUG
             DebugLog("Failed to set ENV_WD_PID");
+            #endif
             return SET_ENV_FAILURE;
         }
     }
@@ -195,19 +222,25 @@ static int SetENV(size_t threshold, size_t interval)
 
     if (SUCCESS != setenv(ENV_THRESHOLD, buffer_threshold, TRUE))
     {
+        #ifdef DEBUG
         DebugLog("Failed to set ENV_THRESHOLD");
+        #endif
         return SET_ENV_FAILURE;
     }
 
     if (SUCCESS != setenv(ENV_INTERVAL, buffer_interval, TRUE))
     {
+        #ifdef DEBUG
         DebugLog("Failed to set ENV_INTERVAL");
+        #endif
         return SET_ENV_FAILURE;
     }
 
     if (SUCCESS != setenv(ENV_CLIENT_PID, buffer_pid, TRUE))
     {
+        #ifdef DEBUG
         DebugLog("Failed to set ENV_CLIENT_PID");
+        #endif
         return SET_ENV_FAILURE;
     }
 
@@ -220,12 +253,15 @@ static void *WatchdogRun(void *arg)
     char *pid_str;
     char **argv = (char **)arg;
     int fail = IPC_FAILURE;
+    sd_t *scheduler = NULL;
 
     scheduler = SCHEDCreate();
     if(!scheduler)
     {
+        #ifdef DEBUG
         DebugLog("Failed to create scheduler.");
-        return SCHEDULER_CREATION_FAILURE;
+        #endif
+        return (void *)SCHEDULER_CREATION_FAILURE;
     }
 
     sa.sa_handler = SignalHandler;
@@ -235,7 +271,9 @@ static void *WatchdogRun(void *arg)
 
     if(FAIL == sem_wait(sem_thread))
     {
+        #ifdef DEBUG
         DebugLog("sem-wait failure. Exiting thread.");
+        #endif
         pthread_exit(&fail);
     }
 
@@ -243,16 +281,21 @@ static void *WatchdogRun(void *arg)
     {
         pid_str = getenv(ENV_WD_PID);
         if(!pid_str) 
-        {   fail = SET_ENV_FAILURE;
+        {   
+            fail = SET_ENV_FAILURE;
+            #ifdef DEBUG
             DebugLog("Failed to get WD_PID");
+            #endif
             pthread_exit(&fail);
         }
-        task1 = SCHEDAddTask(scheduler, time(NULL), SendSignalTask, pid_str, NULL, NULL);
-        task2 = SCHEDAddTask(scheduler, time(NULL)+1, CheckThresholdTask, argv, NULL, NULL);
+        task1 = SCHEDAddTask(scheduler, time(NULL), SendSignal, pid_str, NULL, NULL);
+        task2 = SCHEDAddTask(scheduler, time(NULL)+1, CheckThreshold, argv, NULL, NULL);
 
         if(UIDIsEqual(task1, bad_uid) || UIDIsEqual(task2, bad_uid))
         {
+            #ifdef DEBUG
             DebugLog("Bad task UID. Failed to create task.");
+            #endif
             fail = TASK_ADDITION_FAILURE;
             break;
         }
@@ -263,24 +306,25 @@ static void *WatchdogRun(void *arg)
             break;
         }
     }
-        SCHEDDestroy(scheduler);
-        pthread_exit(&fail);
+    SCHEDDestroy(scheduler);
+    pthread_exit(&fail);
 }
 
-
-time_t SendSignalTask(void *params)
+time_t SendSignal(void *params)
 {
-    pid_t watchdog_pid = atoi(getenv(ENV_WD_PID));
+    pid_t watchdog_pid = atoi((char *)params);
     if(FAIL == kill(watchdog_pid, SIG_CHECK))
     {
-        DebugLog("Failed to deliever a signal !");
+        #ifdef DEBUG
+        DebugLog("Failed to deliver a signal !");
+        #endif
     }
     atomic_fetch_add(&signal_counter, 1);
     
     return atoi(getenv(ENV_INTERVAL));
 }
 
-time_t CheckThresholdTask(void *params)
+time_t CheckThreshold(void *params)
 {
     pid_t pid = 0;
     size_t count = atomic_load(&signal_counter);
@@ -298,7 +342,9 @@ time_t CheckThresholdTask(void *params)
             if(SUCCESS > pid)
             {
                 sem_close(sem_thread);
+                #ifdef DEBUG
                 DebugLog("Fork failed: %s", strerror(errno));
+                #endif
                 return WATCHDOG_CREATION_FAILURE;
             }
             if(SUCCESS == pid)
@@ -307,54 +353,33 @@ time_t CheckThresholdTask(void *params)
                 if(SUCCESS != execvp(temp[0], temp))
                 {
                     sem_close(sem_thread);
+                    #ifdef DEBUG
                     DebugLog("execvp failed: %s", strerror(errno));
+                    #endif
                     return WATCHDOG_CREATION_FAILURE;
                 }
                 else
                 {
                     current_pid = pid;
                     sem_wait(sem_thread);
+                    if(FAIL == sem_post(sem_thread))
+                    {
+                        #ifdef DEBUG
+                        DebugLog("Failed to post semaphore.");
+                        #endif
+                        return IPC_FAILURE;
+                    }
                 }
             }
-
+            else
+            {
+                CreateWatchDogImage(temp);
+                sem_wait(sem_thread);
+            }
         }
     }
     return interval;
 }
-
-
-
-
-
-
-
-
-void CleanupIPC(sem_t *sem_thread, sem_t *sem_process)
-{
-    DebugLog("CleanupIPC called");
-    if (sem_thread)
-    {
-        sem_close(sem_thread);
-        sem_unlink(SEM_NAME_THREAD);
-    }
-    if (sem_process)
-    {
-        sem_close(sem_process);
-        sem_unlink(SEM_NAME_PROCESS);
-    }
-    DebugLog("IPC cleaned up");
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 #ifndef NDEBUG
