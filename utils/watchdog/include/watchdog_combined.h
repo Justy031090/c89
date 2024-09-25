@@ -1,14 +1,9 @@
-#ifndef WATCHDOG_H
-#define WATCHDOG_H
+#ifndef WATCHDOG_COMBINED_H
+#define WATCHDOG_COMBINED_H
 
-#include <stddef.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <time.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <time.h> /*time_t*/
+
+
 
 #define TRUE 1
 #define SUCCESS 0
@@ -21,6 +16,7 @@
 #define TASK_ADDITION_FAILURE -7
 #define THREAD_CREATION_FAILURE -8
 #define SET_ENV_FAILURE -9
+#define BUFFER_SIZE 32
 
 #define SEM_NAME_THREAD "/watchdog_sem_thread"
 #define SEM_NAME_PROCESS "/watchdog_sem_process"
@@ -40,49 +36,20 @@
 #define SIG_CHECK SIGUSR1
 #define SIG_STOP SIGUSR2
 
-static FILE *debug_file = NULL;
-
 void SignalHandler(int signum);
 void SignalHandler2(int signum);
 time_t SendSignal(void *params);
 time_t CheckThreshold(void *params);
-void LogMessage(const char *format, ...);
 
-#ifndef NDEBUG
-static void DebugLog(const char *format, ...)
-{
-    va_list args;
-    time_t now;
-    char time_str[26];
-
-    if (debug_file == NULL)
-    {
-        debug_file = fopen(DEBUG_FILE, "a+");
-        if (debug_file == NULL)
-        {
-            fprintf(stderr, "Failed to open debug file\n");
-            return;
-        }
-    }
-
-    time(&now);
-    ctime_r(&now, time_str);
-    time_str[24] = '\0';
-
-    fprintf(debug_file, "[%s] [PID %d] ", time_str, (int)getpid());
-    
-    va_start(args, format);
-    vfprintf(debug_file, format, args);
-    va_end(args);
-
-    fprintf(debug_file, "\n");
-    fflush(debug_file);
-}
-#else
-#define DebugLog(x) do {} while(0)
+#if !defined(NDEBUG) && !defined(DEBUG)
+#define DEBUG
 #endif
 
+#ifdef DEBUG
+#define DebugLog(x) debug_log x
+void debug_log(const char *format, ...);
+#else
+#define DebugLog(x) 
+#endif
 
-
-
-#endif /* WATCHDOG_H */
+#endif /* WATCHDOG_COMBINED_H */

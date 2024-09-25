@@ -10,14 +10,16 @@
 #include <stdatomic.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <semaphore.h>
 
 #include "watchdog.h"
 #include "watchdog_combined.h"
 #include "sched_heap.h"
 
 sd_t *scheduler = NULL;
+extern atomic_int stop_wd;
+extern atomic_size_t signal_counter;
 extern sem_t *sem_thread;
-extern int stop_wd ;
 extern pid_t current_pid;
 extern struct sigaction sa;
 extern struct sigaction sa2;
@@ -27,6 +29,8 @@ void SignalHandler2(int signum);
 time_t SendSignal(void *params);
 time_t CheckThreshold(void *params);
 static int CleanupWatchdog(void);
+
+
 
 int main(int argc, char *argv[])
 {
@@ -44,14 +48,27 @@ int main(int argc, char *argv[])
     sigemptyset(&sa2.sa_mask);
     sa2.sa_flags = 0;
     
-    if (sigaction(SIG_CHECK, &sa, NULL) == -1 || sigaction(SIG_STOP, &sa2, NULL) == -1)
+    if (sigaction(SIG_CHECK, &sa, NULL) == FAIL || sigaction(SIG_STOP, &sa2, NULL) == FAIL)
     {
-        DebugLog("Failed to set up signal handlers");
+        DebugLog(("Failed to set up signal handlers"));
         return SIGNAL_HANDLER_FAILURE;
     }
 
     threshold = (size_t)atoi(getenv(ENV_THRESHOLD));
     interval = (size_t)atoi(getenv(ENV_INTERVAL));
+
+    if(!threshold || !interval)
+    {
+        DebugLog(("Environment variabls ENV_THRESHOLD or ENV_INTERVAL not set"));
+        return SET_ENV_FAILURE;
+    }
+
+    scheduler = SCHEDCreate();
+    if(!scheduler)
+    {
+        DebugLog(("Failed to create scheduler"));
+        return SCHEDULER_CREATION_FAILURE;
+    }
 
     WDStart(threshold, interval, argc, argv);
     sprintf(pid_buffer, "%d", (int)getpid());
@@ -64,14 +81,14 @@ int main(int argc, char *argv[])
 
         if (UIDIsEqual(task1, bad_uid) || UIDIsEqual(task2, bad_uid))
         {
-            DebugLog("Failed to add tasks to scheduler");
+            DebugLog(("Failed to add tasks to scheduler"));
             CleanupWatchdog();
             return TASK_ADDITION_FAILURE;
         }
 
         if (SCHEDRun(scheduler) == FAIL)
         {
-            DebugLog("Scheduler run failed");
+            DebugLog(("Scheduler run failed"));
             break;
         }
         if(current_pid)
@@ -88,8 +105,16 @@ int main(int argc, char *argv[])
 static int CleanupWatchdog(void)
 {
     SCHEDDestroy(scheduler);
-    sem_close(sem_thread);
-    sem_unlink(SEM_NAME_THREAD);
-    DebugLog("Watchdog process exiting");
+    if (sem_close(sem_thread) != 0)
+    {
+        DebugLog(("Failed to close semaphore"));
+        return IPC_FAILURE;
+    }
+    if (sem_unlink(SEM_NAME_THREAD) != 0)
+    {
+        DebugLog(("Failed to unlink semaphore"));
+        return IPC_FAILURE;
+    }
+    DebugLog(("Watchdog process exiting"));
     return SUCCESS;
 }
