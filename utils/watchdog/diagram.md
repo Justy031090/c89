@@ -1,10 +1,6 @@
 
-
-
-
-
-
-    sequenceDiagram
+```mermaid
+sequenceDiagram
     participant Client
     participant WDStart
     participant WatchdogRun
@@ -81,4 +77,3 @@
         WDStop-->>Client: Return SUCCESS
         deactivate WDStop
     end
-
