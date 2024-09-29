@@ -3,8 +3,6 @@
 
 #include <time.h> /*time_t*/
 
-
-
 #define TRUE 1
 #define SUCCESS 0
 #define FAIL -1
@@ -40,10 +38,6 @@ void SignalHandler(int signum);
 void SignalHandler2(int signum);
 time_t SendSignal(void *params);
 time_t CheckThreshold(void *params);
-
-#if !defined(NDEBUG) && !defined(DEBUG)
-#define DEBUG
-#endif
 
 #ifdef DEBUG
 #define DebugLog(x) debug_log x

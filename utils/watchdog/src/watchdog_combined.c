@@ -1,21 +1,17 @@
-#define _DEFAULT_SOURCE
-#define _POSIX_C_SOURCE 200112L
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <stdatomic.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <semaphore.h>
+#define _POSIX_C_SOURCE 200112L /*sigaction*/
+
+#include <stdio.h> /*sprintf*/
+#include <semaphore.h> /*semaphore operations*/
+#include <stdatomic.h> /*atomic operations & variables*/
+#include <signal.h>/*sigaction, sigemptyset*/
+#include <stdlib.h> /*atoi, getenv*/
+#include <unistd.h> /*getpid*/
 
 #include "watchdog.h"
 #include "watchdog_combined.h"
 #include "sched_heap.h"
 
+/*Global variables*/
 sd_t *scheduler = NULL;
 extern atomic_int stop_wd;
 extern atomic_size_t signal_counter;
@@ -24,20 +20,18 @@ extern pid_t current_pid;
 extern struct sigaction sa;
 extern struct sigaction sa2;
 
+/*Function prototypes*/
 void SignalHandler(int signum);
 void SignalHandler2(int signum);
 time_t SendSignal(void *params);
 time_t CheckThreshold(void *params);
 static int CleanupWatchdog(void);
 
-
-
 int main(int argc, char *argv[])
 {
-
     struct sigaction sa;
     my_uid_t task1, task2;
-    char pid_buffer[32];
+    char pid_buffer[BUFFER_SIZE];
     size_t threshold, interval;
 
     sa.sa_handler = SignalHandler;

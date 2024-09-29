@@ -1,12 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <assert.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <sys/time.h>
-#include <errno.h>
+#define _DEFAULT_SOURCE /* usleep */
+#include <stdio.h> /* printf, fprintf */
+#include <stdlib.h> /* atoi, getenv */
+#include <unistd.h> /* sleep */
+#include <assert.h> /* assert */
+#include <signal.h> /* signal handling */
+#include <sys/wait.h> /* waitpid */
+#include <string.h> /* strcmp */
+#include <sys/time.h> /* time */
+#include <errno.h> /* errno */
 
 #include "watchdog.h"
 #include "watchdog_combined.h"
@@ -16,7 +17,7 @@
 #define TEST_INTERVAL 1
 #define TEST_DURATION 5
 
-static void test_WDStart_WDStop(void)
+static void test_StartStop(void)
 {
     int result;
     pid_t pid = getpid();
@@ -58,7 +59,7 @@ static void test_WDStart_WDStop(void)
     printf("[Process %d] WDStart and WDStop test passed.\n", pid);
 }
 
-static void test_mutual_revival(void)
+static void test_Revival(void)
 {
     int result;
     pid_t pid;
@@ -89,7 +90,7 @@ static void test_mutual_revival(void)
             if (i < 2)
             {
                 printf("Child process simulating crash...\n");
-                raise(SIGTERM);  /* Use SIGTERM instead of SIGKILL */
+                raise(SIGTERM);  /* Simulate a crash */
                 /* If we reach here, it means the process was revived */
                 printf("Child process revived after crash\n");
             }
@@ -109,7 +110,8 @@ static void test_mutual_revival(void)
     else if (pid > 0)
     {
         /* Parent process */
-        sleep(1); /* Give child process time to start */
+        /* Give child process time to start */
+        sleep(1); 
         
         /* Wait for child process to exit */
         waitpid(pid, &status, 0);
@@ -127,7 +129,7 @@ static void test_mutual_revival(void)
         else
         {
             printf("Unexpected child process termination\n");
-            assert(0 && "Unexpected child process termination");
+            assert(FAIL && "Unexpected child process termination");
         }
         
         printf("Mutual revival test passed.\n");
@@ -139,17 +141,20 @@ static void test_mutual_revival(void)
     }
 }
 
-static void test_watchdog_termination(void)
+
+static void test_Termination(void)
 {
     int result;
     pid_t pid;
     int status;
     int i;
+    /* Time tracking for timeout */
     struct timeval start, now;
     double elapsed;
 
     printf("Testing watchdog termination...\n");
 
+    /* Get start time */
     gettimeofday(&start, NULL);
 
     pid = fork();
@@ -187,28 +192,32 @@ static void test_watchdog_termination(void)
     else if (pid > 0)
     {
         /* Parent process */
-        while (1)
+        while (TRUE)
         {
+            /* Get current time */
             gettimeofday(&now, NULL);
             elapsed = (now.tv_sec - start.tv_sec) + (now.tv_usec - start.tv_usec) / 1000000.0;
             
             if (elapsed > TEST_TIMEOUT)
             {
                 printf("Test timed out after %.2f seconds\n", elapsed);
+                kill(pid, SIGKILL); /* Kill the child process if timeout occurs */
                 kill(pid, SIGKILL);
                 waitpid(pid, &status, 0);
                 assert(0 && "Test timed out");
                 return;
             }
             
+            /*WNOHANG Blocks Waiting*/
             if (waitpid(pid, &status, WNOHANG) != 0)
             {
+                /* Break if child process has exited */
                 break;
             }
             
-            usleep(100000); /* Sleep for 100ms */
+            usleep(100000); 
         }
-        
+        /* Check the exit status of the child process */
         if (WIFEXITED(status))
         {
             printf("Child process exited with status: %d\n", WEXITSTATUS(status));
@@ -236,22 +245,17 @@ static void test_watchdog_termination(void)
 
 
 
-
-
-
-
-
 int main()
 {
     printf("Starting Watchdog Test Suite\n");
 
-    test_WDStart_WDStop();
+    test_StartStop();
     sleep(1);
 
-    test_watchdog_termination();
+    test_Termination();
     sleep(1);
 
-    test_mutual_revival();
+    test_Revival();
 
     printf("All tests completed successfully.\n");
     return 0;
