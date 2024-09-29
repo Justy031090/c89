@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 
 ```mermaid
 >>>>>>> refs/remotes/origin/master
@@ -79,8 +77,6 @@ sequenceDiagram
         WDStop->>WDStop: Clean up resources
         WDStop-->>Client: Return SUCCESS
         deactivate WDStop
-<<<<<<< HEAD
-    end
-=======
+
     end
 >>>>>>> refs/remotes/origin/master
