@@ -1,6 +1,4 @@
-
 ```mermaid
->>>>>>> refs/remotes/origin/master
 sequenceDiagram
     participant Client
     participant WDStart
