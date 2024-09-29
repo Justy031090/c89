@@ -1,14 +1,29 @@
-#
-# gcc compilation aliases: c89, c99, debug mode, release mode
+# C Compilation Aliases (C89 and C99)
+alias gd='gcc -ansi -pedantic-errors -Wall -Wextra -g'         # C89 Debug
+alias gc='gcc -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3' # C89 Release
+alias gd9='gcc -std=c99 -pedantic-errors -Wall -Wextra -g'      # C99 Debug
+alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -O3' # C99 Release
 
-alias gd='gcc -ansi -pedantic-errors -Wall -Wextra -g'
-alias gc='gcc -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -03'
-alias gd9='gcc -std=c99 -pedantic-errors -Wall -Wextra -g'
-alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -03'
-#
-#Valgrind alias
+# C++ Compilation Aliases (C++98 and C++11)
+alias cppd='g++ -std=c++98 -pedantic-errors -Wall -Wextra -g'   # C++98 Debug
+alias cppc='g++ -std=c++98 -Wall -Wextra -DNDEBUG -O3'          # C++98 Release
+alias cpp11d='g++ -std=c++11 -pedantic-errors -Wall -Wextra -g' # C++11 Debug
+alias cpp11c='g++ -std=c++11 -Wall -Wextra -DNDEBUG -O3'        # C++11 Release
 
+# Valgrind Alias
 alias vlg='valgrind --leak-check=yes --track-origins=yes'
 
-#Git alias
-alias gs='git status'
+# Navigation Aliases
+alias ..='cd ..'                 
+alias ...='cd ../..'             
+alias ....='cd ../../..'         
+alias .....='cd ../../../..'     
+alias bd='cd "$OLDPWD"'          # Go back to the previous directory
+alias home='cd ~'                # Go to the home directory
+
+# Permissions Aliases
+alias 000='chmod -R 000'         # Set permissions to 000 (no access) recursively
+alias 644='chmod -R 644'         # Set permissions to 644 (read/write for owner, read for group and others) recursively
+alias 666='chmod -R 666'         # Set permissions to 666 (read/write for all) recursively
+alias 755='chmod -R 755'         # Set permissions to 755 (read/write/execute for owner, read/execute for group and others) recursively
+alias 777='chmod -R 777'         # Set permissions to 777 (full access for all) recursively

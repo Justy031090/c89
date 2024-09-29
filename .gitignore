@@ -1,10 +1,11 @@
 # Hello Infinity Labs !
 
-*
-!.myfuncs
-!.gitignore
-!*/
-!*.c
-!*.h
-
-
+*.md
+*.o
+*.so
+*.out
+*.d
+*vscode
+*.json
+Makefile
+.gitignore
