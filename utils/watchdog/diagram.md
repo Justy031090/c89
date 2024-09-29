@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+
+```mermaid
+>>>>>>> refs/remotes/origin/master
 sequenceDiagram
     participant Client
     participant WDStart
@@ -74,4 +79,8 @@ sequenceDiagram
         WDStop->>WDStop: Clean up resources
         WDStop-->>Client: Return SUCCESS
         deactivate WDStop
+<<<<<<< HEAD
     end
+=======
+    end
+>>>>>>> refs/remotes/origin/master
